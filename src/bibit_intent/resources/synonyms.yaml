@@ -1,0 +1,26 @@
+version: 1
+groups:
+  - canonical: "音量"
+    terms: ["音量", "声量", "声音大小"]
+  - canonical: "浏览器"
+    terms: ["浏览器", "网页浏览器"]
+  - canonical: "CPU"
+    terms: ["CPU", "中央处理器", "处理器"]
+  - canonical: "内存"
+    terms: ["内存", "运行内存"]
+  - canonical: "硬盘"
+    terms: ["硬盘", "磁盘", "存储空间"]
+  - canonical: "卸载"
+    terms: ["卸载", "移除", "删除软件"]
+  - canonical: "安装"
+    terms: ["安装", "装一下"]
+  - canonical: "volume"
+    terms: ["volume", "sound", "audio", "loudness", "audio level"]
+  - canonical: "brightness"
+    terms: ["brightness", "screen brightness", "backlight", "display brightness"]
+  - canonical: "wifi"
+    terms: ["wifi", "wi-fi", "wireless", "wireless network"]
+  - canonical: "bluetooth"
+    terms: ["bluetooth", "bt", "wireless headset"]
+  - canonical: "package"
+    terms: ["package", "software package", "apt package", "application"]

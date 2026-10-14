@@ -1,0 +1,27 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+  remove|purge|disappear)
+    # debhelper 对 user 服务只做 enable/disable 状态管理，不会 stop 运行中的实例；
+    # 这里对已登录且有 user manager 的用户执行 disable --now（stop + 清理启用链接），
+    # 与 postinst 的 per-user enable/start 对称。
+    UNITS="bibit-intent.service bibit-intent-models.service"
+    if command -v systemctl >/dev/null 2>&1 && command -v loginctl >/dev/null 2>&1; then
+      for u in $(loginctl list-sessions --no-legend 2>/dev/null | awk 'NF >= 3 {print $3}' | sort -u); do
+        uid=$(id -u "$u" 2>/dev/null) || continue
+        [ -d "/run/user/$uid" ] || continue
+        runuser -u "$u" -- env XDG_RUNTIME_DIR="/run/user/$uid" \
+          systemctl --user disable --now $UNITS >/dev/null 2>&1 || true
+      done
+      if [ -n "${XDG_RUNTIME_DIR:-}" ] && [ -d "$XDG_RUNTIME_DIR" ]; then
+        systemctl --user disable --now $UNITS >/dev/null 2>&1 || true
+      fi
+    fi
+    rm -rf /opt/bibit-intent/.venv
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

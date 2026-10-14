@@ -1,0 +1,29 @@
+{"id":"M01","lang":"zh","input":"打开浏览器并播放三国演义","label":true,"note":"核心场景:launch_app+播放"}
+{"id":"M02","lang":"zh","input":"打开浏览器，然后把亮度调低到30","label":true,"note":"连接词=然后;应用+设备"}
+{"id":"M03","lang":"zh","input":"先连上WiFi再打开浏览器","label":true,"note":"连接词=再;有依赖顺序"}
+{"id":"M04","lang":"zh","input":"音量调到30，亮度调到50","label":true,"note":"逗号边界,两动作"}
+{"id":"M05","lang":"zh","input":"调低亮度 音量调大","label":true,"note":"空格边界,两动作"}
+{"id":"M06","lang":"zh","input":"搜索资讯并生成可视化报告","label":true,"note":"搜索+生成+连接词"}
+{"id":"M07","lang":"zh","input":"保存并退出","label":true,"note":"保存+退出+并"}
+{"id":"M08","lang":"zh","input":"静音 重启","label":true,"note":"两动作空格分隔"}
+{"id":"M09","lang":"en","input":"open browser and play three kingdoms","label":true,"note":"英文:open+play+and"}
+{"id":"M10","lang":"en","input":"save the file and close the app","label":true,"note":"英文:save+close+and"}
+{"id":"M11","lang":"en","input":"set volume to 30, then set brightness to 50","label":true,"note":"英文:两动作+then"}
+{"id":"S01","lang":"zh","input":"打开浏览器","label":false,"note":"单动作,打开"}
+{"id":"S02","lang":"zh","input":"打开开关","label":false,"note":"陷阱:开关不应拆成开+关"}
+{"id":"S03","lang":"zh","input":"调节音量到6成","label":false,"note":"单动作,调节"}
+{"id":"S04","lang":"zh","input":"查看 CPU 详细信息","label":false,"note":"单动作,查看"}
+{"id":"S05","lang":"zh","input":"显示内存大小","label":false,"note":"单动作,显示"}
+{"id":"S06","lang":"zh","input":"把音量调到60","label":false,"note":"单动作,调"}
+{"id":"S07","lang":"zh","input":"调低亮度","label":false,"note":"单动作,调低"}
+{"id":"S08","lang":"zh","input":"看看这个skill","label":false,"note":"口语,非多动作"}
+{"id":"S09","lang":"zh","input":"看电影","label":false,"note":"单动作,看"}
+{"id":"S10","lang":"en","input":"check cpu details","label":false,"note":"英文单动作,check"}
+{"id":"S11","lang":"en","input":"open settings","label":false,"note":"英文单动作,open"}
+{"id":"S12","lang":"en","input":"adjust volume to 60 percent","label":false,"note":"英文单动作,adjust"}
+{"id":"M13","lang":"zh","input":"帮我调音量到80%再查下K3的AI算力","label":true,"note":"连接词=再;调节+口语查询动词查下"}
+{"id":"M14","lang":"zh","input":"打开浏览器然后看下天气","label":true,"note":"连接词=然后;应用+口语查询动词看下"}
+{"id":"M15","lang":"zh","input":"调低亮度再看一下内存","label":true,"note":"连接词=再;设备+口语查询动词看一下"}
+{"id":"M16","lang":"zh","input":"先连上WiFi再查一下IP","label":true,"note":"连接词=再;网络+口语查询动词查一下"}
+{"id":"S13","lang":"zh","input":"查内存和CPU","label":false,"note":"单谓词多宾语,查+内存/CPU"}
+{"id":"S14","lang":"zh","input":"查看CPU和内存","label":false,"note":"单谓词多宾语,查看+CPU/内存"}

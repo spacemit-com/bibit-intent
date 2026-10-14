@@ -1,0 +1,61 @@
+{"id":"EN-SC-001","group":"rule","input":"set the volume to 60","expect":"set_volume"}
+{"id":"EN-SC-002","group":"rule","input":"make the sound louder","expect":"set_volume"}
+{"id":"EN-SC-003","group":"rule","input":"set brightness to 40 percent","expect":"set_brightness"}
+{"id":"EN-SC-004","group":"rule","input":"open the browser","expect":"launch_app"}
+{"id":"EN-SC-005","group":"rule","input":"quit Firefox","expect":"close_app"}
+{"id":"EN-SC-006","group":"rule","input":"restart the computer","expect":"reboot"}
+{"id":"EN-SC-007","group":"rule","input":"lock the screen","expect":"lock_screen"}
+{"id":"EN-SC-008","group":"rule","input":"show all open windows","expect":"window_list"}
+{"id":"EN-SC-009","group":"rule","input":"rotate the display clockwise","expect":"rotate_screen"}
+{"id":"EN-SC-010","group":"rule","input":"set the refresh rate to 60 Hz","expect":"set_refresh_rate"}
+{"id":"EN-SC-011","group":"rule","input":"change the aspect ratio to 16:9","expect":"set_aspect_ratio"}
+{"id":"EN-SC-012","group":"rule","input":"switch to mirror display mode","expect":"set_display_mode"}
+{"id":"EN-SC-013","group":"rule","input":"scan for available Wi-Fi networks","expect":"wifi_scan"}
+{"id":"EN-SC-014","group":"rule","input":"connect to Wi-Fi HomeNet","expect":"wifi_connect"}
+{"id":"EN-SC-015","group":"rule","input":"disconnect the Wi-Fi network","expect":"wifi_disconnect"}
+{"id":"EN-SC-016","group":"rule","input":"show Wi-Fi status","expect":"wifi_status"}
+{"id":"EN-SC-017","group":"rule","input":"show my Wi-Fi IP address","expect":"wifi_ip"}
+{"id":"EN-SC-018","group":"rule","input":"turn on Bluetooth","expect":"bt_on"}
+{"id":"EN-SC-019","group":"rule","input":"turn off Bluetooth","expect":"bt_off"}
+{"id":"EN-SC-020","group":"rule","input":"scan for Bluetooth devices","expect":"bt_scan"}
+{"id":"EN-SC-021","group":"rule","input":"pair my Bluetooth headset","expect":"bt_connect"}
+{"id":"EN-SC-022","group":"rule","input":"disconnect the Bluetooth headphones","expect":"bt_disconnect"}
+{"id":"EN-SC-023","group":"rule","input":"unpair the Bluetooth speaker","expect":"bt_forget"}
+{"id":"EN-SC-024","group":"rule","input":"enable the Ethernet connection","expect":"eth_up"}
+{"id":"EN-SC-025","group":"rule","input":"disable the Ethernet connection","expect":"eth_down"}
+{"id":"EN-SC-026","group":"rule","input":"show Ethernet status","expect":"eth_status"}
+{"id":"EN-SC-027","group":"rule","input":"show the network IP address","expect":"net_ip"}
+{"id":"EN-SC-028","group":"rule","input":"list USB devices","expect":"usb_list"}
+{"id":"EN-SC-029","group":"rule","input":"show USB device details","expect":"usb_detail"}
+{"id":"EN-SC-030","group":"rule","input":"show the USB device tree","expect":"usb_tree"}
+{"id":"EN-SC-031","group":"rule","input":"reset the USB device","expect":"usb_reset"}
+{"id":"EN-SC-032","group":"rule","input":"switch to speakers","expect":"audio_output_switch"}
+{"id":"EN-SC-033","group":"rule","input":"change audio output to headphones","expect":"audio_output_switch"}
+{"id":"EN-SC-034","group":"rule","input":"switch to HDMI output","expect":"audio_output_switch"}
+{"id":"EN-SC-035","group":"rule","input":"switch audio output device","expect":"audio_output_switch"}
+{"id":"EN-SC-036","group":"model","input":"I want to use the speakers","expect":"audio_output_switch"}
+{"id":"EN-SC-037","group":"rule","input":"set microphone volume to 80","expect":"audio_input_volume"}
+{"id":"EN-SC-038","group":"rule","input":"increase microphone volume","expect":"audio_input_volume"}
+{"id":"EN-SC-039","group":"rule","input":"turn up the mic","expect":"audio_input_volume"}
+{"id":"EN-SC-040","group":"rule","input":"raise the recording volume","expect":"audio_input_volume"}
+{"id":"EN-SC-041","group":"model","input":"input volume is too low","expect":"audio_input_volume"}
+{"id":"EN-SC-042","group":"rule","input":"switch to built-in microphone","expect":"audio_input_switch"}
+{"id":"EN-SC-043","group":"rule","input":"use the headset mic","expect":"audio_input_switch"}
+{"id":"EN-SC-044","group":"rule","input":"switch microphone","expect":"audio_input_switch"}
+{"id":"EN-SC-045","group":"rule","input":"change to onboard mic","expect":"audio_input_switch"}
+{"id":"EN-SC-046","group":"model","input":"use the laptop's built-in mic","expect":"audio_input_switch"}
+{"id":"EN-SC-047","group":"rule","input":"mute the microphone","expect":"audio_input_mute"}
+{"id":"EN-SC-048","group":"rule","input":"turn off the mic","expect":"audio_input_mute"}
+{"id":"EN-SC-049","group":"rule","input":"unmute the microphone","expect":"audio_input_mute"}
+{"id":"EN-SC-050","group":"rule","input":"turn on the mic","expect":"audio_input_mute"}
+{"id":"EN-SC-051","group":"model","input":"mute my mic during the meeting","expect":"audio_input_mute"}
+{"id":"EN-SC-052","group":"rule","input":"open the camera","expect":"camera_open"}
+{"id":"EN-SC-053","group":"rule","input":"launch the camera","expect":"camera_open"}
+{"id":"EN-SC-054","group":"rule","input":"start the camera app","expect":"camera_open"}
+{"id":"EN-SC-055","group":"rule","input":"I want to take a photo","expect":"take_photo"}
+{"id":"EN-SC-056","group":"rule","input":"open camera","expect":"camera_open"}
+{"id":"EN-SC-057","group":"rule","input":"close the camera","expect":"camera_close"}
+{"id":"EN-SC-058","group":"rule","input":"exit the camera","expect":"camera_close"}
+{"id":"EN-SC-059","group":"rule","input":"stop the camera","expect":"camera_close"}
+{"id":"EN-SC-060","group":"rule","input":"done taking photos","expect":"camera_close"}
+{"id":"EN-SC-061","group":"rule","input":"close camera","expect":"camera_close"}

@@ -1,0 +1,42 @@
+# 云端知识源（出厂默认）—— 用户可指定，见 docs/design/k3_smart_office.md §3.3。
+#
+# 覆盖面分工：
+#   本地文件   → bibit-filesearch 的 file_search + file_read（永远先查，零外发）
+#   社区知识库 → 本文件的 remote_vector 来源（默认关，开一个开关即可用）
+#   网络搜索   → Runtime 的 web_search（本仓只登记开关，不代它出网）
+#
+# 用户配置放在 ~/.config/bibit-intent/knowledge_sources.yaml，按 id 覆盖本文件；
+# 也可用环境变量覆盖单个来源：
+#   BIBIT_KB_<ID>_ENABLED=1 / BIBIT_KB_<ID>_ENDPOINT=https://… / BIBIT_KB_<ID>_TOKEN_ENV=…
+#
+# 令牌不写进本文件，只写「读哪个环境变量」（token_env）；当前社区接口公开
+# （仅按 IP 限流，无 Authorization），因此 token_env 留空。
+
+sources:
+
+  # 进迭社区知识库：RagFlow 检索转发接口。
+  # 契约与错误码见 docs/spec/RagFlow-检索接口对接文档.md；测试环境用
+  # https://developer.bianbu.xyz/api-server/ragflow/retrieval，
+  # 生产环境是 https://spacemit.com/api-server/ragflow/retrieval。
+  # 出厂关闭：不替用户把查询发出去；打开 enabled 后 kb_search 只发送脱敏后的查询词。
+  - id: spacemit_community
+    kind: remote_vector
+    protocol: ragflow
+    label: 进迭社区知识库
+    label_en: SpacemiT community knowledge base
+    enabled: false
+    endpoint: https://developer.bianbu.xyz/api-server/ragflow/retrieval
+    token_env: ""
+    timeout_seconds: 60
+    top_k: 10
+    similarity_threshold: 0.2
+    vector_similarity_weight: 0.3
+    description: 进迭社区文档的远程向量检索（RagFlow 转发接口，公开访问按 IP 限流）
+
+  # 开放网络检索。kb_search 只回报「已启用」，实际检索由 Runtime 的 web_search 执行。
+  - id: web
+    kind: web_search
+    label: 网络搜索
+    label_en: Web search
+    enabled: true
+    description: 开放网络检索，由 Runtime 的 web_search 执行（kb_search 不代它出网）

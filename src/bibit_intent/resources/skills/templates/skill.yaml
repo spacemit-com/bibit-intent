@@ -1,0 +1,54 @@
+# 办公模板 Skill（只读）
+# 依据 docs/design/k3_smart_office.md §4：内置 5 个办公模板（周报/会议纪要/项目计划/
+# 数据报表/演示汇报），以**声明式骨架 + appcli 动作计划**的形式交给模型。
+#
+# 本 Skill 全部只读：读模板资源、渲染动作计划，不执行任何命令、不写文件。
+# 真正的执行仍走 appcli（appcli_run，confirm: true + 产物校验）。
+
+name: templates
+version: "0.1"
+display: "办公模板"
+description: "列出内置办公模板并取出某个模板的骨架与 appcli 动作计划（只读）"
+author: "bibit"
+
+requires:
+  - python3
+
+tools:
+
+  template_list:
+    display: "列出办公模板（只读）"
+    display_en: "List the built-in office templates (weekly report, meeting minutes, project plan, data report, presentation) with their document type, deliverables and when to use them (read-only). Call this before starting any document/spreadsheet/slide deliverable."
+    short: "tlist"
+    aliases: ["列出办公模板", "有哪些模板", "模板列表", "办公模板", "list templates", "office templates"]
+    params:
+      doc_type: {type: str, default: ""}
+    routes:
+      rule:
+        patterns:
+          - "^(?:列出|查看|看看|有哪些|显示)(?:内置)?(?:办公)?(?:文档)?模板$"
+          - "^(?:list|show)\\s+(?:built-?in\\s+)?(?:office\\s+)?templates$"
+        keywords: ["办公模板", "模板列表", "list templates", "office templates"]
+      local: null
+    confirm: false
+    handler: "template_list"
+    mcp: {group: readonly}
+
+  template_get:
+    display: "取办公模板骨架（只读）"
+    display_en: "Get one built-in template: the section/sheet/slide skeleton, the minimum inputs with fallbacks, which knowledge sources are worth searching first, and the ordered appcli action plan (with <project>/<output> placeholders). Read-only: it does not run anything. Fill the content yourself, then execute the plan with appcli_run."
+    short: "tget"
+    aliases: ["取模板", "模板骨架", "模板详情", "get template", "template detail"]
+    params:
+      template: {type: str}
+      preset: {type: str, default: ""}
+    routes:
+      rule:
+        patterns:
+          - "^(?:取|查看|显示|看看)(?:办公)?模板\\s+(?P<template>[a-z_]+)$"
+          - "^(?:get|show)\\s+template\\s+(?P<template>[a-z_]+)$"
+        keywords: ["取模板", "模板骨架", "get template"]
+      local: null
+    confirm: false
+    handler: "template_get"
+    mcp: {group: readonly}

@@ -1,0 +1,60 @@
+{"id":"EN01","group":"rule","input":"set volume to 60","expect":"set_volume"}
+{"id":"EN02","group":"rule","input":"mute the sound","expect":"mute"}
+{"id":"EN03","group":"rule","input":"set brightness to 40%","expect":"set_brightness"}
+{"id":"EN04","group":"rule","input":"open the browser","expect":"launch_app"}
+{"id":"EN05","group":"rule","input":"install nginx","expect":"pkg_install"}
+{"id":"EN06","group":"rule","input":"uninstall vim","expect":"pkg_remove"}
+{"id":"EN07","group":"escalate","input":"what is quantum entanglement?","expect":"open_question"}
+{"id":"EN08","group":"escalate","input":"how do I open the file manager?","expect":"open_question"}
+{"id":"EN09","group":"escalate","input":"open browser and play a video","expect":"multi_intent"}
+{"id":"EN10","group":"escalate","input":"don't close the browser","expect":"negated_action"}
+{"id":"EN11","group":"escalate","input":"install curl and wget","expect":"multi_target"}
+{"id":"EN12","group":"escalate","input":"write a poem about Linux","expect":"writing_task"}
+{"id":"EN13","group":"rule","input":"please adjust the audio level to 30 percent","expect":"set_volume"}
+{"id":"EN14","group":"rule","input":"make the volume louder","expect":"set_volume"}
+{"id":"EN15","group":"rule","input":"please dim the screen","expect":"set_brightness"}
+{"id":"EN16","group":"rule","input":"launch the terminal app","expect":"launch_app"}
+{"id":"EN17","group":"rule","input":"please quit the browser","expect":"close_app"}
+{"id":"EN18","group":"rule","input":"restart the ssh service","expect":"service_restart"}
+{"id":"EN19","group":"rule","input":"stop the nginx service","expect":"service_stop"}
+{"id":"EN20","group":"rule","input":"show installed packages","expect":"pkg_installed"}
+{"id":"EN21","group":"rule","input":"check disk usage","expect":"disk_usage"}
+{"id":"EN22","group":"rule","input":"is the ssh service running?","expect":"service_status"}
+{"id":"EN23","group":"rule","input":"show cpu information","expect":"sys_cpu"}
+{"id":"EN24","group":"rule","input":"get memory size","expect":"sys_mem_size"}
+{"id":"EN25","group":"rule","input":"set volume to sixty percent","expect":"set_volume"}
+{"id":"EN26","group":"rule","input":"set brightness to half","expect":"set_brightness"}
+{"id":"EN27","group":"anchor","input":"could you make the audio a little quieter","expect":"set_volume"}
+{"id":"EN28","group":"anchor","input":"how much disk space is used","expect":"disk_usage"}
+{"id":"EN29","group":"anchor","input":"is sshd currently running","expect":"service_status"}
+{"id":"EN30","group":"rule","input":"unmute","expect":"mute"}
+{"id":"EN31","group":"rule","input":"restart the computer","expect":"reboot"}
+{"id":"EN32","group":"rule","input":"lock the screen","expect":"lock_screen"}
+{"id":"EN33","group":"rule","input":"show the system uptime","expect":"sys_uptime"}
+{"id":"EN34","group":"rule","input":"list block devices","expect":"disk_lsblk"}
+{"id":"EN35","group":"rule","input":"show network connections","expect":"net_conn"}
+{"id":"EN36","group":"rule","input":"what is the system architecture?","expect":"sys_arch"}
+{"id":"EN37","group":"rule","input":"show screen resolution","expect":"sys_resolution"}
+{"id":"EN38","group":"rule","input":"list all services","expect":"service_list"}
+{"id":"EN39","group":"rule","input":"show system users","expect":"user_list"}
+{"id":"EN45","group":"rule","input":"show the top processes by memory","expect":"proc_top_mem"}
+{"id":"EN46","group":"rule","input":"display the process tree","expect":"proc_tree"}
+{"id":"EN47","group":"rule","input":"show process memory usage","expect":"proc_mem"}
+{"id":"EN48","group":"rule","input":"show loaded kernel modules","expect":"sys_modules"}
+{"id":"EN49","group":"rule","input":"show the hardware information","expect":"sys_hw"}
+{"id":"EN50","group":"rule","input":"show memory type","expect":"sys_mem_type"}
+{"id":"EN51","group":"rule","input":"show disk partitions","expect":"disk_partitions"}
+{"id":"EN52","group":"rule","input":"connect to Wi-Fi \"Home Network\" with password \"secret pass\"","expect":"wifi_connect"}
+{"id":"EN53","group":"rule","input":"show login history","expect":"login_records"}
+{"id":"EN54","group":"rule","input":"show installed package statistics","expect":"pkg_stats"}
+{"id":"EN55","group":"rule","input":"export the installed package list","expect":"pkg_selections"}
+{"id":"EN56","group":"rule","input":"show the routing table","expect":"net_route"}
+{"id":"EN57","group":"rule","input":"update the package lists","expect":"pkg_update"}
+{"id":"EN58","group":"rule","input":"clean the apt cache","expect":"pkg_clean"}
+{"id":"EN59","group":"rule","input":"remove unused packages","expect":"pkg_autoremove"}
+{"id":"EN60","group":"rule","input":"show all open windows","expect":"window_list"}
+{"id":"EN61","group":"rule","input":"mute the system audio","expect":"mute"}
+{"id":"EN62","group":"rule","input":"search files on this machine","expect":"file_search"}
+{"id":"EN63","group":"rule","input":"find local documents","expect":"file_search"}
+{"id":"EN64","group":"rule","input":"on my computer search pdf files","expect":"file_search"}
+{"id":"EN65","group":"escalate","input":"search the latest news online","expect":"writing_task"}

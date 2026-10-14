@@ -1,0 +1,16 @@
+// Allow members of the "sudo" group to manage NetworkManager without an
+// interactive polkit prompt, from any context (desktop, SSH, or a systemd
+// service).
+//
+// The stock org.freedesktop.NetworkManager.rules only authorizes
+// settings.modify.system when subject.active (an active seat session), so
+// bibit-intent's wifi_connect / wifi_disconnect handlers — which run as a
+// sudo-group user from SSH or a systemd service, with no seat — are denied
+// with "Insufficient privileges". Drop the subject.local and subject.active
+// requirements here.
+polkit.addRule(function(action, subject) {
+    if (subject.isInGroup("sudo") &&
+        action.id.indexOf("org.freedesktop.NetworkManager.") === 0) {
+        return polkit.Result.YES;
+    }
+});

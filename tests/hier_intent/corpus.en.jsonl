@@ -1,0 +1,4 @@
+{"id":"EN-HI-001","input":"set the volume to 50","expect":"control"}
+{"id":"EN-HI-002","input":"show CPU information","expect":"control"}
+{"id":"EN-HI-003","input":"what is quantum entanglement?","expect":"knowledge"}
+{"id":"EN-HI-004","input":"write a Linux script","expect":"generation"}

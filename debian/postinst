@@ -1,0 +1,103 @@
+#!/bin/sh
+set -e
+
+VENV=/opt/bibit-intent/.venv
+REQUIREMENTS=/opt/bibit-intent/requirements.txt
+PYTHON=/usr/bin/python3.14
+PIP_INDEX=https://git.spacemit.com/api/v4/projects/33/packages/pypi/simple
+
+case "$1" in
+  configure)
+    /bin/sh /opt/bibit-intent/retire-legacy-models.sh
+    if [ ! -x "$VENV/bin/python" ]; then
+      "$PYTHON" -m venv "$VENV"
+    fi
+    "$VENV/bin/python" -m pip install --upgrade pip >/dev/null 2>&1 || true
+    if [ -f "$REQUIREMENTS" ]; then
+      "$VENV/bin/python" -m pip install -i "$PIP_INDEX" -r "$REQUIREMENTS"
+    fi
+
+    # Load-request extra_args do not survive Gateway restarts or lazy reloads.
+    # 显式传 --config：安装期（尤其 chroot 镜像制作/初始化）没有运行中的 systemd，
+    # 不能用 systemctl show 反查配置路径；该路径是 Gateway 包写死的静态值。YAML
+    # 始终原地更新，只有真实 systemd 运行时才 try-restart 让运行中的 Gateway 立即
+    # 生效；chroot 里跳过重启，等首次启动时由 Gateway 自己加载。
+    GATEWAY_CONFIG_RESULT=$(/opt/spacemit-ai-gateway/venv/bin/python \
+      /opt/bibit-intent/deploy/configure-gateway-embedding.py \
+      --config /opt/spacemit-ai-gateway/configs/base.yaml)
+    if [ "$GATEWAY_CONFIG_RESULT" = updated ] && [ -d /run/systemd/system ]; then
+      systemctl try-restart spacemit-ai-gateway.service
+    fi
+
+    echo "bibit-intent: model initialization runs asynchronously in bibit-intent-models.service"
+
+    # MCP manifest 的归属：Runtime 包通过 bianbu.bibit.intent 插件分发同一份
+    # 定义（resources/plugins/bianbu.bibit.intent/mcps/bibit-intent/），本包只
+    # 提供 /opt/bibit-intent/mcp.json 作为被引用的源，插件在时绝不再往用户主目录
+    # 写副本——两个 id 不同、不按 id 覆盖，两份会同时加载。
+    # Runtime 还没有该插件成员时（旧 Runtime）保留历史行为，为已登录的普通用户
+    # 装一份，否则升级到本版 bibit 而 Runtime 未更新的机器会一个 MCP 都没有。
+    MCP_SOURCE=/opt/bibit-intent/mcp.json
+    RUNTIME_PLUGIN_MCP_ROOT=/usr/share/bianbu-agent-runtime/plugins/bianbu.bibit.intent/mcps
+    RUNTIME_PLUGIN_MCP=0
+    for mcp_name in bibit-readonly bibit-control bibit-admin; do
+      if [ -f "$RUNTIME_PLUGIN_MCP_ROOT/$mcp_name/mcp.json" ]; then
+        RUNTIME_PLUGIN_MCP=1
+        break
+      fi
+    done
+    if [ "$RUNTIME_PLUGIN_MCP" = 1 ]; then
+      echo "bibit-intent: Runtime Bibit Plugin ships this MCP; no per-user manifest is installed"
+    elif [ -f "$MCP_SOURCE" ] && [ -x /opt/bibit-intent/install-user-mcp.py ]; then
+      MCP_USERS=${SUDO_USER:-}
+      if command -v loginctl >/dev/null 2>&1; then
+        MCP_USERS="$MCP_USERS $(loginctl list-users --no-legend 2>/dev/null | awk '{print $2}' | sort -u)"
+      fi
+      MCP_USERS=$(printf '%s\n' $MCP_USERS | sort -u)
+      for u in $MCP_USERS; do
+        [ "$u" = "root" ] && continue
+        uid=$(id -u "$u" 2>/dev/null) || continue
+        [ "$uid" -ge 1000 ] && [ "$uid" -ne 65534 ] || continue
+        /usr/bin/python3 /opt/bibit-intent/install-user-mcp.py \
+          --user "$u" --source "$MCP_SOURCE" || true
+      done
+    fi
+
+    # 首次启动由 vendor enable 保证（debian/rules 把 wants 符号链接打进
+    # /usr/lib/systemd/user/default.target.wants/），任何非 root 用户登录即自动启动
+    # bibit-intent，并经由 Wants 拉起模型下载。这里只对已登录用户立即做旧模型迁移
+    # + restart，让升级后的代码/配置立即生效。
+    if command -v systemctl >/dev/null 2>&1; then
+      # The Runtime owns the Bibit MCP worker and caches its tool definitions
+      # at process start. Reloading only bibit-intent.service leaves an already
+      # running Runtime with the previous MCP schema after a package upgrade.
+      # Restart only an already active Runtime here; the detached agent upgrade
+      # script starts it after upgrading the Runtime package itself.
+      if [ -d /run/systemd/system ] && systemctl is-active --quiet bianbu-agent-runtime.service; then
+        systemctl daemon-reload >/dev/null 2>&1 || true
+        systemctl restart bianbu-agent-runtime.service >/dev/null 2>&1 || true
+      fi
+      for u in $(loginctl list-users --no-legend 2>/dev/null | awk '{print $2}' | sort -u); do
+        [ "$u" = "root" ] && continue
+        uid=$(id -u "$u" 2>/dev/null) || continue
+        [ -d "/run/user/$uid" ] || continue
+        home=$(getent passwd "$u" | cut -d: -f6)
+        if [ -f /etc/bibit-intent/inference.env ] && [ -n "$home" ]; then
+          runuser -u "$u" -- env HOME="$home" \
+            PYTHONPATH=/opt/bibit-intent/src "$VENV/bin/python" \
+            -m bibit_intent.models.gateway_setup --migrate-legacy --cleanup-legacy \
+            --legacy-home "$home" --env-file /etc/bibit-intent/inference.env \
+            || echo "bibit-intent: Gateway migration pending; original models preserved"
+        fi
+        runuser -u "$u" -- env XDG_RUNTIME_DIR="/run/user/$uid" \
+          systemctl --user daemon-reload >/dev/null 2>&1 || true
+        runuser -u "$u" -- env XDG_RUNTIME_DIR="/run/user/$uid" \
+          systemctl --user restart --no-block bibit-intent.service >/dev/null 2>&1 || true
+      done
+    fi
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

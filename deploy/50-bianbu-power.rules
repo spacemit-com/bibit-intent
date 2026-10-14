@@ -1,0 +1,27 @@
+// Allow members of the "sudo" group to power off, reboot, suspend or hibernate
+// the machine without an interactive polkit prompt, from any context (desktop,
+// SSH, or a systemd service).
+//
+// org.freedesktop.login1.power-off / reboot / suspend ship with
+// allow_active=yes but allow_any=auth_admin_keep: they only succeed for a
+// process that logind considers part of an active seat session. bibit-intent's
+// shutdown / reboot / sleep handlers also run from the MCP tool server, which
+// is a subprocess of the bianbu-agent-runtime *system* service and therefore
+// has no seat. logind then answers "Interactive authentication required" and
+// the device silently stays on, so drop the subject.local / subject.active
+// requirement here.
+polkit.addRule(function(action, subject) {
+    var actions = [
+        "org.freedesktop.login1.power-off",
+        "org.freedesktop.login1.power-off-multiple-sessions",
+        "org.freedesktop.login1.reboot",
+        "org.freedesktop.login1.reboot-multiple-sessions",
+        "org.freedesktop.login1.suspend",
+        "org.freedesktop.login1.suspend-multiple-sessions",
+        "org.freedesktop.login1.hibernate",
+        "org.freedesktop.login1.hibernate-multiple-sessions"
+    ];
+    if (subject.isInGroup("sudo") && actions.indexOf(action.id) !== -1) {
+        return polkit.Result.YES;
+    }
+});

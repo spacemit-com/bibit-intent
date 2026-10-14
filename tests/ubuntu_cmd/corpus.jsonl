@@ -1,0 +1,143 @@
+{"id": "U01", "group": "rule", "input": "查看软件curl安装内容", "expect": "pkg_files", "note": "wiki:查看软件xxx安装内容 dpkg -L"}
+{"id": "U02", "group": "rule", "input": "curl这个软件安装了哪些文件", "expect": "pkg_files", "note": "口语但规则可抽取"}
+{"id": "U03", "group": "model", "input": "vim这个软件给我看看它装了什么", "expect": "ESCALATE", "note": "口语模糊-装了什么查询,应升级云端"}
+{"id": "U04", "group": "model", "input": "看看python3这个软件都装了哪些内容", "expect": "pkg_files", "note": "装了哪些内容-口语"}
+{"id": "U05", "group": "rule", "input": "搜索软件库中的文本编辑器", "expect": "pkg_search", "note": "wiki:查找软件库中的软件"}
+{"id": "U06", "group": "rule", "input": "帮我搜一下有没有vlc", "expect": "pkg_search", "note": "搜软件-带软件名"}
+{"id": "U07", "group": "model", "input": "想知道apt仓库里有没有nginx", "expect": "pkg_search", "note": "有没有-口语"}
+{"id": "U08", "group": "rule", "input": "查看openssh-client这个包的信息", "expect": "pkg_info", "note": "wiki:显示包的信息"}
+{"id": "U09", "group": "rule", "input": "vim装的是什么版本", "expect": "pkg_info", "note": "版本查询-规则槽位"}
+{"id": "U10", "group": "model", "input": "看看git这个包的版本信息", "expect": "pkg_info", "note": "版本信息-口语"}
+{"id": "U11", "group": "rule", "input": "查看系统已经安装了哪些软件", "expect": "pkg_installed", "note": "wiki:查看已经安装了哪些包"}
+{"id": "U12", "group": "rule", "input": "装了哪些软件", "expect": "pkg_installed", "note": "短句式"}
+{"id": "U13", "group": "model", "input": "系统里有没有装git", "expect": "pkg_installed", "note": "有没有装-口语"}
+{"id": "U14", "group": "rule", "input": "看看/bin/ls这个文件属于哪个软件包", "expect": "pkg_owns_file", "note": "wiki:查找文件属于哪个包 dpkg -S"}
+{"id": "U15", "group": "rule", "input": "/bin/top这个文件来自哪个包", "expect": "pkg_owns_file", "note": "来自哪个包"}
+{"id": "U16", "group": "model", "input": "top这个命令是哪个包带的", "expect": "pkg_owns_file", "note": "哪个包带的-口语"}
+{"id": "U17", "group": "rule", "input": "python3依赖哪些包", "expect": "pkg_depends", "note": "wiki:查询软件xxx依赖哪些包"}
+{"id": "U18", "group": "rule", "input": "查看vim的依赖关系", "expect": "pkg_depends", "note": "依赖关系"}
+{"id": "U19", "group": "model", "input": "查一下curl要拉哪些依赖", "expect": "pkg_depends", "note": "哪些依赖-口语"}
+{"id": "U20", "group": "rule", "input": "curl被哪些包依赖", "expect": "pkg_rdepends", "note": "wiki:查询软件xxx被哪些包依赖"}
+{"id": "U21", "group": "model", "input": "有哪些包在引用curl", "expect": "pkg_rdepends", "note": "引用-口语"}
+{"id": "U22", "group": "rule", "input": "查看内核版本", "expect": "sys_kernel", "note": "wiki:查看内核 uname -a"}
+{"id": "U23", "group": "model", "input": "这台机器的kernel是啥", "expect": "sys_kernel", "note": "kernel-口语"}
+{"id": "U24", "group": "rule", "input": "系统是什么版本", "expect": "sys_version", "note": "wiki:查看Ubuntu版本"}
+{"id": "U25", "group": "model", "input": "这台设备跑的是什么系统", "expect": "sys_version", "note": "什么系统-口语"}
+{"id": "U26", "group": "rule", "input": "查看USB设备", "expect": "usb_list", "note": "wiki:查看USB设备 lsusb"}
+{"id": "U27", "group": "model", "input": "u盘上接了啥外设", "expect": "usb_list", "note": "u盘-口语"}
+{"id": "U28", "group": "rule", "input": "系统开机多久了", "expect": "sys_uptime", "note": "wiki:显示系统运行时间 uptime"}
+{"id": "U29", "group": "model", "input": "开机到现在多久了", "expect": "sys_uptime", "note": "口语"}
+{"id": "U30", "group": "rule", "input": "硬盘还剩多少空间", "expect": "disk_usage", "note": "wiki:查看硬盘剩余空间 df"}
+{"id": "U31", "group": "model", "input": "我的存储快满了", "expect": "disk_usage", "note": "快满-口语"}
+{"id": "U32", "group": "rule", "input": "查看/home目录占了多少", "expect": "disk_dir_usage", "note": "wiki:查看目录占用空间 du -hs"}
+{"id": "U33", "group": "model", "input": "var这个目录很占地方", "expect": "disk_dir_usage", "note": "占地方-口语"}
+{"id": "U34", "group": "rule", "input": "有哪些块设备", "expect": "disk_lsblk", "note": "wiki:查看块设备 lsblk"}
+{"id": "U35", "group": "model", "input": "机器上挂了几块盘", "expect": "disk_lsblk", "note": "块盘-口语"}
+{"id": "U36", "group": "rule", "input": "查看当前进程", "expect": "proc_list", "note": "wiki:查看当前有哪些进程 ps"}
+{"id": "U37", "group": "rule", "input": "nginx进程在跑吗", "expect": "proc_list", "note": "进程在跑吗-规则"}
+{"id": "U38", "group": "model", "input": "看看现在有哪些程序在跑", "expect": "proc_list", "note": "程序在跑-口语"}
+{"id": "U39", "group": "rule", "input": "谁吃内存最多", "expect": "proc_top_mem", "note": "wiki:列出最耗内存进程"}
+{"id": "U40", "group": "model", "input": "内存怎么一下就被吃光了", "expect": "proc_top_mem", "note": "吃光-口语"}
+{"id": "U41", "group": "rule", "input": "哪个进程CPU占用最高", "expect": "proc_top_cpu", "note": "wiki:按cpu利用率排列进程"}
+{"id": "U42", "group": "model", "input": "到底哪个东西在烧cpu", "expect": "proc_top_cpu", "note": "烧cpu-口语"}
+{"id": "U43", "group": "rule", "input": "查看进程树", "expect": "proc_tree", "note": "wiki:查看当前进程树 pstree"}
+{"id": "U44", "group": "model", "input": "进程之间的父子关系是怎样的", "expect": "proc_tree", "note": "父子关系-口语"}
+{"id": "U45", "group": "rule", "input": "当前ip地址是多少", "expect": "net_ip", "note": "wiki:查看当前IP地址"}
+{"id": "U46", "group": "model", "input": "怎么查看我这台设备的IP信息", "expect": "net_ip", "note": "IP信息-口语"}
+{"id": "U47", "group": "rule", "input": "查看监听端口", "expect": "net_conn", "note": "wiki:查看监听端口 ss"}
+{"id": "U48", "group": "model", "input": "这台机器都开着哪些端口", "expect": "net_conn", "note": "哪些端口-口语"}
+{"id": "U49", "group": "rule", "input": "ssh服务状态", "expect": "service_status", "note": "wiki:查看服务状态"}
+{"id": "U50", "group": "model", "input": "看看ssh有没有在跑", "expect": "service_status", "note": "有没有在跑-口语"}
+{"id": "U51", "group": "rule", "input": "查看登录记录", "expect": "login_records", "note": "wiki:查看系统的登录情况 last"}
+{"id": "U52", "group": "model", "input": "这台机器哪些人登录过", "expect": "login_records", "note": "登录过-口语"}
+{"id": "U53", "group": "rule", "input": "当前有哪些用户在线", "expect": "online_users", "note": "wiki:查看当前在线用户 w"}
+{"id": "U54", "group": "model", "input": "看一下当前登录了几个用户", "expect": "online_users", "note": "当前登录用户-口语"}
+{"id": "U55", "group": "model", "input": "帮我写一首关于秋天的诗", "expect": "ESCALATE", "note": "端侧能力外,应升级"}
+{"id": "U56", "group": "rule", "input": "解释一下量子纠缠", "expect": "ESCALATE", "note": "开放问答,前置升级"}
+{"id": "U57", "group": "rule", "input": "查看软件包的统计信息", "expect": "pkg_stats", "note": "wiki:apt-cache stats"}
+{"id": "U58", "group": "rule", "input": "查看下载缓存目录", "expect": "pkg_archives", "note": "wiki:下载包临时存放目录"}
+{"id": "U59", "group": "rule", "input": "备份当前已安装包列表", "expect": "pkg_selections", "note": "wiki:dpkg --get-selections"}
+{"id": "U60", "group": "rule", "input": "系统是32位还是64位", "expect": "sys_arch", "note": "wiki:查看系统是32位还是64位"}
+{"id": "U61", "group": "rule", "input": "查看内核加载的模块", "expect": "sys_modules", "note": "wiki:lsmod"}
+{"id": "U62", "group": "rule", "input": "CPU是什么型号", "expect": "sys_cpu", "note": "wiki:cat /proc/cpuinfo 型号/核数"}
+{"id": "U63", "group": "rule", "input": "显示当前硬件信息", "expect": "sys_hw", "note": "wiki:lshw"}
+{"id": "U64", "group": "rule", "input": "内存条是什么型号", "expect": "sys_mem_type", "note": "wiki:dmidecode -t memory"}
+{"id": "U65", "group": "rule", "input": "系统有多少内存", "expect": "sys_mem_size", "note": "wiki:free -m Mem 总量"}
+{"id": "U66", "group": "rule", "input": "系统的资源限制是多少", "expect": "sys_limits", "note": "wiki:ulimit -a"}
+{"id": "U67", "group": "rule", "input": "查看内核限制", "expect": "sys_kernel_limits", "note": "wiki:ipcs -l"}
+{"id": "U68", "group": "rule", "input": "查看当前屏幕分辨率", "expect": "sys_resolution", "note": "wiki:xrandr"}
+{"id": "U69", "group": "rule", "input": "查看硬盘分区", "expect": "disk_partitions", "note": "wiki:fdisk -l"}
+{"id": "U70", "group": "rule", "input": "查看硬盘详细信息", "expect": "disk_info", "note": "wiki:hdparm -i"}
+{"id": "U71", "group": "rule", "input": "查看硬盘读写情况", "expect": "disk_io", "note": "wiki:iostat -x"}
+{"id": "U72", "group": "rule", "input": "查看软raid阵列", "expect": "disk_raid", "note": "wiki:cat /proc/mdstat"}
+{"id": "U73", "group": "rule", "input": "内存还剩多少", "expect": "proc_mem", "note": "wiki:free"}
+{"id": "U74", "group": "rule", "input": "统计各程序内存耗用", "expect": "proc_mem_stat", "note": "wiki:ps -eo fname,rss 汇总"}
+{"id": "U75", "group": "rule", "input": "1234进程打开了哪些文件", "expect": "proc_open_files", "note": "wiki:lsof -p pid"}
+{"id": "U76", "group": "rule", "input": "8081端口被哪个程序占用", "expect": "proc_port", "note": "wiki:lsof -i :port"}
+{"id": "U77", "group": "rule", "input": "查看路由信息", "expect": "net_route", "note": "wiki:netstat -rn"}
+{"id": "U78", "group": "rule", "input": "查看网卡MAC地址", "expect": "net_mac", "note": "wiki:ifconfig MAC/物理地址"}
+{"id": "U79", "group": "rule", "input": "查询外网IP", "expect": "net_ext_ip", "note": "wiki:curl ifconfig.me"}
+{"id": "U80", "group": "rule", "input": "baidu.com域名注册情况", "expect": "net_whois", "note": "wiki:whois"}
+{"id": "U81", "group": "rule", "input": "跟踪baidu.com的路由路径", "expect": "net_trace", "note": "wiki:tracepath"}
+{"id": "U82", "group": "rule", "input": "查看baidu.com的响应头", "expect": "net_http_head", "note": "wiki:curl --head"}
+{"id": "U83", "group": "rule", "input": "查看iptables规则", "expect": "iptables_list", "note": "wiki:iptables -L"}
+{"id": "U84", "group": "rule", "input": "查看所有账号的登录情况", "expect": "sec_lastlog", "note": "wiki:lastlog2"}
+{"id": "U85", "group": "model", "input": "检查系统安全隐患", "expect": "ESCALATE", "note": "rkhunter已上云"}
+{"id": "U86", "group": "rule", "input": "扫描病毒", "expect": "sec_antivirus", "note": "wiki:clamscan"}
+{"id": "U87", "group": "rule", "input": "查看全部服务状态", "expect": "service_list", "note": "wiki:service --status-all"}
+{"id": "U88", "group": "rule", "input": "系统里有哪些用户", "expect": "user_list", "note": "wiki:用户管理/系统用户"}
+{"id": "U89", "group": "rule", "input": "查看/etc/passwd这个文件的类型", "expect": "file_info", "note": "wiki:file 文件名"}
+{"id": "U90", "group": "rule", "input": "a.txt文件编码", "expect": "text_encoding", "note": "wiki:enca 文件名"}
+{"id": "U91", "group": "rule", "input": "帮我装一下htop", "expect": "pkg_install", "note": "admin:安装软件"}
+{"id": "U92", "group": "rule", "input": "卸载vim", "expect": "pkg_remove", "note": "admin:卸载软件"}
+{"id": "U93", "group": "rule", "input": "系统更新", "expect": "pkg_update", "note": "admin:系统更新"}
+{"id": "U94", "group": "rule", "input": "清理软件缓存", "expect": "pkg_clean", "note": "admin:apt-get clean"}
+{"id": "U95", "group": "rule", "input": "清理孤立软件", "expect": "pkg_autoremove", "note": "admin:apt-get autoremove"}
+{"id": "U96", "group": "rule", "input": "恢复包列表", "expect": "pkg_restore_selections", "note": "admin:dpkg --set-selections"}
+{"id": "U97", "group": "rule", "input": "挂载/dev/sdb1到/mnt/c", "expect": "disk_mount", "note": "admin:mount"}
+{"id": "U98", "group": "rule", "input": "卸载/mnt/c", "expect": "disk_umount", "note": "admin:umount"}
+{"id": "U99", "group": "rule", "input": "检查/dev/sda1分区", "expect": "disk_check", "note": "admin:fsck"}
+{"id": "U100", "group": "rule", "input": "格式化/dev/sdb1", "expect": "disk_format", "note": "admin:mkfs"}
+{"id": "U101", "group": "rule", "input": "杀掉1234进程", "expect": "proc_kill", "note": "admin:kill"}
+{"id": "U102", "group": "rule", "input": "清理僵尸进程", "expect": "proc_zombie", "note": "admin:清僵尸"}
+{"id": "U103", "group": "rule", "input": "重启nginx服务", "expect": "service_restart", "note": "admin:systemctl restart"}
+{"id": "U104", "group": "rule", "input": "把ssh服务停掉", "expect": "service_stop", "note": "admin:systemctl stop"}
+{"id": "U105", "group": "rule", "input": "把ssh服务开起来", "expect": "service_start", "note": "admin:systemctl start"}
+{"id": "U106", "group": "rule", "input": "新建一个用户alice", "expect": "user_add", "note": "admin:adduser"}
+{"id": "U107", "group": "rule", "input": "删除用户bob", "expect": "user_del", "note": "admin:deluser"}
+{"id": "U108", "group": "rule", "input": "锁定用户alice", "expect": "user_lock", "note": "admin:usermod -L"}
+{"id": "U109", "group": "rule", "input": "解锁用户alice", "expect": "user_unlock", "note": "admin:usermod -U"}
+{"id": "U110", "group": "rule", "input": "屏蔽192.168.1.125这个IP", "expect": "iptables_block", "note": "admin:iptables DROP"}
+{"id": "U111", "group": "rule", "input": "把网络的NAT功能打开", "expect": "net_enable_nat", "note": "admin:IP转发+MASQUERADE"}
+{"id": "U112", "group": "rule", "input": "src目录转码", "expect": "text_convert", "note": "admin:convmv GBK转UTF8"}
+{"id": "U113", "group": "rule", "input": "curl文件清单", "expect": "pkg_files", "note": "变体:pkg_files 文件清单简写"}
+{"id": "U114", "group": "rule", "input": "这台机器跑的是什么系统", "expect": "sys_version", "note": "变体:本机/这台+机器+跑+什么系统"}
+{"id": "U115", "group": "rule", "input": "ubuntu版本", "expect": "sys_version", "note": "变体:ubuntu(是什么)版本"}
+{"id": "U116", "group": "rule", "input": "U盘上都插了哪些设备", "expect": "usb_list", "note": "变体:usb上都插了哪些"}
+{"id": "U117", "group": "rule", "input": "开机了多久", "expect": "sys_uptime", "note": "变体:^(开机)了?多久$（避开 launch_app 歧义）"}
+{"id": "U118", "group": "rule", "input": "开机时间", "expect": "sys_uptime", "note": "变体:^(运行|开机).{0,4}时间$"}
+{"id": "U119", "group": "rule", "input": "开机到现在多长时间了", "expect": "sys_uptime", "note": "变体:开机..到现在..多长时间"}
+{"id": "U120", "group": "rule", "input": "系统运行了多长时间了", "expect": "sys_uptime", "note": "变体:系统+运行+多长时间"}
+{"id": "U121", "group": "rule", "input": "nginx进程在跑吗", "expect": "proc_list", "note": "变体:xxx进程在跑吗"}
+{"id": "U122", "group": "rule", "input": "这台设备跑着哪些进程", "expect": "proc_list", "note": "变体:设备跑着哪些进程"}
+{"id": "U123", "group": "rule", "input": "CPU占用排行", "expect": "proc_top_cpu", "note": "变体:CPU占用排行"}
+{"id": "U124", "group": "rule", "input": "apt里能搜到htop", "expect": "pkg_search", "note": "变体:apt里能搜到xxx(槽位htop)"}
+{"id": "U125", "group": "rule", "input": "想知道apt里有没有vim", "expect": "pkg_search", "note": "变体:想知道apt里有没有xxx(槽位vim)"}
+{"id": "U126", "group": "rule", "input": "谁在占用8081端口", "expect": "proc_port", "note": "变体:谁在占用xxx端口(惰性量词修复,槽位8081)"}
+{"id": "U127", "group": "rule", "input": "8081端口被谁占着", "expect": "proc_port", "note": "变体:xxx端口被谁(槽位8081)"}
+{"id": "U128", "group": "rule", "input": "把vim删掉", "expect": "pkg_remove", "note": "变体:把xxx删掉(admin)"}
+{"id": "U129", "group": "rule", "input": "把ssh服务重启一下", "expect": "service_restart", "note": "变体:把xxx服务重启一下(admin)"}
+{"id": "U130", "group": "rule", "input": "加一个用户carol", "expect": "user_add", "note": "变体:加一个用户xxx(惰性修复,槽位carol,admin)"}
+{"id": "U131", "group": "rule", "input": "把192.168.1.23封了", "expect": "iptables_block", "note": "变体:把ip封了(admin)"}
+{"id": "U132", "group": "model", "input": "vim 安装出来的文件放在哪些目录", "expect": "ESCALATE", "note": "口语模糊-安装文件放哪,应升级云端"}
+{"id": "U133", "group": "model", "input": "仓库里到底有没有 tree 这个包", "expect": "pkg_search", "note": "口语-仓库有没有(带参)"}
+{"id": "U134", "group": "model", "input": "git 装完以后东西都放在哪些地方", "expect": "ESCALATE", "note": "口语模糊-装完放哪,应升级云端"}
+{"id": "U135", "group": "model", "input": "看下 8081 到底被什么服务占着", "expect": "proc_port", "note": "口语-端口被谁占(带参)"}
+{"id": "U136", "group": "model", "input": "python3 装了哪些依赖包", "expect": "pkg_depends", "note": "口语-依赖包(带参)"}
+{"id": "U137", "group": "model", "input": "看看 /etc/passwd 是哪个软件包的", "expect": "pkg_owns_file", "note": "口语-文件属于哪个包(带参)"}
+{"id": "U138", "group": "model", "input": "查一下 /opt 这个目录为什么这么大", "expect": "disk_dir_usage", "note": "口语-目录为什么大(带参)"}
+{"id": "U139", "group": "model", "input": "把 /etc/hosts 这个文件转成 utf8", "expect": "text_convert", "note": "口语-转码(带参)"}
+{"id": "U140", "group": "model", "input": "扫一下 /home 看看有没有病毒", "expect": "sec_antivirus", "note": "口语-扫毒(带参)"}
+{"id": "U141", "group": "rule", "input": "系统更新状态", "expect": "system_update_status", "note": "readonly:系统更新状态"}
+{"id": "U142", "group": "rule", "input": "查看系统升级进度", "expect": "system_update_status", "note": "readonly:系统升级进度"}
+{"id": "U143", "group": "model", "input": "系统更新好了吗", "expect": "system_update_status", "note": "口语-系统更新状态"}

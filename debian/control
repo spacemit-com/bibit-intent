@@ -1,0 +1,64 @@
+Source: bibit-intent
+Section: python
+Priority: optional
+Maintainer: fanxiaogang <xiaogang.henry@spacemit.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ python3.14,
+Standards-Version: 4.6.2
+Homepage: https://gitlab.dc.com/bianbu/bianbu-star/bibit-intent
+Rules-Requires-Root: no
+Vcs-Git: https://gitlab.dc.com/bianbu/bianbu-star/bibit-intent.git
+Vcs-Browser: https://gitlab.dc.com/bianbu/bianbu-star/bibit-intent.git
+
+Package: bibit-intent
+Architecture: any
+Depends:
+ alsa-utils,
+ bibit-filesearch,
+ bluez,
+ ca-certificates,
+ clamav,
+ convmv,
+ curl,
+ dmidecode,
+ enca,
+ file,
+ hdparm,
+ iproute2,
+ iputils-tracepath,
+ iptables,
+ lastlog2,
+ libfst26,
+ spacemit-ai-gateway,
+ lshw,
+ lsb-release,
+ lsof,
+ lxqt-schedule,
+ network-manager,
+ pciutils,
+ procps,
+ psmisc,
+ python3.14,
+ python3.14-venv,
+ ssh-askpass,
+ sudo,
+ sysstat,
+ systemd,
+ usbutils,
+ whois,
+ zenity,
+ ${misc:Depends},
+ ${shlibs:Depends},
+Recommends:
+ kanshi,
+ net-tools,
+ wlr-randr,
+ wlrctl,
+Suggests:
+ fdisk,
+ x11-xserver-utils,
+Description: edge-first intent router for Bianbu devices
+ Bibit intent routes user requests locally when possible and falls back to
+ the cloud when necessary. It ships vendored text-normalization dependencies
+ and is installed under /opt/bibit-intent.

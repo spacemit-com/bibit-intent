@@ -1,0 +1,69 @@
+{"id": "SC01", "cat": "sys_control", "group": "常规", "input": "把音量调到60"}
+{"id": "SC02", "cat": "sys_control", "group": "常规", "input": "声音开大一点"}
+{"id": "SC03", "cat": "sys_control", "group": "常规", "input": "静音"}
+{"id": "SC04", "cat": "sys_control", "group": "常规", "input": "亮度调低一点"}
+{"id": "SC05", "cat": "sys_control", "group": "常规", "input": "把屏幕亮度设成80"}
+{"id": "SC06", "cat": "sys_control", "group": "常规", "input": "重启一下设备"}
+{"id": "SC07", "cat": "sys_control", "group": "常规", "input": "关掉声音"}
+{"id": "SC08", "cat": "sys_control", "group": "常规", "input": "取消静音"}
+{"id": "SC09", "cat": "sys_control", "group": "口语", "input": "太吵了小声点"}
+{"id": "SC10", "cat": "sys_control", "group": "口语", "input": "屏幕有点刺眼"}
+{"id": "SD01", "cat": "sys_diag", "group": "常规", "input": "现在CPU占用多少"}
+{"id": "SD02", "cat": "sys_diag", "group": "常规", "input": "系统卡不卡"}
+{"id": "SD03", "cat": "sys_diag", "group": "常规", "input": "内存还剩多少"}
+{"id": "SD04", "cat": "sys_diag", "group": "常规", "input": "看下现在的温度"}
+{"id": "SD05", "cat": "sys_diag", "group": "常规", "input": "磁盘还有多少空间"}
+{"id": "SD06", "cat": "sys_diag", "group": "常规", "input": "现在系统状态怎么样"}
+{"id": "SD07", "cat": "sys_diag", "group": "常规", "input": "CPU温度多少度"}
+{"id": "SD08", "cat": "sys_diag", "group": "口语", "input": "怎么这么卡"}
+{"id": "AC01", "cat": "app_control", "group": "常规", "input": "打开浏览器"}
+{"id": "AC02", "cat": "app_control", "group": "常规", "input": "关闭浏览器"}
+{"id": "AC03", "cat": "app_control", "group": "常规", "input": "启动控制中心"}
+{"id": "AC04", "cat": "app_control", "group": "常规", "input": "退出音乐播放器"}
+{"id": "AC05", "cat": "app_control", "group": "常规", "input": "帮我把文件管理器打开"}
+{"id": "AC06", "cat": "app_control", "group": "常规", "input": "打开终端"}
+{"id": "AC07", "cat": "app_control", "group": "常规", "input": "把微信关掉"}
+{"id": "NW01", "cat": "network", "group": "常规", "input": "连接WiFi"}
+{"id": "NW02", "cat": "network", "group": "常规", "input": "断开网络连接"}
+{"id": "NW03", "cat": "network", "group": "常规", "input": "扫描附近的wifi"}
+{"id": "NW04", "cat": "network", "group": "常规", "input": "连一下JDSK这个网络"}
+{"id": "NW05", "cat": "network", "group": "常规", "input": "查看wifi连接状态"}
+{"id": "NW06", "cat": "network", "group": "口语", "input": "无线网连不上了"}
+{"id": "NW07", "cat": "network", "group": "常规", "input": "连到公司的无线网"}
+{"id": "KB01", "cat": "knowledge", "group": "常规", "input": "介绍一下进迭时空"}
+{"id": "KB02", "cat": "knowledge", "group": "常规", "input": "RISC-V是什么"}
+{"id": "KB03", "cat": "knowledge", "group": "常规", "input": "什么是IME矩阵引擎"}
+{"id": "KB04", "cat": "knowledge", "group": "常规", "input": "K3芯片有几个核"}
+{"id": "KB05", "cat": "knowledge", "group": "常规", "input": "Bianbu系统怎么装软件"}
+{"id": "KB06", "cat": "knowledge", "group": "常规", "input": "A100和X100有什么区别"}
+{"id": "SM01", "cat": "soft_mgmt", "group": "常规", "input": "安装微信"}
+{"id": "SM02", "cat": "soft_mgmt", "group": "常规", "input": "卸载这个软件"}
+{"id": "SM03", "cat": "soft_mgmt", "group": "常规", "input": "更新一下系统"}
+{"id": "SM04", "cat": "soft_mgmt", "group": "常规", "input": "帮我装个vscode"}
+{"id": "SM05", "cat": "soft_mgmt", "group": "常规", "input": "把这个应用删掉"}
+{"id": "SM06", "cat": "soft_mgmt", "group": "常规", "input": "有哪些软件可以升级"}
+{"id": "ES01", "cat": "escalate", "group": "写作", "input": "帮我写一首关于春天的诗"}
+{"id": "ES02", "cat": "escalate", "group": "编程", "input": "写个python脚本读取csv"}
+{"id": "ES03", "cat": "escalate", "group": "办公", "input": "做一个介绍公司的PPT"}
+{"id": "ES04", "cat": "escalate", "group": "文件", "input": "把桌面的报告翻译成英文"}
+{"id": "ES05", "cat": "escalate", "group": "开放问答", "input": "量子纠缠是什么原理"}
+{"id": "ES06", "cat": "escalate", "group": "工作助理", "input": "明天下午3点提醒我开会"}
+{"id": "ES07", "cat": "escalate", "group": "开放问答", "input": "今天天气怎么样"}
+{"id": "BD01", "cat": "sys_control", "group": "边界:控制vs诊断", "input": "屏幕怎么这么暗", "note": "疑问句形式但真实意图是调亮→控制"}
+{"id": "BD02", "cat": "sys_diag", "group": "边界:控制vs诊断", "input": "音量怎么这么大", "note": "疑问状态→诊断(而非调音量)"}
+{"id": "BD03", "cat": "sys_control", "group": "边界:控制vs诊断", "input": "声音太小了听不见", "note": "抱怨→调大音量→控制"}
+{"id": "BD04", "cat": "sys_diag", "group": "边界:控制vs诊断", "input": "为什么这么卡", "note": "问原因→诊断"}
+{"id": "BD05", "cat": "network", "group": "边界:应用vs网络", "input": "打开WiFi", "note": "已知歧义:开关网络还是设置项;倾向network"}
+{"id": "BD06", "cat": "sys_control", "group": "边界:应用vs系统", "input": "打开静音", "note": "'打开'但对象是静音开关→系统控制,非应用"}
+{"id": "BD07", "cat": "app_control", "group": "边界:应用vs软件", "input": "打开微信", "note": "开应用→app_control"}
+{"id": "BD08", "cat": "soft_mgmt", "group": "边界:应用vs软件", "input": "重装一下微信", "note": "装卸→软件管理"}
+{"id": "BD09", "cat": "app_control", "group": "边界:应用vs软件", "input": "微信打不开了帮我重启它", "note": "重启应用→app_control,非重装"}
+{"id": "BD10", "cat": "knowledge", "group": "边界:知识vs开放", "input": "RISC-V和ARM哪个好", "note": "领域内对比→知识库"}
+{"id": "BD11", "cat": "escalate", "group": "边界:知识vs开放", "input": "苹果公司怎么样", "note": "开放百科/主观→升级"}
+{"id": "BD12", "cat": "escalate", "group": "边界:单vs多意图", "input": "连上WiFi然后打开浏览器搜索新闻", "note": "多步复合→升级(见多意图报告)"}
+{"id": "BD13", "cat": "escalate", "group": "边界:单vs多意图", "input": "把亮度调低顺便静音", "note": "复合双控制→升级"}
+{"id": "BD14", "cat": "soft_mgmt", "group": "边界:诊断vs软件", "input": "有没有需要更新的软件", "note": "查可升级项→软件管理(非系统诊断)"}
+{"id": "BD15", "cat": "knowledge", "group": "边界:知识vs软件", "input": "Bianbu怎么安装python", "note": "问怎么装(教程)→知识库,非执行安装"}
+{"id": "BD16", "cat": "soft_mgmt", "group": "边界:知识vs软件", "input": "给我装个python", "note": "祈使执行安装→软件管理"}
+{"id": "BD17", "cat": "sys_control", "group": "边界:诊断vs控制", "input": "太暗了", "note": "抱怨状态但期望调亮→控制"}
+{"id": "BD18", "cat": "app_control", "group": "边界:应用vs网络", "input": "打开浏览器", "note": "浏览器是应用→app_control(对照BD05)"}

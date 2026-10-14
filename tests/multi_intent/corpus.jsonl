@@ -1,0 +1,21 @@
+{"id": "C01", "group": "双控制-无依赖", "input": "把亮度调低一点，顺便静音", "expect": [{"tool": "set_brightness"}, {"tool": "mute"}], "note": "并列,无参数硬约束"}
+{"id": "C02", "group": "双控制-无依赖", "input": "音量调到30，然后亮度调到50", "expect": [{"tool": "set_volume", "params": {"level": 30}}, {"tool": "set_brightness", "params": {"level": 50}}], "note": "两个都带精确参数"}
+{"id": "C03", "group": "双控制-无依赖", "input": "声音开大到70再把屏幕调亮到90", "expect": [{"tool": "set_volume", "params": {"level": 70}}, {"tool": "set_brightness", "params": {"level": 90}}], "note": "口语+参数"}
+{"id": "C04", "group": "双控制-无依赖", "input": "亮度调到20，音量也调到20", "expect": [{"tool": "set_brightness", "params": {"level": 20}}, {"tool": "set_volume", "params": {"level": 20}}], "note": "相同数值,考验是否张冠李戴"}
+{"id": "C05", "group": "双控制-无依赖", "input": "静音，然后把亮度拉到最高100", "expect": [{"tool": "mute"}, {"tool": "set_brightness", "params": {"level": 100}}], "note": "无参工具+有参工具混合"}
+{"id": "C06", "group": "连接词多样", "input": "调低音量到10 并且 打开静音", "expect": [{"tool": "set_volume", "params": {"level": 10}}, {"tool": "mute", "params": {"on": true}}], "note": "连接词=并且"}
+{"id": "C07", "group": "连接词多样", "input": "先把亮度设成40，接着看下内存占用", "expect": [{"tool": "set_brightness", "params": {"level": 40}}, {"tool": "get_system_info", "params": {"what": "mem"}}], "note": "连接词=接着;控制+查询"}
+{"id": "C08", "group": "连接词多样", "input": "音量25，亮度60", "expect": [{"tool": "set_volume", "params": {"level": 25}}, {"tool": "set_brightness", "params": {"level": 60}}], "note": "仅逗号,无动词无连接词"}
+{"id": "C09", "group": "连接词多样", "input": "调亮屏幕到80的同时把声音关成静音", "expect": [{"tool": "set_brightness", "params": {"level": 80}}, {"tool": "mute"}], "note": "连接词=的同时"}
+{"id": "C10", "group": "无连接词", "input": "亮度调低 音量调大", "expect": [{"tool": "set_brightness"}, {"tool": "set_volume"}], "note": "空格分隔,无参无连接词,最难切分"}
+{"id": "C11", "group": "无连接词", "input": "静音 重启", "expect": [{"tool": "mute"}, {"tool": "reboot"}], "note": "两个短动词并排"}
+{"id": "C12", "group": "控制+应用", "input": "打开浏览器，然后把亮度调低到30", "expect": [{"tool": "launch_app", "params": {"name": "浏览器"}}, {"tool": "set_brightness", "params": {"level": 30}}], "note": "应用控制+设备控制"}
+{"id": "C13", "group": "控制+应用", "input": "关闭浏览器，再把音量调到0", "expect": [{"tool": "close_app", "params": {"name": "浏览器"}}, {"tool": "set_volume", "params": {"level": 0}}], "note": "关应用+调音量"}
+{"id": "C14", "group": "三意图", "input": "音量调到20，亮度调到40，然后静音", "expect": [{"tool": "set_volume", "params": {"level": 20}}, {"tool": "set_brightness", "params": {"level": 40}}, {"tool": "mute"}], "note": "3个意图,考验是否漏最后一个"}
+{"id": "C15", "group": "三意图", "input": "看下CPU，再看下温度，最后看下磁盘", "expect": [{"tool": "get_system_info", "params": {"what": "cpu"}}, {"tool": "get_system_info", "params": {"what": "temp"}}, {"tool": "get_system_info", "params": {"what": "disk"}}], "note": "同工具3次不同参数"}
+{"id": "C16", "group": "有序依赖", "input": "先连上WiFi再打开浏览器", "expect": [{"tool": "wifi_connect"}, {"tool": "launch_app", "params": {"name": "浏览器"}}], "note": "有先后依赖,顺序不能乱"}
+{"id": "S01", "group": "单意图-干扰", "input": "把音量调到60", "expect": [{"tool": "set_volume", "params": {"level": 60}}], "note": "单意图!不该被拆成两个"}
+{"id": "S02", "group": "单意图-干扰", "input": "帮我打开控制中心", "expect": [{"tool": "launch_app"}], "note": "单意图,含'打开'但只有一个动作"}
+{"id": "S03", "group": "单意图-干扰", "input": "屏幕太暗了看不清", "expect": [{"tool": "set_brightness"}], "note": "单意图口语,不该过度拆分"}
+{"id": "S04", "group": "单意图-干扰", "input": "现在系统卡不卡", "expect": [{"tool": "get_system_info"}], "note": "单意图查询"}
+{"id": "S05", "group": "单意图-干扰", "input": "调低亮度", "expect": [{"tool": "set_brightness"}], "note": "单意图,'调低'易被误当两动作"}

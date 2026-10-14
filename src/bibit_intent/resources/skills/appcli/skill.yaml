@@ -1,0 +1,106 @@
+# 产出物 appcli Skill
+# 依据 docs/design/cli_anything_integration.md：把 CLI-Anything 生成的 appcli
+# 当作「产出物」类任务的能力层（生成 PDF / 表格 / 示意图 / 转码），
+# 与「打开应用」的 GUI 路径分工（见设计方案 §5.5）。
+#
+# 本 Skill 的只读工具（appcli_list / appcli_verify）读注册表 + 只读查询前置状态，
+# 不安装任何东西、也不执行命令；执行动作（appcli_run）在 H03 加入，confirm: true。
+
+name: appcli
+version: "0.1"
+display: "应用命令行（产出物）"
+description: "列出已登记的应用命令行（CLI-Anything 包装）、前置齐备度与 riscv64 验收状态；执行应用产出文档/图表/媒体；复核产物文件（只读）"
+author: "bibit"
+
+requires:
+  - python3
+
+tools:
+
+  appcli_list:
+    display: "列出应用命令行（只读）"
+    display_en: "List the registered document/media apps with their prerequisites, channel and riscv64 acceptance status (read-only). Use before appcli_run to see which app and which actions are available."
+    short: "alist"
+    aliases: ["列出应用命令行", "有哪些产出物工具", "产出物能力", "list appcli apps", "appcli list", "可用应用命令行"]
+    params:
+      category: {type: str, default: ""}
+    routes:
+      rule:
+        patterns:
+          - "^(?:列出|查看|看看|有哪些|显示)(?:可用的)?(?:产出物|文档|渲染|转码)(?:工具|能力|应用命令行)$"
+          - "^(?:list|show)\\s+(?:available\\s+)?appcli(?:\\s+apps)?$"
+        keywords: ["appcli", "产出物工具", "产出物能力", "list appcli apps"]
+      local: null
+    confirm: false
+    handler: "appcli_list"
+    mcp: {group: readonly}
+
+  appcli_run:
+    display: "执行应用命令行"
+    display_en: "Run one registered app action to produce an artifact (PDF, diagram, media). Pass args as key=value pairs registered for that action; never as free-form command line arguments. Use appcli_list first to see the app, its actions and their parameters."
+    short: "arun"
+    aliases: ["执行应用命令行", "生成文档", "导出pdf", "生成示意图", "produce artifact"]
+    params:
+      appcli: {type: str}
+      action: {type: str}
+      args: {type: list, items: {type: str}, default: []}
+      # 路径快捷参数：登记表约定渲染类动作的源工程参数叫 project、目的文件叫 output
+      # （见 docs/design/cli_anything_integration.md §5.1）。它们等价于
+      # args=["project=…", "output=…"]，存在的意义是让规则层能直接捕获路径
+      # ——args 是列表参数，正则命名组抽不了它。动作没声明同名参数时明确报错。
+      project: {type: str, default: ""}
+      output: {type: str, default: ""}
+      # 0 = 用注册表里该 appcli 的 timeout_seconds（渲染类默认 300s）。
+      timeout: {type: int, default: 0, range: [0, 1800], unit: "s"}
+    routes:
+      rule:
+        # 规则层只登记「高价值且措辞明确」的产出物意图（H09）：目的文件扩展名决定走哪台
+        # appcli，具体动作由 slot_map 定死，避免第二段小模型在 prompt 里乱挑 appcli/动作。
+        # 「打开 X」不在这里：它由 launch_app 的规则先接走（回归见
+        # tests/test_appcli_routing.py），两条路径不互相抢。
+        patterns:
+          - "^(?:用|使用)?appcli\\s+(?P<appcli>[A-Za-z0-9-]+)\\s+(?P<action>[A-Za-z0-9_-]+)$"
+          # 产出物：把 <源工程> 导出/转成 <目标文件>（扩展名决定 appcli）
+          - "^(?:把|将)?\\s*(?P<project>[^\\s]+)\\s*(?:导出|转换|转|另存)(?:为|成|到)\\s*(?P<output>[^\\s]+\\.(?:pdf|png))$"
+          - "^(?:export|convert|render)\\s+(?P<project>\\S+)\\s+(?:to|as)\\s+(?P<output>\\S+\\.(?:pdf|png))$"
+          # 只读探测：<源工程> 的文档/工程信息（读产物 vs 执行渲染的分工）
+          - "^(?:看看|查看|显示|读取)\\s*(?P<project>\\S+)\\s*的?(?:文档|工程|工程文件)信息$"
+          - "^(?:列出|查看|显示)?\\s*(?:libreoffice|文档)?\\s*导出预设$"
+        # 不要用 "run appcli"：launch_app 的英文规则 ^run\s+(?P<app_name>\w+)$ 会以
+        # 1.0 置信度把它当成「启动一个叫 appcli 的应用」，被 test_skill_routes 判为抢占。
+        keywords: ["执行appcli", "产出物appcli", "应用命令行", "导出pdf", "生成pdf", "转成pdf", "导出png", "生成示意图", "文档信息", "导出预设"]
+        # 文本里出现这些词时把 appcli/action 定死（键是文本子串，见
+        # routing/rule_engine.py::_apply_slot_map）。只登记「动作唯一」的组合：
+        # pdf → LibreOffice 导出、png → Draw.io 导出、*信息/预设 → 只读动作。
+        slot_map:
+          pdf: {appcli: libreoffice, action: export_render}
+          png: {appcli: drawio, action: export_render}
+          文档信息: {appcli: libreoffice, action: doc_info}
+          工程信息: {appcli: drawio, action: project_info}
+          导出预设: {appcli: libreoffice, action: export_presets}
+      local: null
+    confirm: true
+    handler: "appcli_run"
+    mcp:
+      group: admin
+      discovery: appcli_list
+
+  appcli_verify:
+    display: "复核产出物文件（只读）"
+    display_en: "Verify an existing artifact file against the verification rules declared for one app action. Read-only: it never runs the app and does not require the app to be riscv64-verified. Use it to re-check a file after a failed run, or to audit an artifact produced earlier."
+    short: "averify"
+    aliases: ["复核产出物", "校验产出物", "校验产物文件", "verify artifact"]
+    params:
+      appcli: {type: str}
+      action: {type: str}
+      path: {type: str}
+      artifact: {type: str, default: ""}
+    routes:
+      rule:
+        patterns:
+          - "^(?:复核|校验|验证)(?:产出物|产物)\\s+(?P<appcli>[A-Za-z0-9-]+)\\s+(?P<action>[A-Za-z0-9_-]+)\\s+(?P<path>\\S+)$"
+        keywords: ["复核产出物", "校验产出物", "verify artifact"]
+      local: null
+    confirm: false
+    handler: "appcli_verify"
+    mcp: {group: readonly}

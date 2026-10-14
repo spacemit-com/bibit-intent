@@ -1,0 +1,54 @@
+# 内置模板 4／5：数据报表
+#
+# 参考（仅借鉴流程与校验口径，未复制上游代码）：
+#   - alchaincyf/huashu-excel（MIT）：体检/清洗/对齐/分析/对账/交付 六步，以及
+#     「合计行当校验和、数字必须可追溯」的交付口径 —— 本模板的 guidance 直接照此写。
+id: data_report
+version: 1
+doc_type: calc
+name: "数据报表"
+name_en: "Data report"
+when_to_use: "用户要整理数据、做汇总表、统计报表、对比分析表、月度数据"
+when_to_use_en: "The user wants a data summary, statistics report, comparison table or monthly numbers."
+deliverable: [xlsx, pdf]
+ask_at_most: 2
+inputs:
+  - key: subject
+    label: 报表主题
+    example: 9 月设备出货
+    fallback: 数据
+  - key: source
+    label: 数据来源
+    example: /home/bianbu/Documents/sales.xlsx
+    fallback: ""
+  - key: period
+    label: 统计周期
+    example: "2026-09"
+    fallback: ""
+knowledge:
+  # 本地先查：原始表格/导出文件（file_search 找到后用文件工具读正文再落笔）。
+  local: [file_search]
+  cloud: []
+sheets:
+  - name: "明细"
+    header: [项目, 数量, 单位, 备注]
+    rows:
+      - ["", "", "", ""]
+      - ["", "", "", ""]
+    guidance: "先照原始数据逐行录入，不改数、不补空；来源不明的行在备注写「待核对」。"
+    columns_width: [24, 12, 10, 28]
+  - name: "汇总"
+    header: [分组, 数量, 占比]
+    rows:
+      - ["", "", ""]
+      - ["合计", "", ""]
+    guidance: "汇总行必须与明细核对一致；占比合计补齐到 100%，对不上就写差异原因。"
+    columns_width: [24, 12, 10]
+export:
+  default: xlsx
+  allowed: [xlsx, pdf]
+references:
+  - project: alchaincyf/huashu-excel
+    url: https://github.com/alchaincyf/huashu-excel
+    license: MIT
+    what: 六步流程与「合计行当校验和、数字可追溯」的交付口径

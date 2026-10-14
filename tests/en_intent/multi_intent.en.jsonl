@@ -1,0 +1,3 @@
+{"input":"open the browser and play a video","expect":"multi_intent"}
+{"input":"launch Chrome, then turn the volume down","expect":"multi_intent"}
+{"input":"close the terminal and restart the service","expect":"multi_intent"}

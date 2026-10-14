@@ -1,0 +1,78 @@
+# 云端知识源 Skill（只读）
+# 依据 docs/design/k3_smart_office.md §3.3：本地资料走 bibit-filesearch 的
+# file_search；**云端**来源由用户指定（进迭社区知识库的远程向量检索、网络搜索）。
+#
+# 本 Skill 全部只读（对设备无副作用、不需要确认）：
+#   - file_read ：读本地检索索引目录里的文本文件（file_search 只回元数据）；
+#   - kb_sources：这台设备配了哪些云端来源、开没开、缺什么才能开；
+#   - kb_search ：向**已启用**的 remote_vector 来源发一次检索（只发脱敏查询词）。
+# 未启用任何来源时 kb_search **拒绝出网**并说明怎么启用；web_search 类来源由
+# Runtime 的 web_search 执行，本工具不代它出网。
+
+name: knowledge
+version: "0.1"
+display: "知识源（本地文件 + 云端）"
+description: "读本地检索索引目录里的文本文件；查看用户指定的云端知识源（进迭社区知识库 / 网络搜索）的启用状态，并在已启用的远程向量来源里检索（只读）"
+author: "bibit"
+
+requires:
+  - python3
+
+tools:
+
+  file_read:
+    display: "读取本地文件（只读）"
+    display_en: "Read one text file from the local search index directories (read-only). file_search only returns metadata (path, type, size), so use this to actually read the content before quoting it. Paths outside the index directories, binary/container files (docx/pdf) and over-large files are refused instead of guessed."
+    short: "fread"
+    aliases: ["读取本地文件", "读一下这个文件", "read local file", "file read"]
+    params:
+      path: {type: str}
+      max_bytes: {type: int, default: 0, range: [0, 262144]}
+    routes:
+      rule:
+        patterns:
+          # 路径在中文标点前结束：「读取本地文件 /a/b.txt，然后总结」只取 /a/b.txt
+          - "^(?:读取|读一下|打开看看)(?:本地|本机)?文件\\s+(?P<path>/[^\\s，。；：！？、“”\"'）】)]+)"
+          - "^(?:read)\\s+(?:local\\s+)?file\\s+(?P<path>/[^\\s，。；：！？、“”\"'）】)]+)"
+        keywords: ["读取本地文件", "读一下这个文件", "read local file"]
+      local: null
+    confirm: false
+    handler: "file_read"
+    mcp: {group: readonly}
+  kb_sources:
+    display: "查看云端知识源（只读）"
+    display_en: "List the user-configured cloud knowledge sources (community knowledge base, web search) with their enabled state, connectivity, and what is still missing to enable them (read-only, no network request)."
+    short: "kbsrc"
+    aliases: ["云端知识源", "知识源列表", "已启用的知识源", "knowledge sources"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:列出|查看|看看|显示)(?:已启用的)?(?:云端)?知识源(?:列表)?$"
+          - "^(?:list|show)\\s+(?:enabled\\s+)?(?:cloud\\s+)?knowledge\\s+sources$"
+        keywords: ["云端知识源", "知识源列表", "已启用的知识源", "knowledge sources"]
+      local: null
+    confirm: false
+    handler: "kb_sources"
+    mcp: {group: readonly}
+
+  kb_search:
+    display: "检索云端知识源（只读，需用户启用）"
+    display_en: "Search the cloud knowledge sources the user enabled (for example a community knowledge base with remote vector search). Read-only on the device, but it does send the query text to the configured endpoint. It refuses to make any network call when no source is enabled; web-search sources are run by Runtime's web_search instead. Results carry title/url so the answer can cite them."
+    short: "kbsearch"
+    aliases: ["检索云端知识库", "社区知识库检索", "知识库检索", "search knowledge base"]
+    params:
+      query: {type: str}
+      source: {type: str, default: ""}
+      top_k: {type: int, default: 0, range: [0, 20]}
+    routes:
+      rule:
+        patterns:
+          - "^(?:在|从)?(?:云端|社区)(?:知识库|知识源)(?:里|中)?(?:搜索|检索|查一下|查查|查找)\\s*(?P<query>.+)$"
+          - "^(?:搜索|检索|查一下|查查)(?:云端|社区)(?:知识库|知识源)\\s*(?P<query>.+)$"
+          - "^(?:search|query)\\s+(?:the\\s+)?(?:cloud|community)\\s+knowledge\\s+base\\s+(?:for\\s+)?(?P<query>.+)$"
+        keywords: ["云端知识库搜索", "社区知识库检索", "云端知识源检索", "search knowledge base"]
+      local: null
+    confirm: false
+    handler: "kb_search"
+    mcp: {group: readonly}

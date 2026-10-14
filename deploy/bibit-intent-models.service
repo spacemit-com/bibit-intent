@@ -1,0 +1,15 @@
+[Unit]
+Description=Initialize Bibit models in AI Gateway
+ConditionUser=!root
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/bibit-intent/inference.env
+Environment=PYTHONPATH=/opt/bibit-intent/src
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/bibit-intent/.venv/bin/python -m bibit_intent.models.gateway_bootstrap
+TimeoutStartSec=infinity
+Restart=on-failure
+RestartSec=60
+RemainAfterExit=yes

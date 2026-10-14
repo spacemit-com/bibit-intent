@@ -1,0 +1,42 @@
+# CLI-Anything appcli wheel 锁定表（设计见 docs/design/cli_anything_integration.md §7，任务 H15）
+#
+# 上游 79 个 CLI 里 73 个的官方安装方式是
+#   pip install git+https://github.com/HKUDS/CLI-Anything.git#subdirectory=<dir>
+# 端侧一律不直装：`git+` 是「没有校验和的源码拉取」，不可审计也不可离线。本表把
+# 「上游提交 + 包元数据 + 内部源」固定下来，由 scripts/build_appcli_wheels.py 构建、
+# 校验并回填校验和；core/appcli_wheels.py 是它唯一的读取入口（依赖计划与缺前置提示
+# 都用这里的来源说明，而不是上游的 git+ 命令）。
+#
+#   upstream.commit      40 位提交号；升级必须改这里并重跑 H16 验收
+#   upstream.registry    上游 registry.json（元数据断言的对照物）
+#   internal.index_url   SpacemiT GitLab PyPI 镜像（与 core/pip_index.py 同一口径）
+#   internal.wheel_dir   设备上放离线 wheel 的目录（还没发布时从这里离线装）
+#   packages[].sha256    内部源上这份 wheel 的校验和；留空 = 尚未发布
+
+version: 1
+
+upstream:
+  repository: https://github.com/HKUDS/CLI-Anything
+  commit: 810c18b0d1ab9b234bc996c9fd999318523a3ef0
+  registry: registry.json
+
+internal:
+  index_url: https://git.spacemit.com/api/v4/projects/33/packages/pypi/simple
+  wheel_dir: /opt/bibit-intent/wheels/appcli
+
+packages:
+  - appcli: libreoffice
+    name: cli-anything-libreoffice
+    version: 1.0.1
+    subdirectory: libreoffice/agent-harness
+    skill: skills/cli-anything-libreoffice/SKILL.md
+    entry_point: cli-anything-libreoffice
+    sha256: ""
+
+  - appcli: drawio
+    name: cli-anything-drawio
+    version: 1.0.0
+    subdirectory: drawio/agent-harness
+    skill: skills/cli-anything-drawio/SKILL.md
+    entry_point: cli-anything-drawio
+    sha256: ""

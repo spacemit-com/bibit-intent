@@ -1,0 +1,6 @@
+{"group":"rule","expect":"pkg_install","input":"install a package"}
+{"group":"rule","expect":"pkg_remove","input":"uninstall a package"}
+{"group":"rule","expect":"pkg_installed","input":"list installed packages"}
+{"group":"rule","expect":"service_status","input":"check service status"}
+{"group":"rule","expect":"service_restart","input":"restart the ssh service"}
+{"group":"rule","expect":"disk_usage","input":"check disk usage"}

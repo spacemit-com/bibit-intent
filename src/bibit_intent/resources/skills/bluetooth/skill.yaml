@@ -1,0 +1,189 @@
+# 蓝牙管理 Skill
+# 对照 design.md §5.3（端侧 Skill 简化）+ Bibit_system_control.xlsx「硬件与外设控制/蓝牙」
+# 与 skills/wifi/ 保持对称结构：短名/aliases/patterns/keywords/local 签名。
+#
+# 规则设计原则（避免和 close_app / open_app / set_volume 抢答）：
+#   - patterns 里"蓝牙"是硬性锚点，必须字面出现
+#   - keywords 也必须含"蓝牙"，防止关键词预筛把 bt_* 塞进候选池导致端侧模型乱猜
+#   - bt_disconnect（临时断开）与 bt_forget（取消配对）严格区分动词
+
+name: bluetooth
+version: "1.0"
+display: "蓝牙管理"
+description: "开启/关闭蓝牙、扫描/连接/断开设备、取消配对、切换文件接收目录"
+author: "bibit"
+
+# Skill 依赖的系统命令（Skill 加载时不做强校验，运行时缺失会返回明确错误）
+requires:
+  - bluetoothctl   # BlueZ 交互式管理工具
+
+# Skill 提供的工具
+tools:
+
+  bt_on:
+    display: "打开蓝牙"
+    display_en: "Turn on the Bluetooth module. Use when the user asks to enable/start Bluetooth hardware. For opening the Bluetooth settings app use launch_app; for connecting to a device use bt_connect."
+    short: "bton"
+    aliases: ["bluetooth_on", "开蓝牙", "启用蓝牙", "启动蓝牙"]
+    params: {}
+    routes:
+      rule:
+        # 严格匹配"蓝牙"作为硬件模块的开关意图，排除"蓝牙设置/管理器"等
+        # 应用启动语义（这些应由 launch_app 打开对应 GUI）。
+        patterns:
+          - "^(?:please\\s+)?(?:turn on|enable|start)\\s+(?:the\\s+)?bluetooth$"
+          # "打开/开启/启动/启用/开" + 蓝牙 + (句尾 或 "模块" 等硬件修饰词)
+          # 后面不能接"设置/管理器/面板/设置中心/控制面板"等应用后缀
+          - "(打开|开启|启动|启用|开)\\s*蓝牙(?!\\s*(?:设置|管理器|面板|中心|应用|程序|软件|开关))(?:模块)?$"
+          - "蓝牙\\s*(打开|开启|启动)$"
+          - "把蓝牙\\s*(?:模块)?\\s*(?:打开|开|跑起来|开起来)$"
+        # keywords 保持"蓝牙"锚点，但补充多种口语化动词，让候选注入
+        # 覆盖到"帮我把蓝牙模块跑起来""想用蓝牙"这类模糊表达。
+        keywords: ["打开蓝牙", "开启蓝牙", "开蓝牙", "启动蓝牙", "启用蓝牙",
+                   "蓝牙打开", "蓝牙开启", "蓝牙模块", "用蓝牙", "蓝牙跑起来"]
+      local: "bton()"
+    handler: "bt_on"
+
+  bt_off:
+    display: "关闭蓝牙"
+    display_en: "Turn off the Bluetooth module. Use when the user asks to disable/stop Bluetooth hardware. For disconnecting a device but keeping Bluetooth on use bt_disconnect."
+    short: "btoff"
+    aliases: ["bluetooth_off", "关蓝牙", "禁用蓝牙"]
+    params: {}
+    routes:
+      rule:
+        # 与 bt_on 对称：只吃"关闭蓝牙"硬件语义，"关闭蓝牙设置"归 launch_app
+        # （虽然 launch_app 一般不做"关"应用，但至少不能被 bt_off 误吃）。
+        patterns:
+          - "^(?:please\\s+)?(?:turn off|disable|stop)\\s+(?:the\\s+)?bluetooth$"
+          - "(关闭|关掉|停止|禁用|关)\\s*蓝牙(?!\\s*(?:设置|管理器|面板|中心|应用|程序|软件|开关))(?:模块)?$"
+          - "蓝牙\\s*(关闭|关掉)$"
+          - "把蓝牙(?:模块)?\\s*(?:关闭|关掉|关了|停掉)$"
+          - "断开所有蓝牙$"
+          # 口语直通：不用蓝牙了帮我关一下省电，规则层定死（区别于 bt_disconnect）。
+          - "(?:不用|别用|不想用).{0,4}蓝牙.{0,10}(?:省电|节省电|省点电|关|关掉|关一下|停|停掉)"
+        # 补口语化：不用蓝牙、关蓝牙节省电量、蓝牙关掉
+        keywords: ["关闭蓝牙", "关蓝牙", "禁用蓝牙", "蓝牙关闭", "关掉蓝牙",
+                   "不用蓝牙", "蓝牙关掉", "省电蓝牙", "把蓝牙关"]
+      local: "btoff()"
+    handler: "bt_off"
+
+  bt_scan:
+    display: "扫描蓝牙设备"
+    display_en: "Scan and list nearby Bluetooth devices. Use when the user asks to search for, find, or list nearby Bluetooth devices (headphones, speakers, mice, keyboards)."
+    short: "btscan"
+    aliases: ["scan_bt", "搜索蓝牙", "查找蓝牙", "蓝牙列表"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:please\\s+)?(?:scan|search|list|show)\\s+(?:for\\s+)?bluetooth\\s+devices$"
+          - "(扫描|搜索|搜|查找|找一?下|列出).{0,4}蓝牙"
+          - "附近.{0,2}(有哪些|什么|的).{0,4}蓝牙"
+          - "(有哪些|有什么).{0,2}(能连的?)?\\s*蓝牙"
+          - "看看.{0,4}蓝牙(设备|耳机)"
+        keywords: ["扫描蓝牙", "搜索蓝牙", "查找蓝牙", "附近蓝牙", "搜蓝牙",
+                   "能连的蓝牙", "蓝牙设备", "蓝牙耳机", "看看蓝牙"]
+      local: "btscan()"
+    handler: "bt_scan"
+
+  bt_connect:
+    display: "连接蓝牙设备"
+    display_en: "Connect/pair to a Bluetooth device by name or MAC address. Use when the user asks to connect or pair a Bluetooth headphone, speaker, mouse, or keyboard. Scan first with bt_scan to discover devices."
+    short: "btconn"
+    aliases: ["connect_bt", "配对", "连接蓝牙"]
+    params:
+      # required: false 让「只说了类别词」的句子（连接我的耳机 / 把我的蓝牙鼠标连上来）
+      # 由 handler 里的澄清分支回答（会列出已配对设备），而不是被执行层的通用
+      # 缺参提示拦下（那样会丢「已配对的设备：…」这条最有用的信息）。
+      device: {type: str, required: false}    # 设备名（模糊匹配已配对/已发现）或 MAC 地址
+    routes:
+      rule:
+        patterns:
+          - "^(?:please\\s+)?(?:connect|pair)\\s+(?:to\\s+)?bluetooth\\s+(?P<device>[\\w-]+)$"
+          # 明说"连接蓝牙 XXX" / "配对 XXX" / "连上 XXX"（device 支持中英+数字+_-）
+          - "(?:连接|配对|连上)\\s*蓝牙\\s*(?P<device>[\\w\\u4e00-\\u9fa5\\-]+)"
+          - "配对\\s*(?P<device>[\\w\\u4e00-\\u9fa5\\-]+)"
+          # 把蓝牙连到 XXX 上
+          - "把\\s*蓝牙\\s*连(?:接)?到\\s*(?P<device>[\\w\\u4e00-\\u9fa5\\-]+)\\s*(?:上)?"
+          # 口语直通：重新连下刚才的耳机（可省略"蓝牙"）；限定词（我的/这个/那只…）
+          # 与「手柄」都要吃进来，否则「连接我的耳机」会漏到模型层被判成 WiFi。
+          - "(?:重新|再)?(?:连|连接|连上)(?:一?下|一次)?(?:刚才|上次|之前)?(?:的)?(?:我的|你的|这个|那个|那只|这台)?(?:蓝牙)?(?:耳机|音响|音箱|鼠标|键盘|手柄|设备)"
+          # 口语直通：类别词在前、连接动词在后（"把我的蓝牙鼠标连上来"）。
+          - "(?:请|麻烦|帮我|帮忙|给我)?(?:把)?\\s*(?:我的|你的|这个|那个|这只|那只|这台)?\\s*(?:蓝牙)?\\s*(?:耳机|音响|音箱|鼠标|键盘|手柄)\\s*(?:重新|再)?\\s*(?:连|连接|连上)(?:一?下|一次)?\\s*(?:上来|上去|上|起来|来|去)?\\s*(?:吧|呗|好吗|可以吗|谢谢|多谢)?\\s*[。．.!！~～]*$"
+        # 只用绑定"蓝牙"的强关键词，避免和 wifi_connect 抢答。
+        # 补口语化：蓝牙鼠标/耳机/音响/键盘等常见设备名 + 连接动作
+        keywords: ["连接蓝牙", "蓝牙配对", "配对蓝牙", "蓝牙连接",
+                   "蓝牙鼠标", "蓝牙耳机", "蓝牙键盘", "蓝牙音响", "蓝牙音箱",
+                   "连蓝牙"]
+      local: "btconn(device:...)"
+    handler: "bt_connect"
+
+  bt_disconnect:
+    display: "断开当前蓝牙设备"
+    display_en: "Disconnect the currently connected Bluetooth device (keep Bluetooth on). Use when the user asks to disconnect or drop the current Bluetooth device. For turning Bluetooth off entirely use bt_off; for unpairing/removing a device use bt_forget."
+    short: "btdisc"
+    aliases: ["disconnect_bt", "断开蓝牙"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:please\\s+)?disconnect\\s+(?:the\\s+)?(?:current\\s+)?bluetooth(?:\\s+device)?$"
+          # 注意与 bt_off 区分：这里是"断开当前设备"，蓝牙模块仍开启
+          - "断开当前蓝牙(?:设备)?"
+          # 口语直通：先别用这个蓝牙音响了，规则层定死（区别于 bt_off）。
+          - "(?:先)?别用.{0,4}(?:蓝牙)?(?:音响|音箱|耳机|鼠标|键盘)"
+          - "(断开|断掉|拔掉)\\s*蓝牙(?:连接|设备)?$"
+          - "蓝牙\\s*(断开|断掉)"
+          - "把\\s*蓝牙\\s*断开"
+        # 避免与"取消配对/忘记设备"混淆：keywords 里不含"取消/忘记/删除"
+        # 补口语化：先别用这个蓝牙音响、蓝牙切断、蓝牙别用
+        keywords: ["断开蓝牙", "蓝牙断开", "断开蓝牙连接",
+                   "别用蓝牙", "蓝牙切断", "拔掉蓝牙", "蓝牙音响", "蓝牙耳机"]
+      local: "btdisc()"
+    handler: "bt_disconnect"
+
+  bt_set_recv_dir:
+    display: "切换蓝牙文件接收目录"
+    display_en: "Change the directory where Bluetooth-received files are saved. Use when the user asks to change the Bluetooth file receive/download directory or path."
+    short: "btdir"
+    aliases: ["蓝牙接收目录", "蓝牙保存路径"]
+    params:
+      path: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "^(?:set|change)\\s+(?:the\\s+)?(?i:bluetooth)\\s+(?:file\\s+)?(?:receive|download)\\s+(?:directory|folder|path)\\s+(?:to|as)\\s+(?P<path>[/~][^\\s]+)$"
+          # "切换/设置蓝牙(文件)(接收|传输|保存) (路径|目录|位置) [为/到] <path>"
+          - "(切换|设置|改)\\s*蓝牙\\s*(?:文件)?\\s*(?:接收|传输|保存)\\s*(?:路径|目录|位置)\\s*(?:为|到)?\\s*(?P<path>[/~][^\\s，。]*)"
+          # "蓝牙文件输出位置 <path>"
+          - "蓝牙\\s*文件\\s*输出\\s*位置\\s*(?P<path>[/~][^\\s，。]*)"
+        keywords: ["蓝牙接收目录", "蓝牙保存路径", "蓝牙文件位置", "蓝牙传输目录",
+                   "蓝牙传的文件", "蓝牙接收", "蓝牙文件"]
+      local: "btdir(path:...)"
+    handler: "bt_set_recv_dir"
+
+  bt_forget:
+    display: "忽略蓝牙设备（取消配对）"
+    display_en: "Forget/remove a Bluetooth device (unpair it). Use when the user asks to unpair, forget, or remove a paired Bluetooth device. For temporarily disconnecting use bt_disconnect."
+    short: "btforget"
+    aliases: ["unpair", "取消配对", "忘记蓝牙设备"]
+    params:
+      device: {type: str}
+    routes:
+      rule:
+        patterns:
+          # "取消配对 XXX" / "忽略 XXX" / "忘记 XXX" / "删除蓝牙设备 XXX"
+          - "取消配对\\s*(?P<device>[\\w\\u4e00-\\u9fa5\\-]+)"
+          - "(?:忽略|忘记)\\s*(?:蓝牙\\s*)?(?:设备\\s*)?(?P<device>[\\w\\u4e00-\\u9fa5\\-]+)"
+          - "删除\\s*蓝牙\\s*设备\\s*(?P<device>[\\w\\u4e00-\\u9fa5\\-]+)"
+          - "^(?:please\\s+)?(?:forget|unpair|remove)\\s+(?:the\\s+)?(?i:bluetooth)\\s+(?:device\\s+)?(?P<device>[\\w-]+)$"
+          # "把 XXX 从蓝牙列表中移除"
+          - "把\\s*(?P<device>[\\w\\u4e00-\\u9fa5\\-]+)\\s*从\\s*蓝牙(?:列表)?(?:中)?\\s*(?:移除|删除)"
+        # keywords 强绑定"配对/忘记/移除"语义，与 bt_disconnect 区隔。
+        # 补：以后别自动连、失效的蓝牙设备、把 XX 删掉
+        keywords: ["取消配对", "忘记蓝牙", "移除蓝牙设备", "删除蓝牙",
+                   "蓝牙取消配对", "别自动连", "失效的蓝牙", "旧耳机",
+                   "移除设备", "忘记设备"]
+      local: "btforget(device:...)"
+    handler: "bt_forget"

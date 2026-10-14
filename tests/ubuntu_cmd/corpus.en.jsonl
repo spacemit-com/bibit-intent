@@ -1,0 +1,18 @@
+{"id":"EN-UC-001","group":"rule","input":"install nginx","expect":"pkg_install"}
+{"id":"EN-UC-002","group":"rule","input":"show installed packages","expect":"pkg_installed"}
+{"id":"EN-UC-003","group":"rule","input":"show package information for curl","expect":"pkg_info"}
+{"id":"EN-UC-004","group":"rule","input":"show the system uptime","expect":"sys_uptime"}
+{"id":"EN-UC-005","group":"rule","input":"list block devices","expect":"disk_lsblk"}
+{"id":"EN-UC-006","group":"rule","input":"show network connections","expect":"net_conn"}
+{"id":"EN-UC-007","group":"rule","input":"show the routing table","expect":"net_route"}
+{"id":"EN-UC-008","group":"rule","input":"show the top processes by memory","expect":"proc_top_mem"}
+{"id":"EN-UC-009","group":"rule","input":"display the process tree","expect":"proc_tree"}
+{"id":"EN-UC-010","group":"rule","input":"show process memory usage","expect":"proc_mem"}
+{"id":"EN-UC-011","group":"rule","input":"show loaded kernel modules","expect":"sys_modules"}
+{"id":"EN-UC-012","group":"rule","input":"show the hardware information","expect":"sys_hw"}
+{"id":"EN-UC-013","group":"rule","input":"show memory type","expect":"sys_mem_type"}
+{"id":"EN-UC-014","group":"rule","input":"show disk partitions","expect":"disk_partitions"}
+{"id":"EN-UC-015","group":"rule","input":"show login history","expect":"login_records"}
+{"id":"EN-UC-016","group":"rule","input":"show system users","expect":"user_list"}
+{"id":"EN-UC-017","group":"rule","input":"show installed package statistics","expect":"pkg_stats"}
+{"id":"EN-UC-018","group":"rule","input":"export the installed package list","expect":"pkg_selections"}

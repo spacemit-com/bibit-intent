@@ -1,0 +1,28 @@
+# 端侧 Agent 依赖
+# 全部有 riscv64/cp314 预编译 wheel，无需本地编译（已实测）
+
+# 云端推理及 HTTP 客户端
+openai==2.47.0
+httpx==0.28.1
+
+# MCP 工具协议
+mcp==1.19.0
+
+# 数据校验（pydantic-core 有 riscv64 wheel）
+pydantic==2.12.4
+pydantic-settings==2.14.2
+
+# 配置文件解析（PyYAML 纯 Python）
+PyYAML>=6.0
+importlib_resources>=6.0
+
+# 浅层中文分词/POS（纯 Python，可源码构建 wheel）
+jieba==0.42.1
+
+# 工具用到的异步支持
+anyio>=4.0
+
+# bibit-intent 本地服务（HTTP/JSON RPC）
+fastapi>=0.115,<1
+starlette>=0.40
+uvicorn>=0.30

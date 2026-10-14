@@ -1,0 +1,18 @@
+[Unit]
+Description=Bibit Intent edge-first routing service (local file search etc.)
+After=network.target
+Wants=bianbu-agent-runtime-dev.service
+
+[Service]
+Type=simple
+WorkingDirectory=/root/bibit-intent
+Environment=PYTHONPATH=/root/bibit-intent/src
+Environment=BIBIT_INTENT_DATA_ROOT=/root/bibit-intent-data
+Environment=BIBIT_INTENT_LLAMA_URL=http://127.0.0.1:8081
+Environment=BIBIT_INTENT_EMBED_URL=http://127.0.0.1:8082
+ExecStart=/root/bibit-intent/.venv/bin/python -m bibit_intent serve --host 127.0.0.1 --port 8765
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

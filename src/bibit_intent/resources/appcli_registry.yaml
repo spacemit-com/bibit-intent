@@ -1,0 +1,297 @@
+# CLI-Anything appcli 注册表（设计见 docs/design/cli_anything_integration.md §5.1）
+#
+# 只登记「已确认真实命令面」的 appcli。字段含义：
+#   entry_point  可执行命令名（裸名，不含路径），由 appcli_run 直接 Popen
+#   channel      host          = 需要宿主桌面/命名空间，Worker 沙箱内拒绝
+#                artifact-only = 只读写工作区，沙箱内可跑
+#   riscv64      verified / unverified / unsupported —— 唯一白名单判据：
+#                只有 verified 才允许进入 appcli_run（H16 设备验收后置位）
+#   timeout_seconds 该 appcli 动作的默认超时（秒，1–1800）；appcli_run 的 timeout
+#                 参数显式给出时以调用方为准，给 0 表示「用这里的默认值」
+#   requires     缺任一则不执行、不自动安装，只返回依赖计划提示
+#   actions[].argv        模板；占位符 {name} 必须在该动作的 params 里登记
+#   actions[].params.*.path  true = 该参数是路径，必须落在 appcli 工作区内
+#   actions[].readonly    true = 只读动作，免审批
+#   actions[].artifacts[]  产物校验：param = 哪个路径参数指向产物文件（必须标 path）
+#                          verify = H04 实现的校验规则名
+#
+# 现状：两台 appcli 的**命令面**已在开发机实测（见设计方案 §12 附录），
+# riscv64 验收结果（H16，K3/10.0.91.72）：
+#   libreoffice → verified（真 soffice 26.2.1.2 产出 PDF，见该条目的 notes）
+#   drawio      → unsupported（该发行版没有 drawio 桌面后端，appcli 渲染不出来）
+
+version: 1
+
+appclies:
+  - name: libreoffice
+    display: "LibreOffice 文档 / 表格 / 演示"
+    entry_point: cli-anything-libreoffice
+    category: office
+    riscv64: verified
+    # 渲染走 soffice --headless，实测 1.3s 起、复杂文档更久；300s 是渲染类的默认档。
+    timeout_seconds: 300
+    channel: host
+    # 设备实测（K3/riscv64，无 DISPLAY）：不加这个变量，LibreOffice 26.2 会去初始化 Qt xcb
+    # 插件并以 exit 134 退出，`--headless` 也照旧——一个产物都不写。svp 是无头 VCL 插件。
+    env:
+      SAL_USE_VCLPLUGIN: svp
+    notes: "H16 设备验收：soffice 26.2.1.2 + cli-anything-libreoffice 1.0.1 产出 PDF 1.7；无 DISPLAY 时必须 SAL_USE_VCLPLUGIN=svp（见 env），否则 exit 134 且无产物"
+    requires:
+      apt: [libreoffice-writer]
+      python: [cli-anything-libreoffice]
+    actions:
+      - name: doc_new
+        description: "新建一份 Writer/Calc/Impress 文档工程"
+        argv: ["document", "new", "--type", "{doc_type}", "-o", "{project}"]
+        params:
+          doc_type: {type: str, enum: [writer, calc, impress], default: writer}
+          project: {type: str, path: true}
+      - name: writer_add_heading
+        description: "在 Writer 工程里追加大纲标题"
+        argv: ["--project", "{project}", "writer", "add-heading", "-t", "{text}", "-l", "{level}"]
+        params:
+          project: {type: str, path: true}
+          text: {type: str}
+          level: {type: int, default: 1}
+      - name: writer_add_paragraph
+        description: "在 Writer 工程里追加正文段落"
+        argv: ["--project", "{project}", "writer", "add-paragraph", "-t", "{text}"]
+        params:
+          project: {type: str, path: true}
+          text: {type: str}
+      - name: export_render
+        description: "把工程导出为 PDF（产出物动作）"
+        argv: ["--project", "{project}", "export", "render", "{output}", "-p", "{preset}", "--overwrite"]
+        params:
+          project: {type: str, path: true}
+          output: {type: str, path: true}
+          preset: {type: str, enum: [pdf], default: pdf}
+        artifacts:
+          - param: output
+            verify: ["exists", "size>0", "pdf_magic"]
+      # 按格式拆动作（K02）：产物校验规则是**动作级静态声明**，一个 preset 枚举里
+      # 混多种格式就只能用最松的规则（office_zip_magic 分不出 Word 还是 PPT）。
+      # 拆开后每种格式都能要求自己的容器主部件，校验强度不降级。
+      # 设备实测（K3/riscv64，soffice 26.2.1.2）：docx 5747 B / xlsx 5160 B /
+      # pptx 6968 B / odt 1573 B / ods 1486 B，逐条规则均通过（见设计方案 §2.3）。
+      - name: export_docx
+        description: "把 Writer 工程导出为 Word .docx（产出物动作）"
+        argv: ["--project", "{project}", "export", "render", "{output}", "-p", "docx", "--overwrite"]
+        params:
+          project: {type: str, path: true}
+          output: {type: str, path: true}
+        artifacts:
+          - param: output
+            verify: ["exists", "size>0", "docx_magic"]
+      - name: export_odt
+        description: "把 Writer 工程导出为 ODF 文本文档 .odt（产出物动作）"
+        argv: ["--project", "{project}", "export", "render", "{output}", "-p", "odt", "--overwrite"]
+        params:
+          project: {type: str, path: true}
+          output: {type: str, path: true}
+        artifacts:
+          - param: output
+            verify: ["exists", "size>0", "odt_magic"]
+      - name: export_xlsx
+        description: "把 Calc 工程导出为 Excel .xlsx（产出物动作）"
+        argv: ["--project", "{project}", "export", "render", "{output}", "-p", "xlsx", "--overwrite"]
+        params:
+          project: {type: str, path: true}
+          output: {type: str, path: true}
+        artifacts:
+          - param: output
+            verify: ["exists", "size>0", "xlsx_magic"]
+      - name: export_ods
+        description: "把 Calc 工程导出为 ODF 表格 .ods（产出物动作）"
+        argv: ["--project", "{project}", "export", "render", "{output}", "-p", "ods", "--overwrite"]
+        params:
+          project: {type: str, path: true}
+          output: {type: str, path: true}
+        artifacts:
+          - param: output
+            verify: ["exists", "size>0", "ods_magic"]
+      - name: export_pptx
+        description: "把 Impress 工程导出为 PowerPoint .pptx（产出物动作）"
+        argv: ["--project", "{project}", "export", "render", "{output}", "-p", "pptx", "--overwrite"]
+        params:
+          project: {type: str, path: true}
+          output: {type: str, path: true}
+        artifacts:
+          - param: output
+            verify: ["exists", "size>0", "pptx_magic"]
+      - name: writer_add_list
+        description: "在 Writer 工程里追加一个要点列表"
+        # 列表参数写成 "{items...}"：前一个词必须是以 - 开头的字面开关，
+        # 渲染成 `-i A -i B`（click 的 multiple=True），仍然没有自由 argv。
+        argv: ["--project", "{project}", "writer", "add-list", "-i", "{items...}", "--style", "{style}"]
+        params:
+          project: {type: str, path: true}
+          items: {type: list}
+          style: {type: str, enum: [bullet, number], default: bullet}
+      - name: writer_add_table
+        # 上游 appcli 只提供建表，没有填格动作（set-text 对 table 直接报错，K3 实测）。
+        # 描述里写明，避免模型建完空表再去翻源码找「怎么填」。
+        description: "在 Writer 工程里追加一张**空**表格（上游没有填格动作；表格数据请改用 Calc 的动作，或让用户在 Writer 里手填）"
+        argv: ["--project", "{project}", "writer", "add-table", "-r", "{rows}", "-c", "{cols}"]
+        params:
+          project: {type: str, path: true}
+          rows: {type: int}
+          cols: {type: int}
+      - name: writer_add_page_break
+        description: "在 Writer 工程里追加一个分页符"
+        argv: ["--project", "{project}", "writer", "add-page-break"]
+        params:
+          project: {type: str, path: true}
+      - name: writer_set_text
+        description: "改写 Writer 工程里第 index 个内容项的文字"
+        argv: ["--project", "{project}", "writer", "set-text", "{index}", "{text}"]
+        params:
+          project: {type: str, path: true}
+          index: {type: int}
+          text: {type: str}
+      - name: writer_remove
+        description: "删除 Writer 工程里第 index 个内容项"
+        argv: ["--project", "{project}", "writer", "remove", "{index}"]
+        params:
+          project: {type: str, path: true}
+          index: {type: int}
+      - name: writer_list
+        description: "列出 Writer 工程的全部内容项（只读）"
+        argv: ["--project", "{project}", "writer", "list"]
+        params:
+          project: {type: str, path: true}
+        readonly: true
+      - name: calc_set_cell
+        description: "给 Calc 工程的某个单元格赋值"
+        argv: ["--project", "{project}", "calc", "set-cell", "--type", "{cell_type}", "-s", "{sheet}", "{ref}", "{value}"]
+        params:
+          project: {type: str, path: true}
+          ref: {type: str}
+          value: {type: str}
+          cell_type: {type: str, enum: [string, float], default: string}
+          sheet: {type: int, default: 0}
+      - name: calc_get_cell
+        description: "读取 Calc 工程某个单元格的值（只读）"
+        argv: ["--project", "{project}", "calc", "get-cell", "-s", "{sheet}", "{ref}"]
+        params:
+          project: {type: str, path: true}
+          ref: {type: str}
+          sheet: {type: int, default: 0}
+        readonly: true
+      - name: calc_add_sheet
+        description: "给 Calc 工程新增一张工作表"
+        argv: ["--project", "{project}", "calc", "add-sheet", "-n", "{name}"]
+        params:
+          project: {type: str, path: true}
+          name: {type: str}
+      - name: calc_rename_sheet
+        description: "重命名 Calc 工程的某张工作表"
+        argv: ["--project", "{project}", "calc", "rename-sheet", "{index}", "{name}"]
+        params:
+          project: {type: str, path: true}
+          index: {type: int}
+          name: {type: str}
+      - name: calc_remove_sheet
+        description: "删除 Calc 工程的某张工作表"
+        argv: ["--project", "{project}", "calc", "remove-sheet", "{index}"]
+        params:
+          project: {type: str, path: true}
+          index: {type: int}
+      - name: calc_list_sheets
+        description: "列出 Calc 工程的全部工作表（只读）"
+        argv: ["--project", "{project}", "calc", "list-sheets"]
+        params:
+          project: {type: str, path: true}
+        readonly: true
+      - name: impress_add_slide
+        description: "给 Impress 工程追加一页幻灯片"
+        # content 里不允许换行（注册表口径：值必须单行），多个要点用中文分号连接。
+        argv: ["--project", "{project}", "impress", "add-slide", "-t", "{title}", "-c", "{content}"]
+        params:
+          project: {type: str, path: true}
+          title: {type: str}
+          content: {type: str, default: ""}
+      - name: impress_set_content
+        description: "改写 Impress 工程里第 index 页的标题/正文"
+        argv: ["--project", "{project}", "impress", "set-content", "{index}", "-t", "{title}", "-c", "{content}"]
+        params:
+          project: {type: str, path: true}
+          index: {type: int}
+          title: {type: str, default: ""}
+          content: {type: str, default: ""}
+      - name: impress_list_slides
+        description: "列出 Impress 工程的全部幻灯片（只读）"
+        argv: ["--project", "{project}", "impress", "list-slides"]
+        params:
+          project: {type: str, path: true}
+        readonly: true
+      - name: impress_remove_slide
+        description: "删除 Impress 工程里第 index 页幻灯片"
+        argv: ["--project", "{project}", "impress", "remove-slide", "{index}"]
+        params:
+          project: {type: str, path: true}
+          index: {type: int}
+      - name: style_apply
+        description: "把某个样式应用到 Writer 工程里的内容项（Writer only）"
+        argv: ["--project", "{project}", "style", "apply", "{style}", "{content_index}"]
+        params:
+          project: {type: str, path: true}
+          style: {type: str}
+          content_index: {type: int}
+      - name: style_list
+        description: "列出工程里的样式（只读）"
+        argv: ["--project", "{project}", "style", "list"]
+        params:
+          project: {type: str, path: true}
+        readonly: true
+      - name: document_json
+        description: "打印工程原始 JSON（只读）"
+        argv: ["--project", "{project}", "document", "json"]
+        params:
+          project: {type: str, path: true}
+        readonly: true
+      - name: doc_info
+        description: "读取工程信息（只读）"
+        argv: ["--project", "{project}", "document", "info"]
+        params:
+          project: {type: str, path: true}
+        readonly: true
+      - name: export_presets
+        description: "列出可用导出预设（只读）"
+        argv: ["export", "presets"]
+        readonly: true
+
+  - name: drawio
+    display: "Draw.io 示意图"
+    entry_point: cli-anything-drawio
+    category: diagrams
+    riscv64: unsupported
+    timeout_seconds: 300
+    channel: artifact-only
+    notes: "H16 设备结论：riscv64 的 apt 索引里没有 drawio 桌面后端（drawio* 无候选），appcli 没有可渲染的后端，故 unsupported；产物校验（H05）不受影响，仍可复核既有文件"
+    requires:
+      apt: [drawio]
+      python: [cli-anything-drawio]
+    actions:
+      - name: project_new
+        description: "新建空白图工程"
+        argv: ["project", "new", "--preset", "{preset}", "-o", "{project}"]
+        params:
+          preset: {type: str, enum: ["16:9", "4:3", a3, a4, letter, square], default: a4}
+          project: {type: str, path: true}
+      - name: export_render
+        description: "把图工程导出为 PNG/PDF/SVG（产出物动作）"
+        argv: ["--project", "{project}", "export", "render", "{output}", "-f", "{format}", "--overwrite"]
+        params:
+          project: {type: str, path: true}
+          output: {type: str, path: true}
+          format: {type: str, enum: [png], default: png}
+        artifacts:
+          - param: output
+            verify: ["exists", "size>0", "png_magic"]
+      - name: project_info
+        description: "读取图工程信息（只读）"
+        argv: ["--project", "{project}", "project", "info"]
+        params:
+          project: {type: str, path: true}
+        readonly: true

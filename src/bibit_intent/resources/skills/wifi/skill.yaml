@@ -1,0 +1,236 @@
+# WiFi 连接管理 Skill
+# 对照 design.md §5.3（端侧 Skill 简化）+ product_requirements.md 3.2.3（复杂系统控制）
+
+name: wifi
+version: "1.0"
+display: "WiFi 连接管理"
+description: "扫描、连接、断开 WiFi 网络，查看连接状态"
+author: "bibit"
+
+# Skill 依赖的系统命令（安装时检查）
+requires:
+  - nmcli   # NetworkManager CLI
+
+# Skill 提供的工具
+tools:
+
+  wifi_on:
+    display: "打开 WiFi"
+    display_en: "Turn on the WiFi module (radio switch). Use when the user asks to enable/start WiFi hardware. For opening the WiFi settings app use launch_app; for joining a network use wifi_connect."
+    short: "wifiup"
+    aliases: ["wifi_on", "开WiFi", "启用WiFi", "启动WiFi"]
+    params: {}
+    routes:
+      rule:
+        # 与 bt_on 对称：只吃"开 WiFi 硬件"语义，排除"WiFi 设置/管理器/面板"等
+        # 应用后缀（那些归 launch_app，见 corpus H337/H339）。
+        # 裸"无线"不算（"打开无线"仍交模型判断一词多义），必须 wifi/无线网 字面。
+        patterns:
+          - "^(?:please\\s+)?(?:turn on|enable|start)\\s+(?:the\\s+)?(?:wi-?fi|wireless)$"
+          - "(打开|开启|启动|启用|开)\\s*(?:一下)?\\s*(?:wifi|WiFi|WIFI|wi-fi|Wi-Fi|无线网络|无线网卡|无线模块|无线网)(?!\\s*(?:设置|管理器|面板|中心|应用|程序|软件))(?:网卡|模块|功能|开关)?$"
+          - "(?:wifi|WiFi|WIFI|wi-fi|Wi-Fi|无线网络|无线网|无线网卡)\\s*(?:打开|开启|启用|开起来)$"
+          - "把\\s*(?:wifi|WiFi|WIFI|wi-fi|Wi-Fi|无线网络|无线网|无线网卡)\\s*(?:模块|网卡)?\\s*(?:打开|开启|开起来)$"
+        # keywords 必须带 wifi/无线 字面，禁裸"打开/开启"（会把任何"打开xx"注入本工具）
+        keywords: ["打开wifi", "打开WiFi", "开启wifi", "开wifi", "启动wifi", "启用wifi",
+                   "打开无线网", "开启无线网", "打开无线网络", "开启无线网络",
+                   "打开无线网卡", "wifi打开", "无线网打开"]
+        # §4.4-C 候选注入护栏：本工具有副作用（真的开网卡），弱命中必须句中出现
+        # wifi/无线 直接宾语才生效。
+        require_object: ["wifi", "WiFi", "WIFI", "wi-fi", "无线"]
+      local: "wifiup()"
+    handler: "wifi_on"
+    mcp:
+      group: control
+
+  wifi_off:
+    display: "关闭 WiFi"
+    display_en: "Turn off the WiFi module (radio switch). Use when the user asks to disable/switch off WiFi hardware. For disconnecting from the current network while keeping WiFi on use wifi_disconnect."
+    short: "wifidown"
+    aliases: ["wifi_off", "关WiFi", "禁用WiFi", "关闭无线网卡"]
+    params: {}
+    routes:
+      rule:
+        # 与 wifi_disconnect 严格分工（用户实测：说"关闭WiFi"却只是断开连接，
+        # 网卡开关还开着，状态面板显示仍是"已启用"）：
+        #   本工具 = 关掉网卡开关（radio off）→ 面板显示"已关闭"
+        #   wifi_disconnect = 只断开当前连接（radio 仍开，还能扫描/重连）
+        patterns:
+          - "^(?:please\\s+)?(?:turn off|disable|power off)\\s+(?:the\\s+)?(?:wi-?fi|wireless)$"
+          - "(?:关闭|关掉|禁用|停用)\\s*(?:一下)?\\s*(?:wifi|WiFi|WIFI|wi-fi|Wi-Fi|无线网络|无线网|无线)\\s*(?:网卡|模块|开关|功能|网络|连接)?\\s*[。！!]?$"
+          - "把?\\s*(?:wifi|WiFi|WIFI|wi-fi|Wi-Fi|无线网络|无线网|无线)\\s*(?:网卡|模块|开关)?\\s*(?:关了|关掉|关闭|禁用)\\s*[。！!]?$"
+          - "(?:wifi|WiFi|WIFI|wi-fi|Wi-Fi|无线网络|无线网|无线)\\s*(?:网卡|模块|开关)?\\s*(?:关闭|关掉)(?!了吗|吗)"
+        # keywords 已自带 wifi/无线 宾语；require_object 为防御性声明（同 wifi_disconnect）
+        keywords: ["关闭wifi", "关WiFi", "关闭WiFi", "关掉wifi", "关掉无线网", "关闭无线网",
+                   "关闭无线网络", "关闭无线", "关无线", "关闭无线网卡", "禁用wifi", "wifi关闭"]
+        require_object: ["wifi", "WiFi", "WIFI", "wi-fi", "无线"]
+      local: "wifidown()"
+    handler: "wifi_off"
+    mcp:
+      group: control
+
+  wifi_scan:
+    display: "扫描 WiFi 网络"
+    display_en: "Scan and list nearby WiFi networks (SSID, signal strength, security). Use when the user asks to scan, search, or list available WiFi networks."
+    short: "wscan"
+    aliases: ["scan", "扫描", "搜索", "wifi列表", "附近网络"]
+    params: {}
+    routes:
+      rule:
+        # 仅"扫描/搜索/列出/附近/搜一下"这类明确"找附近网络"的语义。
+        # 不含"查看/看"——那是查询当前连接(→ wifi_status)，不是扫描。
+        # "搜一下WiFi"也在这里，不走 pkg_search
+        patterns:
+          - "^(?:please\\s+)?(?:scan|search|list|show)\\s+(?:for\\s+)?(?:available\\s+)?(?:wi-?fi|wifi|wireless networks?)$"
+          # p1 要求 wifi/无线 字面（或"网络"与 wifi/无线 并列）+ 句尾锚定，
+          # 泛词"网络"不单独成立，否则"网络编程/网络小说"这类会被判成扫描。
+          - "(?:扫描|搜索|搜一?下|查找|列出|刷新)\\s*(?:一下)?\\s*(?:附近的|周边的|周围的)?\\s*(?:wifi|WiFi|WIFI|无线网络|无线)\\s*(?:列表|信号|网络)?\\s*$"
+          # 整句锚定：裸"搜索网络/扫描网络"本身就是完整的"找网络"动作 → 整句 1.0；
+          # 带后缀（"搜索网络编程的教程"）因 $ 不命中 —— 与 hard_negatives HN21 同形，靠句尾区分。
+          - "^(?:搜索|搜一?下|搜一搜|扫描|查找)\\s*网络\\s*$"
+          - "(?:查找|搜索).{0,4}周边.{0,4}(?:wifi|WiFi|WIFI|无线|网络)"
+          - "附近.{0,2}(?:有哪些|什么|的).{0,4}(?:wifi|WiFi|无线|网络)"
+          # 泛词"网络"必须带"附近/可用/能连"修饰才成立
+          - "(?:扫描|搜索|搜一?下|查找|列出|刷新)\\s*(?:一下)?\\s*(?:附近|周边|周围|可用|能连|可以连)\\s*(?:的)?\\s*(?:网络|wifi|WiFi|无线)\\s*(?:列表)?"
+          - "(?:wifi|WiFi|WIFI|无线).{0,2}(?:列表|有哪些|有什么)"
+          - "(?:附近|周边|周围)\\s*(?:有|有没有|有哪些|有什么)\\s*(?:可以连|能连|可用|能用)?\\s*(?:的)?\\s*(?:wifi|WiFi|无线网络|无线|网络)"
+          - "(?:有哪些|有什么|有没有)\\s*(?:可以连|能连|可用|能用)(?:的)?\\s*(?:.{0,2})?\\s*(?:wifi|WiFi|无线网络|无线|网络)"
+          - "(?:有哪些|有什么|有没有)\\s*(?:wifi|WiFi|WIFI|无线网络|无线)\\s*(?:可以连|能连|可用|能用|列表)"
+          - "(?:wifi|WiFi|WIFI|无线网络|无线)\\s*(?:的)?\\s*(?:列表|有哪些|有什么|搜一下)"
+          # 口语直通：周围/这周围有能用的网络、能不能上网，规则层定死，
+          # 绕开 1B 在 wifi_scan/wifi_status/usb_list 间乱选。
+          - "(?:周围|这周围|周边).{0,4}(?:有|有没有|有哪些).{0,4}(?:能用|可用|可以连|能连).{0,2}(?:的)?(?:wifi|WiFi|无线|网络)"
+          - "(?:看看|查|试|测|检查).{0,4}(?:这里|这|现在).{0,4}(?:能不能|能否|可以|能).{0,2}(?:上网|联网|连上|连网)"
+        # 关键词只留带动作的复合词："附近网络"这类无动作名词会让任何提到它的句子注入本工具。
+        keywords: ["扫描wifi", "搜索网络", "wifi列表", "附近的wifi", "搜一下wifi"]
+      local: "wscan()"
+    handler: "wifi_scan"
+    mcp:
+      group: readonly
+
+  wifi_connect:
+    display: "连接 WiFi"
+    display_en: "Connect to a WiFi network by SSID, with an optional password. Use when the user asks to connect to or join a specific WiFi network."
+    short: "wconn"
+    aliases: ["connect", "连接", "接入", "加入"]
+    params:
+      # required: false 让「只说了类别词」的句子（连接我的无线 / 连接无线网络）由
+      # handler 的澄清分支回答（会给出「连接 JDSK 密码 …」的例子），而不是被
+      # 执行层的通用缺参提示拦下。
+      ssid: {type: str, required: false}
+      password: {type: str, default: ""}
+    routes:
+      rule:
+        patterns:
+          - "(?i)^(?:please\\s+)?connect\\s+(?:to\\s+)?(?:wi-?fi|wifi|wireless)\\s+['\\\"](?P<ssid>[^'\\\"]+)['\\\"](?:\\s+with\\s+password\\s+['\\\"]?(?P<password>[^'\\\"]+)['\\\"]?)?$"
+          - "^(?:please\\s+)?connect\\s+(?:to\\s+)?(?:wi-?fi|wifi|wireless)\\s+(?P<ssid>[a-zA-Z0-9_-]+)(?:\\s+with\\s+password\\s+(?P<password>\\S+))?$"
+          # 带密码：连接 <SSID> 密码 <PWD>（\s* 避免贪婪吃字符）；
+          # 兼容限定词（我的/家里的/办公室的）与"密码是/为/："提示词。
+          - "(?:请|麻烦|帮我|帮忙){0,2}(?:连接|接入|加入|连上|连一?下|连)\\s*(?:到|上)?\\s*(?:我的|你的|这个|那个|家里的|办公室的|公司的)?\\s*(?:wifi|WiFi|WIFI|wi-fi|无线网络|无线|网络)?\\s*(?:名称|名字叫|名字|名叫|名为)?\\s*(?P<ssid>[a-zA-Z0-9\\-_]+)\\s*(?:的|这个|那个)?\\s*(?:wifi|WiFi|WIFI|wi-fi|无线网络|无线|网络)?\\s*[，,、]?\\s*密码(?:是|为)?\\s*[:：]?\\s*(?P<password>\\S+)"
+          # 仅 SSID + 类别词后置：连接JDSK的wifi / 连上JDSK这个wifi（无密码）。
+          # 不带 wifi/无线/密码 的裸名字不在此直通：那是动作域歧义，交给模型层或 connect_any。
+          - "(?:请|麻烦|帮我|帮忙){0,2}(?:连接|接入|加入|连上|连一?下|连)\\s*(?P<ssid>[a-zA-Z0-9\\-_]+)\\s*(?:的|这个|那个)?\\s*(?:wifi|WiFi|WIFI|wi-fi|无线网络|无线|网络)\\s*$"
+          # 类别词在前的两条：P4"连接wifi JDSK"（类别词 + 名字）、
+          # P5"连接我的无线"（只有类别词，由 handler 回缺参提示）；动词须在句首。
+          - "^(?:请|麻烦|帮我|帮忙|给我)?\\s*(?:连接|接入|加入|连上|连一?下|连)\\s*(?:到|上)?\\s*(?:我的|你的|这个|那个|家里的|办公室的|公司的)?\\s*(?:wifi|WiFi|WIFI|wi-fi|无线网络|无线|网络)\\s*(?:名称|名字叫|名字|名叫|名为)?\\s*(?P<ssid>[a-zA-Z0-9\\-_]+)\\s*$"
+          - "^(?:请|麻烦|帮我|帮忙|给我)?\\s*(?:连接|接入|加入|连上|连一?下|连)\\s*(?:我的|你的|这个|那个|家里的|办公室的|公司的)?\\s*(?:wifi|WiFi|WIFI|wi-fi|无线网络|无线|网络)\\s*$"
+        # 关键词须含明确 WiFi 语义："密码"这类宽泛词不算（JDSK 也可能是库名或账号）；
+        # 备选词只留模型组正例的来源（连回 / 连上WiFi / 家里的网络）。
+        keywords: ["连接wifi", "接入网络", "连回", "连上WiFi", "连上wifi", "连上无线",
+                   "办公室的无线", "家里的网络", "家里的无线"]
+        # §4.4-C：裸词「连回」需 WiFi/无线/网络语境，防止「连回服务器」误注入。
+        require_object: ["wifi", "WiFi", "WIFI", "wi-fi", "无线", "网络"]
+      local: "wconn(ssid:... password:...)"
+    handler: "wifi_connect"
+    mcp:
+      group: control
+      discovery: wifi_scan
+
+  wifi_disconnect:
+    display: "断开 WiFi"
+    display_en: "Disconnect from the current WiFi network. Use when the user asks to disconnect, turn off, or drop the WiFi connection."
+    short: "wdisc"
+    # 不设别名"断网"：断网＝网络不可用，不等于"断开 WiFi"，且会污染给模型的工具线索。
+    aliases: ["disconnect", "断开"]
+    params: {}
+    routes:
+      rule:
+        # 只负责"断开当前连接"（radio 仍开着，还能扫描/重连）。
+        # "关闭WiFi/关掉无线网"这类**关网卡开关**的语义归 wifi_off（用户实测：
+        # 关掉 WiFi 只断开连接，网卡开关还开着，状态面板仍显示"已启用"）。
+        # 语序两种都覆盖："断开无线网络" / "把WiFi断了"（倒装"WiFi断开"）。
+        # 负向前瞻：排除疑问句"WiFi断了吗"（应该走 wifi_status）
+        patterns:
+          - "^(?:please\\s+)?disconnect\\s+(?:from\\s+)?(?:the\\s+)?(?:wi-?fi|wifi|wireless network)$"
+          # p1 要求 wifi/无线 字面 + 句尾锚定（泛词"网络"须在句尾或带"连接"），
+          # 并负向排除 代理/共享/打印机/进程/驱动 等，否则会真的执行 disconnect。
+          - "(?:断开|断掉|切断|停掉)\\s*(?:一下)?\\s*(?:wifi|WiFi|WIFI|wi-fi|Wi-Fi|无线网络|无线网|无线)\\s*(?:连接|网络)?\\s*[。！!]?$"
+          - "(?:断开|断掉|切断|停掉)\\s*(?:一下)?\\s*(?:网络连接|网络的连接)\\s*[。！!]?$"
+          - "(?:断开|断掉|切断|停掉)\\s*(?:一下)?\\s*网络(?!\\s*(?:代理|共享|摄像头|打印机|请求|服务|进程|页面|驱动|流量|邻居|设备))\\s*(?:连接)?\\s*[。！!]?$"
+          - "把?\\s*(?:wifi|WiFi|WIFI|wi-fi|Wi-Fi|无线)\\s*(?:断了|断开|切断)"
+          - "(?:wifi|WiFi|WIFI|wi-fi|Wi-Fi|无线)\\s*(?:断开|断掉)(?!了吗|吗)"
+        # 保留"不想连无线/无线网停"等（模型组正例的来源）；裸词"断网"不留——
+        # 它会把疑问句"是不是断网了"注入 disconnect 候选。
+        keywords: ["断开wifi", "断开无线网", "不想连无线",
+                   "无线网停", "无线网络停", "停无线"]
+        # §4.4-C 候选注入护栏：本工具有副作用（会真执行 nmcli device disconnect），
+        # 弱命中必须句中出现 wifi/无线 直接宾语才生效。当前关键词均已自带宾语，
+        # 此处为防御性声明，防止后续再添裸词时重蹈"断网"覆辙。
+        require_object: ["wifi", "WiFi", "WIFI", "wi-fi", "Wi-Fi", "无线"]
+      local: "wdisc()"
+    handler: "wifi_disconnect"
+
+  wifi_status:
+    display: "WiFi 连接状态"
+    display_en: "Show the current WiFi connection status (connected SSID and signal). Use when the user asks about the current WiFi or network status. For the IP address use wifi_ip."
+    short: "wstat"
+    aliases: ["status", "状态", "当前连接", "连的什么"]
+    params: {}
+    routes:
+      rule:
+        # 负向前瞻：排除"IP地址/内网地址"语境（交给 wifi_ip）
+        # 避免"查看WiFi的IP地址"被 wifi_status 抢先命中
+        patterns:
+          - "^(?:show|check|what is)\\s+(?:the\\s+)?(?:wi-?fi|wifi|wireless)\\s+(?:status|connection)$"
+          # 状态词必现，或带口语疑问尾（怎么样/正常吗/通不通）；泛词"网络"不单独成立。
+          - "(?:当前|现在|这会儿)\\s*(?:的)?\\s*(?:wifi|WiFi|WIFI|无线网络|无线)\\s*(?:的)?\\s*(?:连接)?\\s*(?:状态|连接)(?!.*(?:IP|ip|地址|内网|子网))"
+          - "(?:当前|现在)\\s*(?:的)?\\s*网络\\s*(?:的)?\\s*(?:状态|连接|情况)(?!.*(?:IP|ip|地址|内网|子网))"
+          # 整句锚定：裸"当前网络/现在网络"= 问当下连的是哪个网 → 1.0；
+          # "当前网络上有什么热点新闻"因 $ 不命中（旧的宽松规则就是这么吃掉口语的）。
+          - "^(?:当前|现在|这会儿)\\s*(?:的)?\\s*网络\\s*$"
+          - "(?:当前|现在|这会儿|看看)\\s*.{0,4}(?:网络|wifi|WiFi|无线)\\s*.{0,4}(?:怎么样|如何|正常吗|正常不|稳定吗|稳不稳|通不通|通吗|快吗|慢吗|好不好)"
+          - "(?:连着|连的|连上|接的|正在连)\\s*(?:哪个|什么|那个)\\s*.{0,2}(?:wifi|WiFi|WIFI|无线|网络)"
+          - "连(?:的|接的?)(?:是)?什么.{0,2}(?:wifi|网络)"
+          - "(?:查看|看看|看|查|显示|检查).{0,2}(?:wifi|WiFi|无线|网络).{0,2}(?:连接|状态)(?!.*(?:IP|ip|地址|内网|子网))"
+          - "(?:查看|看看|看|查|显示|检查).{0,2}(?:wifi|WiFi|无线)(?:网络)?(?!.*(?:IP|ip|地址|内网|子网))$"
+          - "(?:wifi|WiFi|WIFI|无线).{0,2}(?:连上了吗|好了没|通了吗|能用吗|断了吗)"
+          - "我是不是连着(?:wifi|WiFi|无线|网络)"
+          # 口语直通：网速正常吗看看连接，规则层定死，绕开 1B 选 usb_list。
+          - "(?:网速|网络速度|网速怎么样).{0,6}(?:正常吗|怎么样|如何|快吗|慢吗|看看|查|状态)"
+        # 关键词只留带 wifi 的复合词："当前网络/网络状态"会让网络新闻类句子也注入本工具。
+        keywords: ["wifi状态", "查看wifi", "wifi连接"]
+      local: "wstat()"
+    handler: "wifi_status"
+    mcp:
+      group: readonly
+
+  wifi_ip:
+    display: "查看 WiFi IP 地址"
+    display_en: "Show the WiFi interface's IP address. Use only when the user says wireless or WiFi. For a generic IP query use net_ip; for wired use eth_ip."
+    short: "wip"
+    aliases: ["wifi_ip", "无线ip", "wifi地址"]
+    params: {}
+    routes:
+      rule:
+        # 专门处理"WiFi/无线 + IP/地址"的组合，优先级高于 wifi_status 和 net_ip
+        patterns:
+          - "^(?:show|check|get)\\s+(?:my\\s+)?(?:wi-?fi|wifi)\\s+(?:IP(?:\\s+address)?|address)$"
+          - "(?:查看|查询|获取|看|帮我查|检查).{0,4}(?:wifi|WiFi|WIFI|wi-fi|无线).{0,4}(?:IP|ip|内网|IP地址|ip地址|地址|网络地址)"
+          - "(?:wifi|WiFi|WIFI|无线).{0,2}(?:IP|ip|IP地址|ip地址|地址|内网地址)(?:是多少|是啥|是什么)?"
+          - "现在的?(?:wifi|WiFi|无线|网络)(?:IP|ip|内网)?(?:地址|IP地址|ip地址)(?:是多少|是啥|是什么)?"
+          - "(?:我的|本机)?无线.{0,2}(?:内网|局域网)?(?:IP|ip|地址)(?:是多少|是啥|是什么)?"
+          - "现在的?无线网络(?:地址|IP地址|ip地址)?是多少"
+        keywords: ["wifi ip", "无线ip", "wifi地址", "无线地址", "内网地址wifi"]
+      local: "wip()"
+    handler: "wifi_ip"
+    mcp:
+      group: readonly

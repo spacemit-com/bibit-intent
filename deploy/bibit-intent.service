@@ -1,0 +1,25 @@
+[Unit]
+Description=Bibit edge-first intent routing service
+# user 单元：整机由 postinst 只对唯一桌面用户 enable（单实例）；禁止在 root 的
+# user manager 启动（ConditionUser=!root）。
+ConditionUser=!root
+Wants=bibit-intent-models.service
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/bibit-intent/inference.env
+WorkingDirectory=/opt/bibit-intent
+# ExecStart 最前面先执行初始化检查 bibit-intent-init.sh：Runtime 的
+# bianbu.bibit.intent 插件带着这份 MCP 时退休用户目录里的历史副本，插件还没进包
+# 的旧 Runtime 上则保留原来的写入行为。
+ExecStart=/bin/sh -c '/opt/bibit-intent/bibit-intent-init.sh && exec /opt/bibit-intent/.venv/bin/python /opt/bibit-intent/main.py serve --data-root /opt/bibit-intent --bind 127.0.0.1:8765'
+Restart=on-failure
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+# appcli 的入口命令（cli-anything-*）装在同一个 venv 里；PATH 里没有它的 bin，
+# 直接经 HTTP 调 appcli_list 会报「入口命令未安装」，与 MCP 路径的判定不一致
+# （MCP 子进程的 PATH 由 deploy/mcp.json 给出）。systemd 默认不带上 venv/bin。
+Environment=PATH=/opt/bibit-intent/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+
+[Install]
+WantedBy=default.target

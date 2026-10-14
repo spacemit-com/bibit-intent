@@ -1,0 +1,5 @@
+{"id":"EN-HN-001","input":"what is quantum entanglement?","expect":"open_question"}
+{"id":"EN-HN-002","input":"write a poem about Linux","expect":"writing_task"}
+{"id":"EN-HN-003","input":"how do I open the file manager?","expect":"open_question"}
+{"id":"EN-HN-004","input":"don't close the browser","expect":"negated_action"}
+{"id":"EN-HN-005","input":"open the file","expect":"ambiguous_control"}

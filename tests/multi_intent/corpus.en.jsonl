@@ -1,0 +1,4 @@
+{"id":"EN-MI-001","input":"open the browser and play a video","expect":"multi_intent"}
+{"id":"EN-MI-002","input":"launch Chrome, then turn the volume down","expect":"multi_intent"}
+{"id":"EN-MI-003","input":"close the terminal and restart the service","expect":"multi_intent"}
+{"id":"EN-MI-004","input":"scan for Wi-Fi and connect to HomeNet","expect":"multi_intent"}

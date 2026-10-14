@@ -1,0 +1,1294 @@
+# Ubuntu 命令技巧 Skill
+# 依据 wiki.ubuntu.org.cn/UbuntuSkills 提炼的常用只读运维命令：
+#   安装升级(dpkg/apt) / 系统(uname/lsb_release/lspci/lsusb/uptime)
+#   硬盘(df/du/lsblk) / 进程(ps/top/pstree)
+#   网络(ip addr/ss) / 服务(systemctl) / 用户(last/w)
+# 全部为只读查询，无破坏性操作；参数化 subprocess，杜绝 shell 注入。
+# 对照 design.md §5.3（端侧 Skill 简化）
+
+name: ubuntu_cmd
+version: "1.0"
+display: "Ubuntu 命令查询"
+description: "软件包/系统/磁盘/进程/网络/服务/用户等 Ubuntu 命令查询"
+author: "bibit"
+
+# Skill 依赖的系统命令（缺失只标记，执行时才报错）
+requires:
+  - dpkg
+  - apt-cache
+  - ps
+  - lastlog2
+  - iostat
+  - hdparm
+  - lshw
+  - clamscan
+  - enca
+  - whois
+  - tracepath
+
+# Skill 提供的工具
+tools:
+
+  software_delivery_assess:
+    display: "评估软件交付路径（RISC-V只读）"
+    display_en: "Assess software delivery routes (RISC-V read-only)"
+    short: "softwareassess"
+    aliases: ["软件交付评估", "RISC-V软件评估", "评估软件安装"]
+    params:
+      target: {type: str}
+      version: {type: str, default: ""}
+      scope: {type: str, default: ""}
+    routes:
+      rule:
+        patterns:
+          - "^软件交付评估\\s+(?P<target>[a-z0-9][a-z0-9+.-]*(?::[a-z0-9][a-z0-9-]*)?)$"
+          - "^评估(?:安装)?软件\\s+(?P<target>[a-z0-9][a-z0-9+.-]*(?::[a-z0-9][a-z0-9-]*)?)$"
+          - "^(?:assess|check)\\s+software\\s+delivery\\s+(?P<target>[a-z0-9][a-z0-9+.-]*(?::[a-z0-9][a-z0-9-]*)?)$"
+        keywords: ["软件交付评估", "RISC-V软件评估", "software delivery"]
+    local: null
+    confirm: false
+    handler: "software_delivery_assess"
+    mcp: {group: readonly}
+
+  pkg_candidate:
+    display: "查询单包候选版本与架构（只读）"
+    params:
+      pkg: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "^软件包候选\\s+(?P<pkg>\\S+)$"
+        keywords: ["软件包候选"]
+      local: null
+    confirm: false
+    handler: "pkg_candidate"
+    mcp: {group: readonly}
+
+  pkg_operation_preview:
+    display: "单包安装卸载影响预检（只读模拟，不执行）"
+    params:
+      operation: {type: str, enum: [install, remove]}
+      pkg: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "^软件包预检\\s+(?P<operation>install|remove)\\s+(?P<pkg>\\S+)$"
+        keywords: ["软件包预检"]
+        slot_map:
+          安装: {operation: install}
+          卸载: {operation: remove}
+      local: null
+    confirm: false
+    handler: "pkg_operation_preview"
+    mcp: {group: readonly}
+
+  pkg_verify:
+    display: "核验软件包安装状态与目标版本（只读，不启动应用）"
+    params:
+      pkg: {type: str}
+      expected_version: {type: str, default: ""}
+      executable: {type: str, default: ""}
+    routes:
+      rule:
+        patterns:
+          - "^软件包验证\\s+(?P<pkg>\\S+)(?:\\s+(?P<expected_version>\\S+))?$"
+        keywords: ["软件包验证"]
+      local: null
+    confirm: false
+    handler: "pkg_verify"
+    mcp: {group: readonly}
+
+  pkg_match_preview:
+    display: "软件包模式只读预览"
+    display_en: "Preview package names only; explicit glob/regex full-name matching. available uses cached APT names, not guaranteed installable; installed includes incomplete packages. Never installs or removes."
+    short: "pkgpreview"
+    params:
+      scope: {type: str, enum: [available, installed]}
+      mode: {type: str, enum: [glob, regex]}
+      pattern: {type: str}
+      limit: {type: int, range: [1, 50], default: 20}
+    routes:
+      rule:
+        patterns:
+          - "^(?:软件包预览|包预览|package preview)\\s+(?P<scope>available|installed)\\s+(?P<mode>glob|regex)\\s+(?P<pattern>.+)$"
+        keywords: ["软件包预览", "包预览", "package preview"]
+        slot_map:
+          软件源: {scope: available}
+          已安装: {scope: installed}
+          通配符: {mode: glob}
+          正则: {mode: regex}
+      local: null
+    confirm: false
+    handler: "pkg_match_preview"
+    mcp:
+      group: readonly
+
+  # ── 软件包管理（wiki 安装升级 节）──────────────────────────────────
+  pkg_files:
+    display: "查看软件包安装了哪些文件"
+    display_en: "List files installed by a package (dpkg -L)"
+    short: "pfiles"
+    aliases: ["pkgfiles", "package-files", "安装内容", "装了哪些文件"]
+    params:
+      pkg: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|看看|查|看|显示|列出).{0,6}(?:软件|包|程序).{0,6}?(?P<pkg>[a-zA-Z0-9_+.-]{1,40}).{0,4}(?:安装|装了)(?:哪些|什么|些什么)?(?:的)?(?:文件|内容)"
+          - "(?P<pkg>[a-zA-Z0-9_+.-]{1,40})(?:这个)?(?:软件|包|程序)?(?:安装了|装了|安装).{0,3}(?:哪些|什么|些什么)?(?:文件|内容)"
+          # 口语“看看…装了什么/装了些啥”对象不明确（装的什么内容/放哪），
+          # 一律升级云端，不直通 pkg_files（见 corpus U03）
+          - "(?P<pkg>[a-zA-Z0-9_+.-]{1,40})(?:这个)?(?:软件|包|程序)(?:都|就|也)?(?:装了|安装了)(?:哪些|什么|些什么)(?:内容|文件)?"
+          - "(?P<pkg>[a-zA-Z0-9_+.-]{1,40})(?:这个)?(?:软件|包|程序)?.{0,6}(?:文件清单|文件列表)"
+          - "^(?:please\\s+)?(?:show|list|display)\\s+(?:the\\s+)?(?:package\\s+)?files\\s+(?:for|of)\\s+(?P<pkg>[a-zA-Z0-9_+.-]{1,40})$"
+        keywords: ["安装内容", "装了哪些文件", "安装了哪些文件", "装了什么", "装了哪些内容", "安装的文件", "dpkg -L", "文件清单", "文件列表"]
+      local: "pfiles(pkg:...)"
+    handler: "pkg_files"
+
+  pkg_search:
+    display: "搜索软件库中的软件"
+    display_en: "Search packages in apt repositories (apt-cache search). Only for OS software packages. Not for network routes (net_trace), domain whois (net_whois), IP addresses (net_ip), or firewall rules (iptables_list)."
+    short: "psearch"
+    aliases: ["aptsearch", "search-pkg", "搜软件", "软件搜索"]
+    params:
+      query: {type: str}
+    routes:
+      rule:
+        # 负向前瞻：紧跟"搜索/查找"的若是硬件设备关键词（蓝牙/WiFi/USB/摄像头等），
+        # 交给对应硬件 skill（bluetooth: bt_scan / wifi: wifi_scan / ...），
+        # 避免"搜一下附近的蓝牙设备"被误当成搜包。
+        patterns:
+          - "(?:帮我)?(?:搜索|搜一?下|查找|找找)(?!.{0,10}(?:蓝牙|WiFi|wifi|WIFI|无线|网络|USB|usb|PCIe|pcie|摄像头|相机|外设|附近))(?!.{0,20}(?:资讯|新闻|网页|报告|文章|资料|教程|生成|可视化|搜索引擎|百度|谷歌|全网|AI资讯|AI新闻|在干什么|在干嘛|干什么|干嘛|是谁|是什么|怎么样|天气)).{0,4}?(?:软件|软件库|仓库|软件源|apt)?(?P<query>.{1,20})$"
+          - "(?:想知道|我想知道).{0,4}(?:apt|软件|软件库|仓库|源).{0,4}(?:里|中|内).{0,3}(?:有没有|是否有|是否).{0,3}?(?P<query>[a-zA-Z0-9_+.-]{1,40})$"
+          - "(?:apt|软件库|软件源).{0,4}(?:里|中).{0,4}(?:能|可以)?(?:搜到|找到|查到).{0,3}?(?P<query>[a-zA-Z0-9_+.-]{1,40})"
+          # 口语直通：仓库里到底有没有 tree 这个包，规则层定死，绕开 1B 选 usb_tree。
+          - "(?:仓库|软件库|软件源|源).{0,4}(?:里|中|内).{0,4}(?:到底)?(?:有没有|是否有|找得到|搜得到|能搜到).{0,4}?(?P<query>[a-zA-Z0-9_+.-]{1,40}).{0,4}?(?:这个)?(?:包|软件|程序)"
+        keywords: ["仓库里有没有", "软件库有没有", "搜一下", "搜索软件", "找找", "软件库", "apt search", "软件源", "搜到", "能搜到", "仓库", "仓库里"]
+      local: "psearch(query:...)"
+    handler: "pkg_search"
+
+  pkg_info:
+    display: "查看软件包信息"
+    display_en: "Show package metadata from apt repositories (apt-cache show)"
+    short: "pinfo"
+    aliases: ["pkginfo", "pkg-info", "包信息", "软件信息"]
+    params:
+      pkg: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "^(?:查看|看看|查|看|显示)\\s*软件包\\s*(?P<pkg>[a-zA-Z0-9_+.-]{1,40})\\s*(?:的\\s*)?(?:信息|详情|介绍|版本)$"
+          - "(?!.{0,4}(?:CPU|cpu)(?:信息|详情))(?:查看|看看|查|看|显示).{0,4}?(?:软件|包|程序)?(?P<pkg>[a-zA-Z0-9_+.-]{1,40})(?:这个)?(?:软件|包)?(?:的)?(?:信息|详情|介绍|版本)"
+          - "(?P<pkg>[a-zA-Z0-9_+.-]{1,40}).{0,3}(?:装的是|是什么版本|的版本|包的信息)"
+          - "^(?:please\\s+)?(?:show|display|get)\\s+(?:the\\s+)?(?:package|software)\\s+information\\s+(?:for|about|of)\\s+(?P<pkg>[a-zA-Z0-9_+.-]{1,40})$"
+          - "^(?:please\\s+)?(?:show|display|get)\\s+(?:the\\s+)?(?:package|software)?\\s*(?:info|information|details)\\s+(?:for|about|of)\\s+(?P<pkg>[a-zA-Z0-9_+.-]{1,40})$"
+        keywords: ["包的信息", "软件信息", "版本信息", "包的详情", "装的是什么", "什么版本", "有没有装", "装过"]
+      local: "pinfo(pkg:...)"
+    handler: "pkg_info"
+
+  pkg_installed:
+    display: "查看已安装的软件包列表"
+    display_en: "List installed packages with optional name filter (dpkg-query -W). Only for OS software packages. Not for firewall rules (iptables_list), network routes (net_trace), or IP addresses (net_ip)."
+    short: "pinstalled"
+    aliases: ["installed", "dpkgl", "已安装", "软件列表"]
+    params:
+      filter: {type: str, default: ""}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|list|display)\\s+(?:all\\s+)?installed\\s+(?:packages|software)$"
+          - "(?:查看|看看|查|看|显示|列出).{0,4}(?:系统|已经|已).{0,4}(?:安装|装了).{0,4}(?:的)?(?:软件|软件包|包)(?:列表|清单)?"
+          - "^(?:装了|安装|已装).{0,3}(?:哪些|什么).{0,3}(?:软件|包|程序)$"
+          - "^(?:系统|设备|机器)(?:里|上)?有没有装(?P<filter>[a-zA-Z0-9_+.-]{1,40})$"
+        keywords: ["有没有装", "已安装的包", "安装了哪些", "软件列表", "安装的软件", "装了哪些软件"]
+      local: "pinstalled(filter:...)"
+    handler: "pkg_installed"
+
+  pkg_owns_file:
+    display: "查找文件属于哪个软件包"
+    display_en: "Find which package owns a file (dpkg -S)"
+    short: "powns"
+    aliases: ["owns", "pkg-owns", "文件归属", "哪个包"]
+    params:
+      file: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "(?:查|看|找|找找|确认).{0,4}?(?:这个|下|一下)?(?P<file>[a-zA-Z0-9_/.-]{1,60})(?:这个文件)?(?:属于|来自|是谁装的|是哪个包装的).{0,2}(?:哪个|什么)(?:软件|包)?"
+          - "(?P<file>[a-zA-Z0-9_/.-]{1,60})(?:这个文件)?(?:属于|来自).{0,2}(?:哪个|什么)(?:软件包|软件|包)"
+          # 口语直通：top这个命令是哪个包带的，规则层定死，绕开 1B 选 close_app。
+          - "(?P<file>[a-zA-Z0-9_/.-]{1,60}).{0,8}(?:哪个包带的|哪个包装的|哪个软件包带的)"
+          - "^(?:please\\s+)?(?:which|what)\\s+package\\s+(?:owns|provides|contains)\\s+(?P<file>/[a-zA-Z0-9_/.-]+)$"
+        keywords: ["属于哪个包", "哪个软件包", "属于哪个软件", "来自哪个包", "dpkg -S", "哪个包装的", "哪个包"]
+      local: "powns(file:...)"
+    handler: "pkg_owns_file"
+
+  pkg_depends:
+    display: "查询软件包依赖哪些包"
+    display_en: "Show dependencies of a package (apt-cache depends)"
+    short: "pdep"
+    aliases: ["depends", "pkg-depends", "依赖", "依赖关系"]
+    params:
+      pkg: {type: str}
+    routes:
+      rule:
+        patterns:
+          # 依赖查询必须带疑问词或"的+包/软件/库"名词；禁止"X需要…"裸动词句式
+          # 误伤叙述句（如"agent os需要全部功能集成进来"会被旧的宽松正则当成
+          # 包依赖查询，抽到 pkg=agent 后 apt-cache depends 报 码100）。
+          - "(?P<pkg>[a-zA-Z0-9_+.-]{1,40})\\s{0,3}依赖(?:(?:哪些|什么|那些|多少)(?:的)?(?:软件|包|库|依赖)?|的(?:依赖包|依赖|软件包|软件|包|库))"
+          - "(?:查|看|查看).{0,4}?(?P<pkg>[a-zA-Z0-9_+.-]{1,40}).{0,3}依赖"
+          - "(?:查|看|查看).{0,6}?(?P<pkg>[a-zA-Z0-9_+.-]{1,40}).{0,6}(?:要|需要|得).{0,4}(?:拉|装|下载).{0,4}(?:哪些|什么).{0,2}(?:依赖|包)"
+          # 口语直通：python3 装了哪些依赖包，规则层定死，绕开 1B 选 eth_down。
+          - "(?P<pkg>[a-zA-Z0-9_+.-]{1,40}).{0,6}?(?:装|安装|拉|下载).{0,4}(?:了)?(?:哪些|什么|多少).{0,4}(?:依赖|依赖包)"
+          # X 需要/要/依靠…哪些/什么 +（依赖|包|软件|库）…：疑问词与名词尾缀
+          # 都必现，防止"X需要做…/X需要把…集成"等陈述句触发依赖查询。
+          - "(?P<pkg>[a-zA-Z0-9_+.-]{1,40})\\s{0,3}(?:需要|要|依靠).{0,6}?(?:哪些|什么|那些|多少)(?:的)?(?:依赖包|依赖|软件包|软件|包|库|前置)"
+          # 安装 X（前|之前|以前）需要装什么/哪些（依赖|包|软件|库）
+          - "(?P<pkg>[a-zA-Z0-9_+.-]{1,40}).{0,8}(?:前|之前|以前).{0,4}(?:需要|要|需).{0,4}(?:装|拉|下载).{0,4}(?:什么|哪些|多少)(?:依赖|包|软件|库|前置)?"
+        keywords: ["要拉哪些依赖", "依赖哪些", "依赖什么", "需要哪些包", "依赖的包", "哪些依赖", "apt-cache depends", "依赖包"]
+      local: "pdep(pkg:...)"
+    handler: "pkg_depends"
+
+  pkg_rdepends:
+    display: "查询软件包被哪些包依赖"
+    display_en: "Show reverse dependencies of a package (apt-cache rdepends)"
+    short: "prdep"
+    aliases: ["rdepends", "reverse-depends", "反向依赖", "被谁依赖"]
+    params:
+      pkg: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "(?P<pkg>[a-zA-Z0-9_+.-]{1,40}).{0,3}(?:被哪些|被什么|哪些包|哪些软件).{0,3}(?:依赖|引用|需要)"
+          - "(?:谁|哪些).{0,3}(?:依赖|需要).{0,3}?(?P<pkg>[a-zA-Z0-9_+.-]{1,40})"
+          - "^(?:有哪些|哪些|什么).{0,2}(?:软件|包|程序).{0,4}(?:在|正在)?(?:引用|依赖|需要).{0,3}?(?P<pkg>[a-zA-Z0-9_+.-]{1,40})$"
+        keywords: ["被哪些包依赖", "被谁依赖", "反向依赖", "哪些包引用", "rdepends"]
+      local: "prdep(pkg:...)"
+    handler: "pkg_rdepends"
+
+  # ── 系统信息（wiki 系统 节）────────────────────────────────────────
+  sys_overview:
+    display: "查看系统概览"
+    display_en: "Show a combined system overview: OS/release version, kernel version, CPU model and cores, memory size, and uptime. Use when the user asks for several system facts in one request."
+    short: "sysoverview"
+    aliases: ["系统概览", "整机信息", "系统概况", "system overview"]
+    covers: []
+    params: {}
+    routes:
+      rule:
+        patterns: []
+        keywords: ["系统概览", "整机信息", "系统概况", "system overview"]
+      local: null
+    confirm: false
+    handler: "sys_overview"
+    mcp: {group: readonly}
+
+  sys_kernel:
+    display: "查看内核版本"
+    display_en: "Show the kernel version. Use when the user asks about the kernel version or what kernel is running. For OS/release version use sys_version."
+    short: "kernel"
+    aliases: ["uname", "内核", "kernel版本"]
+    covers: ["内核版本", "内核", "kernel"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|查|看|显示|告诉我).{0,4}(?:系统|当前)?(?:内核|kernel|Kernel).{0,4}(?:版本|信息)"
+          - "^(?:内核|kernel)版本$"
+          - "(?:这台|本机|当前)?(?:机器|设备|系统).{0,3}(?:kernel|Kernel|内核).{0,3}(?:是啥|是什么|多少|版本)"
+        keywords: ["内核版本", "内核信息", "kernel版本", "kernel", "uname"]
+      local: "kernel()"
+    handler: "sys_kernel"
+    mcp: {group: readonly}
+
+  sys_version:
+    display: "查看系统版本"
+    display_en: "Show the OS/release version (e.g. Ubuntu version). Use when the user asks what OS version or distribution is running. For the kernel version use sys_kernel."
+    short: "osver"
+    aliases: ["os-version", "lsb-release", "系统版本", "发行版"]
+    covers: ["系统版本", "发行版", "ubuntu版本", "os版本"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|查|看|显示|告诉).{0,4}(?:系统|Ubuntu|linux|Linux|操作系统).{0,4}(?:版本|发行版)"
+          - "系统是什么版本"
+          - "(?:这台|本机).{0,3}(?:设备|机器).{0,4}(?:跑|运行|装).{0,3}(?:的)?(?:是)?什么系统"
+          - "(?:ubuntu|Ubuntu)(?:是)?(?:什么)?版本"
+        keywords: ["系统版本", "发行版", "ubuntu版本", "os版本", "系统信息", "什么系统"]
+      local: "osver()"
+    handler: "sys_version"
+
+  sys_pci:
+    display: "查看 PCI 设备"
+    display_en: "List PCI devices (graphics card, etc.). Use when the user asks about PCI devices or the graphics card. For all hardware use sys_hw."
+    short: "pci"
+    aliases: ["lspci", "显卡", "pci设备"]
+    covers: ["pci", "显卡", "pci设备"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|查|看|显示|列出).{0,4}(?:PCI|pci|显卡).{0,4}(?:设备|列表)?"
+        keywords: ["pci设备", "pci", "显卡设备", "lspci"]
+      local: "pci()"
+    handler: "sys_pci"
+
+  # ── USB 三兄弟：树形 / 详情 / 重置 ──
+  # 必须声明在 usb_list 之前：rule_engine._pattern_match 同置信度下按声明序
+  # 取首个命中，特化工具在前可在正则平手时胜出（usb_list 另有负向前瞻兜底）。
+
+  usb_tree:
+    display: "显示 USB 设备树"
+    display_en: "Show the USB device tree/topology (which device is connected to which hub or port). Use when the user asks about USB hierarchy, parent-child, or which device is plugged into where. For a flat list use usb_list; for verbose details use usb_detail."
+    short: "usbtree"
+    aliases: ["usb树", "usb拓扑", "usb层级", "usb结构"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:USB|usb).{0,6}(?:树状|树形|树|拓扑|层级|层次)"
+          - "(?:查看|显示|列出|看).{0,4}(?:USB|usb).{0,6}(?:树状|树形|树|拓扑|层级|层次|结构)"
+          - "(?:USB|usb).{0,4}(?:接口|设备)?.{0,4}(?:的)?(?:层级|拓扑|树状|树形)(?:结构|关系|连接|图)?"
+          - "(?:USB|usb).{0,4}(?:Hub|hub|集线器).{0,6}(?:下面|下|连接|层级|接了|信息)"
+          # 口语拓扑词直通：含 USB 的父子/上下级/挂在 语义，规则层定死，
+          # 绕开 1B 在 usb_list 与 usb_tree 二选一时偏向通用项的毛病。
+          - "(?:USB|usb).{0,10}(?:父子|上下级|谁挂在|挂在谁|谁下面|挂在哪)"
+          # 口语拓扑直通：插/接在 A 还是 B（判断设备挂接位置/拓扑）
+          - "(?:USB|usb).{0,12}(?:线|线缆|接口)?(?:插|接|挂)(?:在|着|的)?(?:了)?.{0,14}(?:还是|或者|或)"
+        # 复合词 + 口语单词（层级/上下级/父子/挂在/扩展坞…）。单词不含 USB，
+        # 靠 usb_list 让出裸词后才能被 _keyword_match 命中。
+        keywords: ["USB树", "usb树", "USB拓扑", "usb拓扑", "USB层级", "usb层级",
+                   "USB Hub", "usb hub", "集线器", "扩展坞", "上下级", "父子",
+                   "层级", "层次", "拓扑", "树状", "树形", "挂在", "谁下面", "几层"]
+        # §4.4-C 候选注入护栏：层级/拓扑/父子/挂在 等裸名词仅在 USB 语境下召回，
+        # 防止「层级结构」「网络拓扑」「父子进程」误注入本工具。
+        require_object: ["USB", "usb", "集线器", "Hub", "hub", "扩展坞"]
+      local: "usbtree()"
+    handler: "usb_tree"
+
+  usb_detail:
+    display: "显示 USB 设备详细信息"
+    display_en: "Show detailed USB device info (vendor ID, serial number, descriptors, firmware, speed, current). Use when the user asks for USB device details or specific parameters. For a flat list use usb_list; for topology use usb_tree."
+    short: "usbdetail"
+    aliases: ["usb详情", "usb详细", "usb verbose"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:USB|usb).{0,6}(?:详细|详情|完整|具体).{0,4}(?:信息|参数|数据)?"
+          - "(?:查看|显示|列出|看).{0,4}(?:USB|usb).{0,6}(?:设备|接口)?.{0,4}(?:的)?(?:详细|详情|完整|具体)"
+          - "(?:USB|usb).{0,4}(?:verbose|详细模式)"
+          - "(?:这个|那个|该).{0,4}(?:USB|usb).{0,6}(?:的)?(?:详细|详情|完整|具体).{0,4}(?:信息|参数)?"
+          # 具体参数名口语直通：厂商编号/序列号/描述符/规格参数/固件版本 等，
+          # 规则层定死，绕开 1B 在 usb_list 与 usb_detail 二选一时偏向通用项的毛病。
+          - "(?:USB|usb).{0,10}(?:厂商编号|厂商号|序列号|描述符|固件版本|协议版本|规格参数)"
+        # 加入具体参数名口语：厂商号/序列号/描述符/速率/电流/固件版本…
+        keywords: ["USB详情", "usb详情", "USB详细", "usb详细", "USB完整", "USB具体",
+                   "usb verbose", "厂商编号", "厂商号", "序列号", "描述符",
+                   "固件版本", "协议版本", "规格参数", "速率", "电流"]
+      local: "usbdetail()"
+    handler: "usb_detail"
+
+  usb_reset:
+    display: "重置 USB 设备"
+    display_en: "Reset or re-initialize a USB device. Use when a USB device (flash drive, mouse, keyboard) is unresponsive, frozen, or not detected. For listing devices use usb_list."
+    short: "usbreset"
+    aliases: ["usb重置", "usb刷新", "usb复位"]
+    params:
+      device: {type: str, default: ""}
+    routes:
+      rule:
+        patterns:
+          - "(?:重置|复位|刷新|重新加载|重新识别|重新初始化|重新插拔).{0,6}(?:USB|usb)(?:设备|接口|总线|口)?"
+          - "(?:USB|usb).{0,6}(?:设备|接口|总线|口)?.{0,6}(?:重置|复位|刷新|重新加载|重新识别|重新初始化|重新认)"
+          - "(?:USB|usb).{0,6}(?:设备|接口)?.{0,6}(?:失灵|卡死|没反应|识别不了|连不上|用不了)"
+          - "(?:U盘|u盘|鼠标|键盘|外设).{0,6}(?:没反应|失灵|卡死|识别不了|连不上).{0,8}(?:重置|复位|刷新|重新)"
+        # 故障/恢复口语（不好使/掉线/卡住/不拔线…）：与网络、系统症状表达重叠，
+        # 必须受下面 require_object 护栏约束，否则会被注入 usb_reset（有物理副作用）。
+        keywords: ["USB重置", "usb重置", "USB刷新", "usb刷新", "USB复位", "USB失灵",
+                   "重置USB", "重置usb", "不好使", "掉线", "卡住", "不拔线",
+                   "重新认", "重新初始化", "重新识别", "没反应", "不动了", "抽风"]
+        # §4.4-C 候选注入护栏：句中没有 USB 直接宾语时，上述裸症状词不得注入本工具。
+        # 覆盖全部正例（U019–U024 / H434–H439 均含 USB·U盘·外设 字面）。
+        require_object: ["USB", "usb", "U盘", "u盘", "外设", "鼠标", "键盘"]
+      local: "usbreset(device:optional)"
+    handler: "usb_reset"
+
+  usb_list:
+    display: "查看 USB 设备"
+    display_en: "List connected USB devices. Use when the user asks what USB devices are plugged in or connected. For topology use usb_tree; for detailed info use usb_detail; for resetting a frozen device use usb_reset."
+    short: "usb"
+    aliases: ["lsusb", "u盘", "usb设备", "外接设备", "usb列表", "usb接口"]
+    covers: ["usb", "u盘", "外接设备", "usb设备"]
+    params: {}
+    routes:
+      rule:
+        # 负向前瞻：句中出现 树/拓扑/层级/详细/重置… 时让位给上面三个特化工具，
+        # 否则 "显示USB设备树" 这类会被本工具的宽泛模式先吃掉。
+        patterns:
+          - "^(?:list|show|display)\\s+(?:all\\s+)?USB\\s+devices$"
+          - "^(?:what\\s+)?USB\\s+devices(?:\\s+are)?(?:\\s+connected)?\\??$"
+          - "(?!.*(?:树状|树形|树|拓扑|层级|层次|上下级|父子|集线器|扩展坞|详细|详情|完整|具体|verbose|描述符|规格|厂商|序列号|速率|电流|固件|协议|重置|复位|刷新|重新加载|重新识别|重新初始化|失灵|卡死|没反应|识别不了|连不上))(?:查看|查|看|显示|列出|检查).{0,4}(?:USB|usb|U盘|外接|外设).{0,4}(?:设备|列表|接口|总线|端口)?"
+          - "(?:u盘|U盘|usb|USB).{0,4}(?:上|里).{0,4}(?:接|插|挂).{0,4}(?:啥|什么|哪些).{0,2}(?:外设|设备)"
+          - "(?:usb|USB|u盘|U盘).{0,4}(?:上都|上|里).{0,4}(?:插|接|挂).{0,4}(?:了)?(?:什么|哪些|啥)"
+          - "(?:USB|usb)\\s?\\d(?:\\.\\d)?.{0,4}(?:接口|端口|口)?.{0,6}(?:有|插|接|连).{0,6}(?:设备|东西|啥|什么|吗)"
+          - "(?:有|现在有|一共有).{0,6}(?:几个|多少个|哪些).{0,4}(?:USB|usb|外设).{0,6}(?:设备)?"
+          - "(?:USB|usb).{0,4}(?:设备|接口|外设)?.{0,4}(?:有哪些|都有啥|状态|列表)"
+        # 关键词只留"列举"语义的复合词：_keyword_match 按声明序取首个命中，
+        # 裸 usb/USB/外设 会让任何含 USB 的句子都只召回本工具，特化工具进不了候选集。
+        keywords: ["usb设备", "USB设备", "usb接口", "USB接口",
+                   "usb口", "USB口", "usb上", "USB上", "usb列表", "USB列表",
+                   "u盘", "U盘", "外接设备", "lsusb",
+                   "认出来了", "识别到了", "认到几个", "都认到", "认到了几"]
+      local: "usb()"
+    handler: "usb_list"
+
+  sys_uptime:
+    display: "显示系统运行时间"
+    display_en: "Show how long the system has been running (uptime) or how long since boot. Use when the user asks how long the device has been on or running."
+    short: "uptime"
+    aliases: ["运行时间", "开机多久", "uptime"]
+    covers: ["开机时长", "开机多久", "开机时间", "运行时间", "uptime"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|check|what is)\\s+(?:the\\s+)?system\\s+uptime\\??$"
+          - "(?:系统|设备|这台机器).{0,3}(?:运行|开机|启动).{0,3}(?:多久|多长时间|了多久)"
+          - "^(?:运行|开机)了?多久$"
+          - "^(?:运行|开机).{0,4}时间$"
+          - "^(?:开机|启动).{0,4}(?:到|至).{0,4}(?:现在|目前).{0,4}(?:多久|多长时间)(?:了)?$"
+          - "^(?:开机|启动)(?:了)?多长时间了?$"
+        keywords: ["运行多久", "开机多久", "运行时间", "开机时间", "uptime"]
+      local: "uptime()"
+    handler: "sys_uptime"
+
+  # ── 硬盘（wiki 硬盘 节）───────────────────────────────────────────
+  disk_usage:
+    display: "查看硬盘剩余空间"
+    display_en: "Show disk space usage and remaining free space. Use when the user asks how much disk space is left, whether the disk is full, or storage capacity. For per-directory usage use disk_dir_usage."
+    short: "df"
+    aliases: ["df", "diskfree", "磁盘空间", "剩余空间"]
+    covers: ["磁盘", "硬盘", "存储", "磁盘空间", "硬盘空间"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:check|show|display)\\s+(?:the\\s+)?disk(?:\\s+space)?\\s+usage$"
+          - "(?:硬盘|磁盘|存储).{0,5}(?:还剩|剩余|还有|够不够|满没满|多少).{0,4}(?:空间|容量)?"
+          - "^(?:查看|看|查).{0,3}(?:硬盘|磁盘|存储)(?:空间|容量|剩余)"
+          - "(?:存储|硬盘|磁盘|空间).{0,4}(?:快|要|快要)?(?:满|不足|不够用)(?:了)?"
+        keywords: ["磁盘空间", "硬盘空间", "剩余空间", "存储空间", "空间不够", "硬盘满了", "快满", "df -h"]
+      local: "df()"
+    handler: "disk_usage"
+
+  disk_dir_usage:
+    display: "查看目录占用空间"
+    display_en: "Show how much space a directory or folder occupies. Use when the user asks how big a directory/folder is. For overall disk usage use disk_usage."
+    short: "du"
+    aliases: ["du", "dirsize", "目录占用", "目录大小"]
+    params:
+      path: {type: str, default: "."}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|看看|查|看|统计).{0,4}?(?P<path>[a-zA-Z0-9_/.-]{1,60})(?:这个)?(?:目录|文件夹)(?:的)?(?:占用|大小|多大|空间)"
+          - "(?P<path>[a-zA-Z0-9_/.-]{1,60}).{0,3}(?:目录|文件夹).{0,4}(?:占用了多少|多大|占用空间|大小)"
+          - "(?P<path>[a-zA-Z0-9_/.-]{1,40})(?:这个)?(?:目录|文件夹).{0,6}(?:占|吃|耗).{0,4}(?:空间|地方|大小)?"
+        keywords: ["目录占用", "目录大小", "文件夹占用", "占了多少", "目录多大", "占地方", "du -hs", "这么大"]
+      local: "du(path:...)"
+    handler: "disk_dir_usage"
+
+  disk_lsblk:
+    display: "查看块设备/分区"
+    display_en: "List block devices and partitions (disks, partitions, mounts). Use when the user asks what disks or partitions exist. For free space use disk_usage."
+    short: "lsblk"
+    aliases: ["lsblk", "块设备", "磁盘列表", "分区"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:list|show)\\s+(?:block\\s+devices|disks)$"
+          - "(?:查看|查|看|显示|列出).{0,4}(?:块设备|磁盘)(?:列表|信息)?"
+          - "有哪些(?:磁盘|硬盘|分区|块设备)"
+        keywords: ["块设备", "磁盘列表", "硬盘分区", "有哪些盘", "分区信息", "块盘", "lsblk"]
+      local: "lsblk()"
+    handler: "disk_lsblk"
+
+  # ── 进程（wiki 进程 节）────────────────────────────────────────────
+  proc_list:
+    display: "查看当前进程"
+    display_en: "List running processes. Use when the user asks what processes/programs are running. For top processes by CPU/memory use proc_top_cpu or proc_top_mem; for the process tree use proc_tree."
+    short: "ps"
+    aliases: ["ps", "process", "进程", "进程列表"]
+    params:
+      name: {type: str, default: ""}
+    routes:
+      rule:
+        patterns:
+          - '^(?:list|show|check)\s+(?:the\s+)?(?:running\s+)?processes?$'
+          - "^(?:查看|查|看|显示|列出).{0,3}(?:当前|正在|所有).{0,3}(?:进程|程序)(?:列表|信息|有哪些)?"
+          - "有哪些(?:进程|程序)(?:在跑|在运行|正在运行)?"
+          - "(?P<name>[a-zA-Z0-9_+.-]{1,30}).{0,3}(?:进程|服务).{0,3}(?:在跑吗|在运行吗|跑没跑|有没有|是否在跑)"
+          - "(?:系统|机器|设备).{0,4}(?:跑着|在跑|运行着).{0,4}(?:哪些|什么).{0,2}(?:进程|程序)"
+        keywords: ["进程列表", "当前进程", "正在运行的程序", "进程在跑", "程序在跑", "ps aux", "running processes", "process list"]
+      local: "ps(name:...)"
+    handler: "proc_list"
+
+  proc_top_mem:
+    display: "内存占用最高的进程"
+    display_en: "Show the processes using the most memory (sorted by memory usage). Use when the user asks which process/program is eating the most RAM. For CPU use proc_top_cpu."
+    short: "topmem"
+    aliases: ["top-mem", "最占内存", "内存大户", "内存排行"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|list)\\s+(?:the\\s+)?top\\s+processes\\s+by\\s+memory$"
+          - "(?:最|谁|哪些).{0,3}(?:占|吃|耗|用).{0,3}(?:内存).{0,4}(?:最多|最高|最大|厉害)?"
+          - "内存.{0,4}(?:占用|消耗|使用).{0,4}(?:最高|最多|最大|排行|排名)"
+          - "(?:内存).{0,8}吃光(?:了)?"
+        keywords: ["最占内存", "内存占用最高", "内存排行", "吃内存", "内存大户", "内存top", "吃光"]
+      local: "topmem()"
+    handler: "proc_top_mem"
+
+  proc_top_cpu:
+    display: "CPU 占用最高的进程"
+    display_en: "Show the processes using the most CPU (sorted by CPU usage). Use when the user asks which process/program is eating the most CPU or burning CPU. For memory use proc_top_mem."
+    short: "topcpu"
+    aliases: ["top-cpu", "最耗cpu", "cpu排行", "cpu占满"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:最|谁|哪些).{0,3}(?:占|吃|耗|用).{0,3}(?:CPU|cpu).{0,4}(?:最多|最高|最大)"
+          - "(?:CPU|cpu)占用.{0,3}(?:最高|最多|排行|排名)"
+          - "(?:哪个|什么|啥).{0,4}(?:东西|程序|进程).{0,4}(?:在|一直|正在)?(?:烧|吃|占|耗)(?:cpu|CPU)"
+          - "(?:哪些|什么|哪个|啥).{0,4}(?:东西|程序|进程).{0,4}(?:在|一直|正在)?(?:烧|吃|占|耗)(?:cpu|CPU)"
+        keywords: ["cpu占用最高", "cpu排行", "吃cpu", "cpu占满", "最耗cpu", "cpu top", "烧cpu"]
+      local: "topcpu()"
+    handler: "proc_top_cpu"
+
+  proc_tree:
+    display: "查看进程树"
+    display_en: "Show the process tree (parent-child relationships between processes). Use when the user asks about process hierarchy or parent-child relationships. For a flat list use proc_list."
+    short: "pstree"
+    aliases: ["pstree", "进程树", "父子进程", "进程层级"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|display)\\s+(?:the\\s+)?process\\s+tree$"
+          - "(?:查看|查|看|显示).{0,4}(?:进程)?(?:树|父子关系|层级)"
+          - "进程树"
+          - "(?:进程|程序).{0,6}(?:之间|的).{0,4}(?:父子|层级).{0,4}(?:关系)?(?:是|怎么)?(?:怎样|什么样)?"
+        keywords: ["进程树", "父子进程", "进程层级", "进程关系", "父子关系", "pstree"]
+      local: "pstree()"
+    handler: "proc_tree"
+
+  # ── 网络（wiki 网络 节）────────────────────────────────────────────
+  net_ip:
+    display: "查看 IP/网卡地址"
+    display_en: "Show the IP address(es) of all network interfaces. Use for a generic 'my IP' or 'network address' query without a wired/wireless qualifier. For wired-only use eth_ip, wireless-only use wifi_ip, public IP use net_ext_ip."
+    short: "ipaddr"
+    # 不设 alias"网卡"：与 eth_up 撞车，且裸"网卡"不区分有线/无线，不该由 net_ip 独占。
+    aliases: ["ip", "ip地址", "ifconfig"]
+    covers: ["网卡", "ip", "dns", "网络地址", "网络ip"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:请)?(?:帮我)?(?:查询|查看|查一下|查|看一下|看|显示)\\s*(?:一下)?\\s*(?:本机|本地|我的)?\\s*(?:IP|ip|Ip)(?:地址)?\\s*(?:是多少)?[？?。！!]*$"
+          - "^(?:show|display|get|what(?:'s| is))\\s+(?:the\\s+)?(?:my\\s+)?(?:network\\s+)?IP(?:\\s+address)?$"
+          - "^(?:show|display|get|check)\\s+(?:the\\s+)?(?:network|local)\\s+(?:IP\\s+)?address(?:es)?$"
+          - "(?!.*(?:无线|wifi|WiFi|WIFI))(?:当前|现在|本机|这台).{0,3}(?:ip|IP|ip地址|IP地址|网卡|网络地址|网络IP|网络ip).{0,3}(?:地址|是多少|是啥|信息)?"
+          # 不含"网卡"（"网卡地址"归 net_mac）。
+          - "^(?!.*(?:无线|wifi|WiFi|WIFI))(?:查看|查|看|显示).{0,3}(?:IP|ip|网络)(?:地址|信息)"
+        # 保留"网络地址"（"网络+地址"双词，非裸名词），补"网卡ip"；
+        # 裸"网卡"/"网卡地址"不留（与 net_mac 的 alias 撞车）。
+        keywords: ["ip地址", "ip是多少", "我的ip", "网络地址", "本机网络地址", "ip信息", "ip addr", "网卡ip", "网卡 ip"]
+      local: "ipaddr()"
+    handler: "net_ip"
+    mcp:
+      group: readonly
+
+  net_conn:
+    display: "查看网络连接/监听端口"
+    display_en: "Show network connections and listening ports. Use when the user asks to list network connections, listening ports, or which ports are open."
+    short: "netstat"
+    aliases: ["netstat", "ss", "监听端口", "网络连接", "端口"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:list|show)\\s+(?:network\\s+connections|active\\s+connections)$"
+          # 负向守卫：句中出现 wifi/无线 时不认"连接状态"（交给 wifi_status）；
+          # 两者同为 1.00 时按注册顺序 net_conn 先胜。
+          - "(?!.*(?:wifi|WiFi|WIFI|无线))(?:查看|查|看|显示|列出).{0,4}(?:当前|现在)?(?:网络连接|连接状态|监听端口|端口)"
+          - "有哪些(?:网络连接|端口|监听)"
+          - "(?:机器|设备|系统).{0,6}(?:都|现在|当前)?.{0,4}(?:开着|开|监听|打开).{0,4}(?:哪些|什么).{0,2}(?:端口|连接)"
+        keywords: ["网络连接", "监听端口", "端口列表", "连接状态", "哪些端口", "ss -tlnp"]
+      local: "netstat()"
+    handler: "net_conn"
+    mcp:
+      group: readonly
+
+  # ── 服务（wiki 服务 节）────────────────────────────────────────────
+  service_status:
+    display: "查看服务状态"
+    display_en: "Check whether a specific service/daemon is running and its status. Use when the user asks if a service (e.g. ssh, docker) is running or its status. For listing all services use service_list; for starting/stopping use service_start/service_stop."
+    short: "svc"
+    aliases: ["service", "systemctl", "服务状态", "服务是否运行"]
+    params:
+      name: {type: str, default: ""}
+    routes:
+      rule:
+        patterns:
+          - "^(?:check|show|what(?:'s| is)?)\\s+(?:the\\s+)?(?P<name>(?!the\\b)[a-zA-Z0-9_-]{1,30})\\s+service\\s+status$"
+          - "^(?:is|check\\s+if)\\s+(?:the\\s+)?(?P<name>(?!the\\b)[a-zA-Z0-9_-]{1,30})\\s+service\\s+running\\??$"
+          - "(?:查看|查|看|显示).{0,4}?(?P<name>[a-zA-Z0-9_-]{1,30})(?:这个)?(?:服务|服务进程).{0,3}(?:状态|运行情况|在跑吗|是否在运行)"
+          - "^(?!wifi|WiFi|WIFI|无线|网络|raid|RAID)(?P<name>[a-zA-Z0-9_-]{1,30})(?:服务)?(?:状态|是否运行|在运行吗|跑着吗)"
+          - "^(?:查看|查|看)(?:一下)?服务状态"
+          - "^(?!wifi|WiFi|WIFI|无线|网络|raid|RAID)(?P<name>[a-zA-Z0-9_-]{1,30})(?:服务|进程)?(?:有没有在跑|在跑吗|在运行吗|是否在运行)"
+          # 口语直通：看看ssh有没有在跑（无\"服务\"二字），规则层定死，绕开 1B 选 net_conn。
+          - "(?:看看|查看|查|看|检查).{0,4}?(?P<name>[a-zA-Z0-9_-]{1,30})(?:这个)?(?:服务|进程)?(?:有没有在跑|在跑吗|在运行吗|是否在运行|跑没跑|起来了没|在不在)"
+        keywords: ["服务状态", "服务在跑吗", "服务是否运行", "运行中的服务", "服务列表", "有没有在跑", "systemctl"]
+      local: "svc(name:...)"
+    handler: "service_status"
+
+  system_update_status:
+    display: "查询系统更新状态"
+    display_en: "Check the latest system update task status. Use when the user asks whether a system update is running, finished, failed, or what its progress is."
+    short: "updatestatus"
+    aliases: ["系统更新状态", "系统更新进度", "升级状态", "更新结果"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:系统更新|系统升级|更新|升级)(?:的)?(?:状态|进度|结果|完成了吗|好了吗|做完了吗)$"
+          - "^(?:查看|查|看|显示|检查).{0,4}(?:系统更新|系统升级|更新|升级).{0,4}(?:状态|进度|结果|完成了吗|好了吗)$"
+          - "^(?:what(?:'s| is)|check)\\s+the\\s+(?:system\\s+)?update\\s+(?:status|progress|result)\\??$"
+        keywords: ["系统更新状态", "系统更新进度", "升级状态", "更新结果", "系统更新好了吗"]
+      local: null
+    confirm: false
+    handler: "system_update_status"
+    mcp: {group: readonly}
+
+  # ── 用户（wiki 用户管理 节）────────────────────────────────────────
+  login_records:
+    display: "查看登录记录"
+    display_en: "Show recent login records/history. Use when the user asks who logged in recently or the login history. For currently online users use online_users."
+    short: "last"
+    aliases: ["last", "登录记录", "登录日志", "登录历史"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|list|check)\\s+(?:the\\s+)?login\\s+(?:history|records|logs)$"
+          - "^(?:show|list|check)\\s+(?:the\\s+)?(?:login|ログイン)\\s+(?:history|records|logs)$"
+          - "(?:查看|查|看|显示).{0,4}(?:系统)?(?:登录|登陆).{0,4}(?:记录|日志|历史)"
+          - "最近.{0,4}(?:谁|有哪些人|登录|登陆)(?:过|了)?"
+          - "(?:机器|设备|系统|这台机器).{0,4}(?:哪些人|谁|什么人).{0,4}(?:登录过|登陆过|上来过|登过)"
+        keywords: ["登录记录", "登录日志", "登陆记录", "最近登录", "谁登录过", "登录过", "last"]
+      local: "last()"
+    handler: "login_records"
+
+  online_users:
+    display: "查看当前在线用户"
+    display_en: "Show currently logged-in users. Use when the user asks who is currently online or logged in. For login history use login_records."
+    short: "who"
+    aliases: ["who", "w", "在线用户", "谁在线"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|list)\\s+(?:currently\\s+)?logged[- ]in\\s+users$"
+          - "(?:当前|现在).{0,3}(?:有)?(?:哪些|谁).{0,3}(?:用户|人).{0,3}(?:在线|登录|登陆)(?:着|了)?"
+          - "谁(?:在线|登录着|在系统上)"
+          - "(?:看一下|看看|查看|查).{0,6}(?:当前|现在)?.{0,3}(?:登录|登陆).{0,3}(?:几个|多少|哪些).{0,2}(?:用户|人)"
+        keywords: ["在线用户", "谁在线", "当前登录用户", "谁登录着", "在线的人"]
+      local: "who()"
+    handler: "online_users"
+
+  # ── 软件包-统计/缓存/备份（wiki 安装升级 节补充）────────────────────
+  pkg_stats:
+    display: "系统安装包统计信息"
+    display_en: "Show apt package statistics (apt-cache stats)"
+    short: "pkgstats"
+    aliases: ["apt-stats", "包统计", "软件统计"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|display|check)\\s+(?:installed\\s+)?package\\s+(?:statistics|count|information)$"
+          - "^(?:show|display|check)\\s+(?:the\\s+)?(?:installed\\s+)?package\\s+(?:statistics|count|information)$"
+          - "(?:查看|看|显示).{0,4}(?:系统|软件|包).{0,4}(?:安装包|软件包|包)(?:统计|数量|信息)"
+          - "软件包统计"
+          - "(?:软件|系统).{0,3}(?:包|软件包).{0,3}(?:统计|数量|信息)"
+        keywords: ["包统计", "软件统计", "安装包数量", "apt-cache stats", "有多少个包"]
+      local: "pkgstats()"
+    handler: "pkg_stats"
+
+  pkg_archives:
+    display: "查看下载缓存目录"
+    display_en: "List downloaded packages in the apt cache directory"
+    short: "pkgsrc"
+    aliases: ["apt-cache-dir", "下载缓存", "包缓存"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|看|显示|列出).{0,4}(?:下载|软件)?(?:缓存|临时存放|archives).{0,4}(?:目录|文件|位置)?"
+          - "(?:下载的包|缓存).{0,4}(?:放在|在哪|存哪)"
+        keywords: ["下载缓存", "包缓存", "缓存目录", "archives", "临时存放"]
+      local: "pkgsrc()"
+    handler: "pkg_archives"
+
+  pkg_selections:
+    display: "备份当前已安装包列表"
+    display_en: "Export the installed package list (dpkg --get-selections)"
+    short: "pkgsel"
+    aliases: ["pkg-selections", "备份包列表", "包列表备份"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:backup|export|save)\\s+(?:the\\s+)?installed\\s+package\\s+list$"
+          - "^(?:backup|export|save)\\s+(?:the\\s+)?(?:currently\\s+)?installed\\s+package\\s+list$"
+          - "(?:备份|导出|保存).{0,4}(?:当前|系统)?(?:已安装|安装的)?(?:软件|包|软件包)(?:列表|清单)"
+          - "备份.{0,4}(?:软件|包).{0,4}列表"
+        keywords: ["备份包列表", "导出软件列表", "包清单备份", "dpkg --get-selections", "已装包备份"]
+      local: "pkgsel()"
+    handler: "pkg_selections"
+
+  # ── 系统信息补充（wiki 系统 节）────────────────────────────────────
+  sys_arch:
+    display: "查看系统32/64位"
+    display_en: "Show the system architecture (32-bit or 64-bit). Use when the user asks whether the system is 32-bit or 64-bit, or the CPU architecture."
+    short: "arch"
+    aliases: ["32位", "64位", "系统位数", "uname-m"]
+    covers: ["系统位数", "系统架构", "架构", "32位", "64位"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|what is|check)\\s+(?:the\\s+)?(?:system\\s+)?architecture\\??$"
+          - "(?:系统|机器|设备).{0,4}(?:是|是不是|是啥).{0,2}(32|64)位"
+          - "系统是32位还是64位"
+        keywords: ["32位", "64位", "系统位数", "多少位"]
+      local: "arch()"
+    handler: "sys_arch"
+
+  sys_modules:
+    display: "查看内核加载的模块"
+    display_en: "List loaded kernel modules. Use when the user asks what kernel modules are loaded."
+    short: "lsmod"
+    aliases: ["lsmod", "内核模块", "模块列表"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|list)\\s+(?:loaded\\s+)?kernel\\s+modules$"
+          - "^(?:show|list)\\s+(?:loaded\\s+)?kernel\\s+modules$"
+          - "(?:查看|看|显示|列出).{0,4}(?:内核)?(?:加载的|当前)?(?:模块|内核模块)"
+          - "加载了哪些模块"
+        keywords: ["内核模块", "加载的模块", "模块列表", "lsmod"]
+      local: "lsmod()"
+    handler: "sys_modules"
+
+  sys_cpu:
+    display: "查看 CPU 详细信息"
+    display_en: "Show CPU details (model, cores). Use when the user asks about the CPU model, core count, or processor info. For current CPU usage/load use get_system_info."
+    short: "cpuinfo"
+    aliases: ["cpuinfo", "cpu信息", "处理器信息"]
+    covers: ["cpu", "处理器", "核心数"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|check|get)\\s+(?:the\\s+)?(?:cpu|processor)\\s+(?:info|information|usage)$"
+          - "(?:查看|看|显示).{0,4}(?:CPU|cpu|处理器).{0,4}(?:详细信息|型号|核数|信息)"
+          - "CPU是什么型号"
+          - "(?:CPU|cpu|处理器).{0,3}(?:是)?(?:什么)?(?:型号|几核|核数)"
+        keywords: ["cpu型号", "处理器信息", "cpu核数", "cpuinfo", "cpu详细"]
+      local: "cpuinfo()"
+    handler: "sys_cpu"
+
+  sys_hw:
+    display: "显示硬件信息"
+    display_en: "Show overall hardware information/list. Use when the user asks about hardware configuration or what hardware is installed."
+    short: "lshw"
+    aliases: ["lshw", "硬件信息", "硬件列表"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|display)\\s+(?:the\\s+)?hardware\\s+(?:information|list)$"
+          - "^(?:show|display)\\s+(?:the\\s+)?hardware\\s+(?:information|list)$"
+          - "(?:查看|看|显示|列出).{0,4}(?:当前)?(?:硬件)(?:信息|列表)?"
+          - "硬件配置"
+        keywords: ["硬件信息", "硬件配置", "硬件列表", "lshw"]
+      local: "lshw()"
+    handler: "sys_hw"
+
+  sys_mem_type:
+    display: "查看内存型号"
+    display_en: "Show the memory module type/model/specification. Use when the user asks about the RAM type or module model. For total memory size use sys_mem_size."
+    short: "memtype"
+    aliases: ["dmidecode", "内存型号", "内存条"]
+    covers: ["内存型号", "内存条", "内存规格"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|check|get)\\s+(?:the\\s+)?memory\\s+(?:type|model|specification)$"
+          - "^(?:show|check|get)\\s+(?:the\\s+)?memory\\s+(?:type|model|specification)$"
+          - "(?:查看|看|显示).{0,4}(?:内存|内存条).{0,4}(?:型号|规格|信息)"
+          - "(?:内存|内存条).{0,4}(?:是)?(?:什么)?(?:型号|规格)"
+        keywords: ["内存型号", "内存条", "内存规格", "dmidecode", "内存信息"]
+      local: "memtype()"
+    handler: "sys_mem_type"
+
+  sys_mem_size:
+    display: "显示当前内存大小"
+    display_en: "Show the total memory/RAM size. Use when the user asks how much memory/RAM the device has. For current memory usage use proc_mem."
+    short: "memsize"
+    aliases: ["mem", "free-m", "内存大小", "多少内存"]
+    covers: ["内存大小", "内存容量", "多少内存", "内存", "ram"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|check|get)\\s+(?:the\\s+)?(?:memory|ram)\\s+(?:size|information|info)$"
+          - "(?:系统|机器|设备).{0,3}有(?:多少|多大)(?:内存|运行内存|物理内存)"
+          - "(?:当前)?(?:内存|运行内存|物理内存).{0,4}(?:多大|大小|容量)"
+          - "(?:查看|看|显示).{0,4}(?:内存|运行内存|物理内存).{0,4}(?:多大|大小|容量)"
+        keywords: ["内存大小", "多少内存", "内存容量", "free -m"]
+      local: "memsize()"
+    handler: "sys_mem_size"
+
+  sys_limits:
+    display: "查看系统限制"
+    display_en: "Show system resource limits (ulimit). Use when the user asks about system limits or open-file limits."
+    short: "ulimit"
+    aliases: ["ulimit", "系统限制", "资源限制"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|看|显示).{0,4}(?:系统|资源).{0,4}(?:限制|上限)"
+          - "ulimit"
+          - "(?:系统|资源).{0,4}(?:限制|上限)"
+        keywords: ["系统限制", "资源限制", "打开文件上限", "ulimit"]
+      local: "ulimit()"
+    handler: "sys_limits"
+
+  sys_kernel_limits:
+    display: "查看内核限制"
+    display_en: "Show kernel IPC/resource limits. Use when the user asks about kernel resource limits or IPC."
+    short: "ipcs"
+    aliases: ["ipcs", "内核限制", "内核资源"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|看|显示).{0,4}(?:内核).{0,4}(?:限制|资源|ipc)"
+        keywords: ["内核限制", "内核资源", "ipcs"]
+      local: "ipcs()"
+    handler: "sys_kernel_limits"
+
+  sys_resolution:
+    display: "查看屏幕分辨率"
+    display_en: "Show the CURRENT screen resolution (read-only query). Use only when the user asks what the current resolution is. If the user complains the resolution is too low/high or wants to change it, use set_resolution."
+    short: "xrandr"
+    aliases: ["xrandr", "分辨率", "屏幕分辨率"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|what is|check)\\s+(?:the\\s+)?screen\\s+resolution\\??$"
+          - "(?:查看|看|显示).{0,4}(?:当前)?(?:屏幕|显示器).{0,4}(?:分辨率|尺寸)"
+          - "分辨率是多少"
+        keywords: ["分辨率", "屏幕分辨率", "xrandr"]
+      local: "xrandr()"
+    handler: "sys_resolution"
+
+  # ── 硬盘补充（wiki 硬盘 节）────────────────────────────────────────
+  disk_partitions:
+    display: "查看硬盘分区"
+    display_en: "List disk partitions and the partition table. Use when the user asks what partitions exist or about the partition table. For block devices use disk_lsblk."
+    short: "fdisk"
+    aliases: ["fdisk-l", "分区表", "硬盘分区"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|list)\\s+(?:the\\s+)?disk\\s+partitions?$"
+          - "^(?:show|list)\\s+(?:the\\s+)?disk\\s+partitions?$"
+          - "(?:查看|看|显示|列出).{0,4}(?:硬盘|磁盘)(?:分区|分区表)"
+          - "有哪些分区"
+        keywords: ["硬盘分区", "分区表", "fdisk -l", "磁盘分区"]
+      local: "fdisk()"
+    handler: "disk_partitions"
+
+  disk_info:
+    display: "查看硬盘详细信息"
+    display_en: "Show disk details (model, parameters). Use when the user asks about the disk model or detailed disk parameters."
+    short: "hdparm"
+    aliases: ["hdparm", "硬盘型号", "硬盘信息"]
+    params:
+      dev: {type: str, default: "/dev/sda"}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|看|显示).{0,4}(?:硬盘|磁盘).{0,4}(?:型号|详细信息|参数)"
+          - "(?P<dev>/dev/[a-z0-9]+).{0,4}(?:硬盘|磁盘).{0,4}(?:信息|参数)"
+        keywords: ["硬盘型号", "硬盘信息", "磁盘参数", "hdparm"]
+      local: "hdparm(dev:...)"
+    handler: "disk_info"
+
+  disk_io:
+    display: "查看硬盘读写情况"
+    display_en: "Show disk read/write IO statistics. Use when the user asks about disk IO, or whether the disk is busy reading/writing."
+    short: "iostat"
+    aliases: ["iostat", "磁盘读写", "硬盘读写", "io情况"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|看|显示).{0,4}(?:硬盘|磁盘).{0,4}(?:读写|IO|io)(?:情况|状态)?"
+          - "(?:磁盘|硬盘).{0,3}(?:读写|IO).{0,3}(?:快|慢|忙)"
+        keywords: ["磁盘读写", "硬盘读写", "io情况", "磁盘io", "iostat"]
+      local: "iostat()"
+    handler: "disk_io"
+
+  disk_raid:
+    display: "查看软 raid 阵列"
+    display_en: "Show software RAID array status. Use when the user asks about RAID or disk array status."
+    short: "mdstat"
+    aliases: ["raid", "mdstat", "软raid", "磁盘阵列"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|看|显示).{0,4}(?:软)?(?:raid|RAID|磁盘阵列)"
+          - "raid状态"
+        keywords: ["raid状态", "磁盘阵列", "软raid", "mdstat"]
+      local: "mdstat()"
+    handler: "disk_raid"
+
+  # ── 进程补充（wiki 进程 节）────────────────────────────────────────
+  proc_mem:
+    display: "查看当前内存使用"
+    display_en: "Show current memory usage (free/used). Use when the user asks about current memory usage or how much memory is left. For total RAM size use sys_mem_size."
+    short: "free"
+    aliases: ["free", "内存使用", "内存占用"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|check)\\s+(?:process\\s+)?memory\\s+usage$"
+          - "(?:当前)?(?:内存).{0,4}(?:使用|占用)(?:情况|多少)?"
+          - "(?:查看|看).{0,3}(?:内存使用|内存占用)"
+          - "(?:内存).{0,4}(?:还剩|剩下|用了).{0,4}(?:多少|空间|情况)?"
+        keywords: ["内存使用", "内存占用", "内存还剩", "free"]
+      local: "free()"
+    handler: "proc_mem"
+
+  proc_mem_stat:
+    display: "统计各程序内存耗用"
+    display_en: "Report memory usage broken down by process. Use when the user asks to aggregate/stat memory usage by program. For top processes by memory use proc_top_mem."
+    short: "memstat"
+    aliases: ["mem-stat", "内存统计", "程序内存排行"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|report)\\s+memory\\s+usage\\s+by\\s+process$"
+          - "(?:统计|看|查).{0,4}(?:各|每个)?(?:程序|进程).{0,4}(?:内存)(?:耗用|统计|占用汇总)"
+          - "按内存统计程序"
+        keywords: ["内存统计", "程序内存", "内存汇总", "memstat"]
+      local: "memstat()"
+    handler: "proc_mem_stat"
+
+  proc_open_files:
+    display: "查看进程打开的文件"
+    display_en: "Show files opened by a process. Use when the user asks what files a process has open, or about file handles."
+    short: "lsof"
+    aliases: ["lsof", "打开的文件", "进程文件"]
+    params:
+      pid: {type: int}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|看|列出).{0,4}(?:进程|程序).{0,4}(?:打开的文件|文件句柄)"
+          - "(?P<pid>\\d+)(?:进程|号进程).{0,4}(?:打开了|打开).{0,4}(?:哪些文件|什么文件)"
+        keywords: ["打开的文件", "文件句柄", "lsof", "进程文件"]
+      local: "lsof(pid:数字)"
+    handler: "proc_open_files"
+
+  proc_port:
+    display: "查看端口被哪个程序占用"
+    display_en: "Show which process/program is using a specific port. Use when the user asks who is occupying a port or which process is listening on a port. For listing all connections use net_conn."
+    short: "portof"
+    aliases: ["port", "端口占用", "lsof-i"]
+    params:
+      port: {type: int, range: [1, 65535]}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|查|看).{0,4}?(?P<port>\\d+)(?:号)?(?:端口).{0,4}(?:被|是|占用).{0,4}(?:哪个|什么)?(?:程序|进程)?"
+          - "(?P<port>\\d+)端口.{0,4}(?:谁|哪个程序|被谁)"
+          - "(?:谁|哪个程序|什么程序).{0,4}(?:在|正)?(?:占用|占着|监听).{0,4}?(?P<port>\\d+)(?:号)?(?:端口)?"
+        keywords: ["端口占用", "谁占用端口", "端口被占", "lsof -i", "占用端口", "端口", "占着", "监听"]
+      local: "portof(port:数字)"
+    handler: "proc_port"
+
+  # ── 网络补充（wiki 网络 节）────────────────────────────────────────
+  net_route:
+    display: "查看路由信息"
+    display_en: "Show the routing table and gateway. Use when the user asks about routes, the routing table, or the gateway."
+    short: "route"
+    aliases: ["route", "路由表", "网关"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|list|display)\\s+(?:the\\s+)?routing\\s+table$"
+          - "(?:查看|看|显示).{0,4}(?:路由|路由表|网关)"
+          - "路由信息"
+        keywords: ["路由表", "路由信息", "网关", "netstat -rn", "ip route"]
+      local: "route()"
+    handler: "net_route"
+    mcp:
+      group: readonly
+
+  net_mac:
+    display: "查看网卡 MAC 地址"
+    display_en: "Show the network interface MAC (physical) address. Use when the user asks about the MAC or physical address, not the IP."
+    short: "mac"
+    aliases: ["mac地址", "物理地址", "网卡地址"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|看|显示).{0,4}(?:网卡|网络|以太网).{0,4}(?:MAC|mac|物理)地址"
+          - "MAC地址是多少"
+          # 认"…的MAC / 网卡地址 / 无线网卡的MAC"，"网卡地址"默认读作物理地址。
+          - "(?:查看|查|看|显示|获取).{0,4}(?:无线网卡|有线网卡|网卡|以太网).{0,4}(?:MAC|mac|物理)(?:地址)?"
+          - "^(?:查看|查|看|显示)?\\s*(?:无线网卡|有线网卡|网卡|以太网)\\s*(?:的)?\\s*(?:物理)?(?:MAC|mac)?\\s*地址\\s*(?:是多少|是啥|是什么)?$"
+        # 补"网卡的mac/无线网卡mac/网卡地址"（net_ip 不再收"网卡地址"）。
+        keywords: ["mac地址", "物理地址", "硬件地址", "网卡mac", "网卡物理地址", "网卡硬件地址", "网卡的mac", "无线网卡mac", "网卡地址"]
+      local: "mac()"
+    handler: "net_mac"
+    mcp:
+      group: readonly
+
+  net_ext_ip:
+    display: "查看外网 IP"
+    display_en: "Show the public/external IP address (via ifconfig.me). Use when the user asks about the public, external, or WAN IP. For the local IP use net_ip."
+    short: "extip"
+    aliases: ["外网ip", "公网ip", "外部ip"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|查|看|查询).{0,4}(?:外网|公网|外部).{0,3}(?:IP|ip|地址)"
+          - "外网IP是多少"
+        keywords: ["外网ip", "公网ip", "外部ip", "我的外网", "curl ifconfig.me"]
+      local: "extip()"
+    handler: "net_ext_ip"
+    mcp:
+      group: readonly
+
+  net_whois:
+    display: "域名 whois 查询"
+    display_en: "Query whois/registration information for a domain. Use when the user asks about a domain's registration, whois, or filing information."
+    short: "whois"
+    aliases: ["whois", "域名注册", "域名备案"]
+    params:
+      domain: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "(?:查|查询|看).{0,4}?(?P<domain>[a-zA-Z0-9.-]{1,60})(?:这个域名)?(?:的)?(?:whois|注册|备案)"
+          - "(?P<domain>[a-zA-Z0-9.-]{1,60}).{0,3}(?:域名).{0,3}(?:注册|备案)情况"
+        keywords: ["whois", "域名注册", "域名备案", "注册信息"]
+      local: "whois(domain:...)"
+    handler: "net_whois"
+    mcp:
+      group: readonly
+
+  net_trace:
+    display: "路由跟踪"
+    display_en: "Trace the network route to a host or domain (tracepath/traceroute). Use when the user asks to trace the route or path to a host."
+    short: "trace"
+    aliases: ["tracepath", "路由跟踪", "traceroute"]
+    params:
+      host: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "(?:跟踪|trace).{0,4}?(?P<host>[a-zA-Z0-9.-]{1,60})(?:这个)?(?:域名|主机)?(?:的)?(?:路由|路径)"
+          - "(?P<host>[a-zA-Z0-9.-]{1,60}).{0,3}(?:路由跟踪|traceroute)"
+          - "^(?:please\\s+)?(?:traceroute|tracepath|trace)\\s+(?:the\\s+)?(?:route|path)?\\s*(?:to|for)?\\s*(?P<host>[a-zA-Z0-9.-]{1,60})$"
+        keywords: ["路由跟踪", "traceroute", "tracepath", "路由路径"]
+      local: "trace(host:...)"
+    handler: "net_trace"
+    mcp:
+      group: readonly
+
+  net_http_head:
+    display: "查看 HTTP 响应头"
+    display_en: "Show the HTTP response headers of a URL. Use when the user asks for a website's HTTP or response headers."
+    short: "httphead"
+    aliases: ["http头", "响应头", "curl-head"]
+    params:
+      url: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|看|查).{0,4}?(?P<url>[a-zA-Z0-9:/.-]{1,80})(?:这个)?(?:网址|网站)?(?:的)?(?:HTTP|http|响应)头"
+          - "(?P<url>[a-zA-Z0-9:/.-]{1,80}).{0,3}(?:响应头|http头)"
+        keywords: ["响应头", "http头", "curl --head", "请求头"]
+      local: "httphead(url:...)"
+    handler: "net_http_head"
+    mcp:
+      group: readonly
+
+  net_diagnose:
+    display: "本地网络诊断"
+    display_en: "Local network diagnosis: 3-hop connectivity probe + local inspection. Offline fallback when cloud is unreachable."
+    short: "netdiag"
+    aliases: ["网络诊断", "网络检查", "诊断网络"]
+    params: {}
+    routes:
+      rule:
+        # 不在这里声明 patterns/keywords，由 intent.py 的预检门直通
+        patterns: []
+        keywords: []
+      local: "netdiag()"
+    handler: "net_diagnose"
+    mcp:
+      group: readonly
+
+  # ── iptables（wiki iptables 节，只读）──────────────────────────────
+  iptables_list:
+    display: "查看 iptables 规则"
+    display_en: "Show the iptables/firewall rules. Use when the user asks to view firewall or iptables rules."
+    short: "iptables"
+    aliases: ["iptables", "防火墙规则", "nat规则"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|看|显示|列出).{0,4}(?:iptables|防火墙|nat)(?:规则|列表)?"
+          - "防火墙规则"
+        keywords: ["iptables规则", "防火墙规则", "nat规则", "防火墙列表"]
+      local: "iptables()"
+    handler: "iptables_list"
+    mcp:
+      group: readonly
+
+  # ── 安全（wiki 安全 节，只读扫描）──────────────────────────────────
+  sec_lastlog:
+    display: "查看所有账号登录情况"
+    display_en: "Show login records for all accounts. Use when the user asks about all accounts' login records. For recent login history use login_records."
+    short: "lastlog2"
+    aliases: ["lastlog2", "lastlog", "账号登录", "全部登录"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "(?:查看|看|显示).{0,4}(?:所有|全部|每个|各个)?(?:账号|账户).{0,4}(?:登录|登陆)(?:情况|记录|历史)?"
+          - "lastlog2"
+          - "lastlog"
+        keywords: ["账号登录情况", "全部登录记录", "lastlog2", "lastlog", "各账号登录"]
+      local: "lastlog2()"
+    handler: "sec_lastlog"
+
+  sec_antivirus:
+    display: "病毒扫描"
+    display_en: "Scan files/directories for viruses. Use when the user asks to scan for viruses or malware, or run an antivirus check."
+    short: "clamav"
+    aliases: ["clamav", "杀毒", "病毒扫描", "查毒"]
+    params:
+      path: {type: str, default: "."}
+    routes:
+      rule:
+        patterns:
+          - "(?:扫描|查).{0,4}?(?P<path>[a-zA-Z0-9_/.-]{1,60})?(?:这个)?(?:目录|文件夹)?(?:的)?(?:病毒|毒)"
+          - "杀毒|查毒"
+        keywords: ["杀毒", "查毒", "病毒扫描", "clamav", "病毒"]
+      local: "clamav(path:...)"
+    handler: "sec_antivirus"
+
+  # ── 服务列表（wiki 服务 节补充）────────────────────────────────────
+  service_list:
+    display: "查看全部服务状态"
+    display_en: "List all services and their status. Use when the user asks to list all services or which services are running. For a single service use service_status."
+    short: "svclist"
+    aliases: ["服务列表", "所有服务", "service-status-all"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:list|show)\\s+(?:all\\s+)?services$"
+          - "(?:查看|看|列出|显示).{0,4}(?:全部|所有|全部).{0,4}(?:服务)(?:状态|列表|情况)?"
+          - "有哪些服务在运行"
+        keywords: ["服务列表", "所有服务", "全部服务", "运行中的服务", "service --status-all"]
+      local: "svclist()"
+    handler: "service_list"
+
+  # ── 用户列表（wiki 用户管理 节补充）────────────────────────────────
+  user_list:
+    display: "查看系统用户"
+    display_en: "List system users/accounts. Use when the user asks what users or accounts exist on the system."
+    short: "users"
+    aliases: ["users", "用户列表", "系统用户", "有哪些用户"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:list|show)\\s+(?:system\\s+)?users$"
+          - "(?:查看|看|列出|显示).{0,4}(?:系统|全部|所有).{0,4}(?:用户|账号)(?:列表|有哪些)?"
+          - "系统里有哪些用户"
+        keywords: ["用户列表", "系统用户", "有哪些用户", "所有账号"]
+      local: "users()"
+    handler: "user_list"
+
+  # ── 文件信息/编码（wiki 中文 节）───────────────────────────────────
+  file_info:
+    display: "察看文件类型信息"
+    display_en: "Show file type information. Use when the user asks what type a file is, or for file metadata. For the file's text encoding use text_encoding."
+    short: "fileinfo"
+    aliases: ["file", "文件类型", "文件信息"]
+    params:
+      path: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "(?:察看|查看|看|查).{0,4}?(?P<path>[a-zA-Z0-9_/.-]{1,80})(?:这个)?(?:文件)?(?:的)?(?:类型|信息|编码)"
+          - "(?P<path>[a-zA-Z0-9_/.-]{1,80}).{0,3}(?:文件类型|是什么文件)"
+          - "^(?:please\\s+)?(?:show|display|get)\\s+(?:the\\s+)?file\\s+(?:type|info|information)\\s*(?:of|for)?\\s*(?P<path>/[a-zA-Z0-9_/.-]+)$"
+        keywords: ["文件类型", "文件信息", "是什么文件", "file命令"]
+      local: "fileinfo(path:...)"
+    handler: "file_info"
+
+  text_encoding:
+    display: "察看文件编码"
+    display_en: "Detect a file's text encoding/charset. Use when the user asks about a file's encoding or character set. For file type use file_info."
+    short: "encoding"
+    aliases: ["enca", "编码检测", "文件编码"]
+    params:
+      path: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "(?:察看|查看|看|检测).{0,4}?(?P<path>[a-zA-Z0-9_/.-]{1,80})(?:这个)?(?:文件)?(?:的)?(?:编码|字符集)"
+          - "(?P<path>[a-zA-Z0-9_/.-]{1,80}).{0,3}(?:文件).{0,3}(?:编码|字符集)"
+        keywords: ["文件编码", "编码检测", "字符集", "enca"]
+      local: "encoding(path:...)"
+    handler: "text_encoding"

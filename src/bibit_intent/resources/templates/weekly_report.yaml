@@ -1,0 +1,89 @@
+# 内置模板 1／5：周报 / 工作汇报
+#
+# 参考（仅借鉴结构与排版惯例，未复制任何上游文件或文本）：
+#   - Wandmalfarbe/pandoc-latex-template（Eisvogel，BSD-3-Clause）：章节层级、
+#     元信息区、表格承载「风险与支持」的排版惯例
+#   - jgm/pandoc-templates（无许可证声明）：标题／小结／附表的章节序
+id: weekly_report
+version: 1
+doc_type: writer
+name: "周报 / 工作汇报"
+name_en: "Weekly status report"
+when_to_use: "用户要写周报、日报、月报、工作汇报、进度同步、向上汇报的材料"
+when_to_use_en: "The user asks for a weekly/daily/monthly status report or a progress update document."
+deliverable: [pdf, docx]
+# 先出草稿：最多问 2 个问题，其余用 inputs 里的 fallback 顶住。
+ask_at_most: 2
+inputs:
+  - key: owner
+    label: 汇报人
+    example: 张三
+    fallback: 我
+  - key: period
+    label: 汇报周期
+    example: "2026-09-07 ~ 2026-09-13"
+    fallback: 本周
+  - key: team
+    label: 团队 / 项目
+    example: 端侧 AI 组
+    fallback: ""
+knowledge:
+  # 本地先查：上一期周报、任务清单、会议记录 —— 用来对齐「上周计划 vs 本周完成」。
+  local: [file_search]
+  cloud: []
+sections:
+  - kind: heading
+    level: 1
+    text: "{period} 工作汇报"
+  - kind: paragraph
+    text: "汇报人：{owner}｜周期：{period}｜团队：{team}"
+    guidance: "元信息一行写全；不确定的字段留空，不要编造数字。"
+  - kind: heading
+    level: 2
+    text: "一、本周完成"
+  - kind: list
+    style: bullet
+    items: []
+    guidance: "3–6 条，动词开头、一句话一条；尽量带可核对的产出（文件、提交、指标）。"
+  - kind: heading
+    level: 2
+    text: "二、关键进展与数据"
+  - kind: paragraph
+    text: ""
+    guidance: "只写有依据的数字；没有就写「本期无量化指标」，不要估算。"
+  - kind: heading
+    level: 2
+    text: "三、下周计划"
+  - kind: list
+    style: number
+    items: []
+    guidance: "3–5 条，与「本周完成」呼应，写清交付物与时间点。"
+  - kind: heading
+    level: 2
+    text: "四、风险与需要的支持"
+  # 这里**故意不用表格**：上游 appcli 的 writer 没有填格动作（`add-table` 只能建一张
+  # 空表，`set-text` 对 table 直接报错，K3 实测），用了就会交付一张空表。需要真正的
+  # 表格时走 Calc（项目计划 / 数据报表模板）。
+  - kind: list
+    style: bullet
+    items: []
+    guidance: "每条写「问题 → 影响 → 需要的支持 → 期望时间」；没有风险就写一条「暂无」，不要为了填内容编风险。"
+  - kind: heading
+    level: 2
+    text: "五、资料来源"
+  - kind: list
+    style: bullet
+    items: []
+    guidance: "列出实际读过的本地文件路径或云端来源标题/链接；没有外部来源时写「无（基于对话内容）」。"
+export:
+  default: pdf
+  allowed: [pdf, docx]
+references:
+  - project: Wandmalfarbe/pandoc-latex-template
+    url: https://github.com/Wandmalfarbe/pandoc-latex-template
+    license: BSD-3-Clause
+    what: PDF 排版惯例（章节层级、元信息区、表格风格）
+  - project: jgm/pandoc-templates
+    url: https://github.com/jgm/pandoc-templates
+    license: "无许可证声明（仅参考结构，不复制）"
+    what: 标题／小结／附表的章节序

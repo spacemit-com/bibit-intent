@@ -1,0 +1,7 @@
+{"group":"rule","expect":"pkg_update","input":"update the package lists"}
+{"group":"rule","expect":"pkg_update","input":"upgrade all packages"}
+{"group":"rule","expect":"pkg_clean","input":"clean the apt cache"}
+{"group":"rule","expect":"pkg_autoremove","input":"remove unused packages"}
+{"group":"rule","expect":"service_restart","input":"restart the ssh service"}
+{"group":"rule","expect":"service_stop","input":"stop the nginx service"}
+{"group":"rule","expect":"service_start","input":"start the docker service"}

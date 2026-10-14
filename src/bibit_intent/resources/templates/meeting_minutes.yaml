@@ -1,0 +1,87 @@
+# 内置模板 2／5：会议纪要
+#
+# 参考（仅借鉴「决议 + 行动项」的事实性排布，未复制上游文本；上游 GPL 项目只做结构对照）：
+#   - gong-sh/minutes-of-meeting-markdown（GPL-3.0）：议题/决议/行动项三段结构
+#   - faisalarbain/minutes-iawriter-template（MIT）：行动项「谁 / 何时 / 做什么」列集
+id: meeting_minutes
+version: 1
+doc_type: writer
+name: "会议纪要"
+name_en: "Meeting minutes"
+when_to_use: "用户要整理会议纪要、讨论记录、评审结论、行动项清单"
+when_to_use_en: "The user wants meeting minutes, discussion notes, review conclusions or an action-item list."
+deliverable: [pdf, docx]
+ask_at_most: 2
+inputs:
+  - key: title
+    label: 会议主题
+    example: K3 智能办公体验评审
+    fallback: 会议
+  - key: date
+    label: 时间
+    example: "2026-09-14 14:00"
+    fallback: 今天
+  - key: attendees
+    label: 参会人
+    example: 张三、李四
+    fallback: ""
+knowledge:
+  # 本地先查：相关会议记录、需求文档、上一版纪要。
+  local: [file_search]
+  cloud: []
+sections:
+  - kind: heading
+    level: 1
+    text: "{title} 会议纪要"
+  - kind: paragraph
+    text: "时间：{date}｜参会：{attendees}｜记录：{recorder}"
+    guidance: "参会人未知就留空；不要替用户点名。"
+  - kind: heading
+    level: 2
+    text: "一、议题"
+  - kind: list
+    style: number
+    items: []
+    guidance: "按讨论顺序列 2–5 条议题，每条一行。"
+  - kind: heading
+    level: 2
+    text: "二、结论与决议"
+  - kind: list
+    style: bullet
+    items: []
+    guidance: "只写已经达成一致的结论；未定的写进「待定」，并注明谁拍板。"
+  - kind: heading
+    level: 2
+    text: "三、行动项"
+  # 同样不用表格（writer 没有填格动作，见周报模板的说明）：行动项按
+  # 「事项 / 负责人 / 截止时间 / 状态」写成一列，信息不丢，交付物不留空表。
+  - kind: list
+    style: bullet
+    items: []
+    guidance: "每条写成「事项 / 负责人 / 截止时间 / 状态」，负责人与时间缺失就写「待确认」。"
+  - kind: heading
+    level: 2
+    text: "四、待定与风险"
+  - kind: list
+    style: bullet
+    items: []
+    guidance: "没有就写「无」。"
+  - kind: heading
+    level: 2
+    text: "五、资料来源"
+  - kind: list
+    style: bullet
+    items: []
+    guidance: "列出实际读过的本地文件路径或云端来源；没有外部来源时写「无（基于对话内容）」。"
+export:
+  default: docx
+  allowed: [docx, pdf]
+references:
+  - project: gong-sh/minutes-of-meeting-markdown
+    url: https://github.com/gong-sh/minutes-of-meeting-markdown
+    license: GPL-3.0
+    what: "议题/结论/行动项三段结构（仅结构参考，不复制文本）"
+  - project: faisalarbain/minutes-iawriter-template
+    url: https://github.com/faisalarbain/minutes-iawriter-template
+    license: MIT
+    what: 行动项的「谁 / 何时 / 做什么」列集

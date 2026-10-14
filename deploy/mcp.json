@@ -1,0 +1,11 @@
+{
+  "display_name": "Bibit Intent Tools",
+  "transport": "stdio",
+  "command": "/opt/bibit-intent/.venv/bin/python",
+  "args": ["-m", "bibit_intent.mcp_server"],
+  "env": {
+    "PYTHONPATH": "/opt/bibit-intent/src",
+    "BIBIT_MCP_TRANSPORT": "stdio",
+    "PATH": "/opt/bibit-intent/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+  }
+}

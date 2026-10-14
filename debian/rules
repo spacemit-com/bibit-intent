@@ -1,0 +1,67 @@
+#!/usr/bin/make -f
+
+export PYTHONDONTWRITEBYTECODE = 1
+
+PACKAGE := bibit-intent
+INSTALL_ROOT := debian/$(PACKAGE)/opt/bibit-intent
+PACKAGE_ROOT := debian/$(PACKAGE)
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	rm -rf debian/.bibit-intent-build
+	dh_auto_clean
+
+override_dh_auto_build:
+	true
+
+override_dh_auto_install:
+	install -d $(INSTALL_ROOT)
+	cp -a src $(INSTALL_ROOT)/src
+	cp -a main.py $(INSTALL_ROOT)/main.py
+	cp -a pyproject.toml $(INSTALL_ROOT)/pyproject.toml
+	cp -a requirements.txt $(INSTALL_ROOT)/requirements.txt
+	cp -a deploy $(INSTALL_ROOT)/deploy
+	find $(INSTALL_ROOT)/src -type d -name __pycache__ -prune -exec rm -rf {} +
+	install -d $(PACKAGE_ROOT)/usr/lib/systemd/user
+	install -m 0644 deploy/bibit-intent.service $(PACKAGE_ROOT)/usr/lib/systemd/user/bibit-intent.service
+	install -m 0644 deploy/bibit-intent-models.service $(PACKAGE_ROOT)/usr/lib/systemd/user/bibit-intent-models.service
+	# vendor enable：符号链接随包发布，镜像制作/初始化时 systemd 并未运行，运行期
+	# enable 会因无 systemd 或 DPKG_ROOT 被跳过而失效；把 wants 链接直接打进包，
+	# 任何非 root 用户首次登录都会经 default.target.wants 拉起 bibit-intent（单元内
+	# ConditionUser=!root），并经 Wants 拉起模型下载服务。
+	install -d $(PACKAGE_ROOT)/usr/lib/systemd/user/default.target.wants
+	ln -s ../bibit-intent.service $(PACKAGE_ROOT)/usr/lib/systemd/user/default.target.wants/bibit-intent.service
+	install -d $(PACKAGE_ROOT)/etc/bibit-intent
+	install -m 0644 deploy/ai-gateway-inference.env.example $(PACKAGE_ROOT)/etc/bibit-intent/inference.env
+	install -d $(PACKAGE_ROOT)/usr/share/bibit-intent
+	install -m 0644 deploy/ai-gateway-bibit.yaml $(PACKAGE_ROOT)/usr/share/bibit-intent/ai-gateway-bibit.yaml
+	install -m 0755 deploy/bibit-intent-init.sh $(INSTALL_ROOT)/bibit-intent-init.sh
+	install -m 0755 deploy/install-user-mcp.py $(INSTALL_ROOT)/install-user-mcp.py
+	install -m 0755 deploy/bibit-agent-upgrade.sh $(INSTALL_ROOT)/bibit-agent-upgrade.sh
+	install -m 0755 deploy/retire-legacy-models.sh $(INSTALL_ROOT)/retire-legacy-models.sh
+	install -m 0644 deploy/mcp.json $(INSTALL_ROOT)/mcp.json
+	# polkit 规则：允许 sudo 组在任意上下文（桌面/SSH/systemd 服务）管理 NetworkManager。
+	# 否则 bibit-intent 的 wifi 工具在 SSH/服务环境（无 seat）会被 polkit 拒绝。
+	install -d $(PACKAGE_ROOT)/etc/polkit-1/rules.d
+	install -m 0644 deploy/50-bianbu-network.rules $(PACKAGE_ROOT)/etc/polkit-1/rules.d/50-bianbu-network.rules
+	# polkit 规则：允许 sudo 组在任意上下文（桌面/SSH/systemd 服务）关机/重启/休眠。
+	# login1 的 power-off/reboot/suspend 默认 allow_active=yes、allow_any=auth_admin_keep，
+	# MCP 工具进程跑在无 seat 的 Runtime 系统服务里会被拒绝，关机/休眠会静默失败。
+	install -m 0644 deploy/50-bianbu-power.rules $(PACKAGE_ROOT)/etc/polkit-1/rules.d/50-bianbu-power.rules
+
+override_dh_strip:
+override_dh_dwz:
+override_dh_shlibdeps:
+override_dh_makeshlibs:
+	# vendored riscv64 .so（pynini 等）不做 shlibs 扫描：本机构建机没有 riscv64 objdump，
+	# 且这些库是随包分发的运行时依赖，不需要生成 shlibs 元数据
+
+override_dh_installsystemduser:
+	# vendor enable 已随包发布（/usr/lib/systemd/user/default.target.wants/ 下的符号
+	# 链接），不再需要 debhelper 在安装时做运行时 enable。
+	dh_installsystemduser --no-enable
+
+override_dh_installsystemd:
+	# not used: all units are user services

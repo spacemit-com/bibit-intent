@@ -1,0 +1,1338 @@
+# 统一工具声明
+# 一份声明，三段各自读取对应视图（规则模板/端侧签名/完整 MCP schema）
+# 对照 design.md §6
+
+tools:
+
+  get_vol_status:
+    display: "查询音量"
+    display_en: "Read the current system master output volume level (0-100). Use when the user asks what the current volume is, how loud the sound currently is, or wants to check the volume without changing it. For changing the volume use set_volume or adjust_volume."
+    short: "vol_status"
+    aliases: ["当前音量", "现在音量", "查看音量"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:现在|当前|目前)?(?:的)?(?:系统)?(?:主)?(?:音量|声音)(?:是)?(?:多少|多大|百分之几|什么情况|怎么样了|有多高)?$"
+          - "^(?:音量|声音)(?:现在|当前|目前)?(?:是|有)?(?:多少|多大|百分之几|什么情况|怎么样了|有多高|多少了)$"
+          - "^(?:查看|查|看|看看)(?:一下|下)?(?:当前|现在|目前)?(?:系统)?(?:主)?(?:音量|声音)$"
+          - "^(?:what(?:'s| is)|whats)\\s+(?:the\\s+)?(?:current\\s+)?(?:system\\s+)?(?:master\\s+)?(?:volume|sound)(?:\\s+level)?\\??$"
+          - "^(?:show|view|check|display|get)\\s+(?:the\\s+)?(?:current\\s+)?(?:system\\s+)?(?:master\\s+)?(?:volume|sound)(?:\\s+level)?\\??$"
+          - "^(?:current\\s+)?(?:volume|sound)(?:\\s+level)?\\??$"
+        keywords: ["当前音量", "现在音量", "音量是多少", "音量多大", "声音是多少", "声音多大"]
+      local: "vol_status()"
+    system:
+      type: proc
+      mcp:
+        group: readonly
+
+  set_volume:
+    display: "设置音量"
+    display_en: "Set the system master output volume to an absolute level (0-100). Use only when the user gives a target volume/sound level, e.g. '音量调到22' / 'set volume to 30'. For increasing or decreasing volume without a target value use adjust_volume. For microphone/recording volume use audio_input_volume; for mute/unmute toggle use mute; for switching output device use audio_output_switch."
+    short: "vol"
+    aliases: ["volume", "sound", "audio", "loudness", "volume level", "声音", "音量"]
+    params:
+      level: {type: int, range: [0, 100], unit: "%"}
+    routes:
+      rule:
+        patterns:
+          - "^(?:set|turn)\\s+(?:the\\s+)?volume\\s+(?:to\\s+)?(?P<level>\\d{1,3})(?:%| percent)?$"
+          - "^(?:please\\s+)?(?:set|put|adjust|change)\\s+(?:the\\s+)?(?:volume|sound|audio|loudness)(?:\\s+level)?\\s*(?:to|at|on)?\\s*(?P<level>\\d{1,3})%?(?:\\s*percent)?$"
+          - "^(?!.*(?:麦克风|话筒|录音|输入))(音量|声音).{0,6}(调|设|改)\\D{0,4}(?P<level>\\d+(?!成))"
+          # 中文数字档位："调到六成/百分之六十/一半"（cn_number 解析）
+          - "^(?!.*(?:麦克风|话筒|录音|输入))(音量|声音).{0,6}(调|设|改)\\D{0,4}(?P<level>百分之[零一二两三四五六七八九十百]+|[零一二两三四五六七八九]成|\\d+成|半)"
+          - "^(?!.*(?:麦克风|话筒|录音|输入))(?:把|将)\\s*(?:音量|声音)\\s*(?:调|设|改)(?:到|为|成)?\\s*(?P<level>百分之[零一二两三四五六七八九十百]+|[零一二两三四五六七八九]成|\\d+成|半|\\d{1,3})$"
+          - "^(?!.*(?:麦克风|话筒|录音|输入))(调|设)\\D{0,4}(音量|声音)\\D{0,4}(?P<level>\\d+(?!成))"
+          - "^(?!.*(?:麦克风|话筒|录音|输入))(调|设)\\D{0,4}(音量|声音)\\D{0,4}(?P<level>百分之[零一二两三四五六七八九十百]+|[零一二两三四五六七八九]成|\\d+成|半)"
+          - "^(?!.*(?:麦克风|话筒|录音|输入))(?P<level>\\d+(?!成)).{0,4}(音量|声音)"
+          - "^(?!.*(?:麦克风|话筒|录音|输入))(?P<level>百分之[零一二两三四五六七八九十百]+|[零一二两三四五六七八九]成|\\d+成|半).{0,4}(音量|声音)"
+        keywords: ["音量", "声音", "volume", "sound", "audio"]
+        slot_map:
+          拉满: {level: 100}
+          开到最大: {level: 100}
+          最大: {level: 100}
+          百分百: {level: 100}
+          百分之百: {level: 100}
+          没声音: {level: 80}
+          最小: {level: 0}
+          最低: {level: 0}
+      local: "vol(level:0-100)"
+    system:
+      type: alsa
+      cmd: "amixer sset Master {level}%"
+
+  adjust_volume:
+    display: "调节音量"
+    display_en: "Adjust the system master output volume relative to its current level. Use when the user asks to turn the volume up/down, louder/quieter, or adjust by a step without a target level. Pass direction (up/down) and optional amount (default 10). For a specific target level use set_volume."
+    short: "vol_adj"
+    aliases: ["adjust volume", "volume up", "volume down", "turn up", "turn down", "louder", "quieter", "调大音量", "调小音量", "音量调大", "音量调小"]
+    params:
+      direction: {type: str, enum: [up, down]}
+      amount: {type: int, default: 10, range: [1, 100], unit: "%"}
+    routes:
+      rule:
+        patterns:
+          - "^(?:turn|make)\\s+(?:the\\s+)?(?:volume|sound|audio|it)\\s+(?:up|higher|louder|down|lower|quieter)$"
+          - "^(?:调高|调大|提高|增大|开大)(?:一下|一点)?(?:音量|声音)$"
+          - "^(?:调低|调小|降低|减小|关小)(?:一下|一点)?(?:音量|声音)$"
+          - "^(?:音量|声音)(?:调高|调大|调低|调小|大一点|小一点)(?:一下|一点)?$"
+          - "^(?:把|将)\\s*(?:音量|声音)\\s*(?:调高|调大|调低|调小|开大|关小|大一点|小一点)(?:一下|一点)?$"
+        keywords: ["调高音量", "调大音量", "提高音量", "增大音量", "调低音量", "调小音量", "降低音量", "减小音量", "音量调高", "音量调小", "turn up", "turn down", "louder", "quieter", "volume up", "volume down"]
+        slot_map:
+          开大: {direction: up, amount: 10}
+          调高: {direction: up, amount: 10}
+          调大: {direction: up, amount: 10}
+          大一点: {direction: up, amount: 10}
+          提高: {direction: up, amount: 10}
+          增大: {direction: up, amount: 10}
+          调低: {direction: down, amount: 10}
+          调小: {direction: down, amount: 10}
+          小一点: {direction: down, amount: 10}
+          降低: {direction: down, amount: 10}
+          减小: {direction: down, amount: 10}
+      local: "vol_adj(direction:up|down,amount:1-100)"
+    system:
+      type: alsa
+      cmd: "amixer sset Master {level}%"
+
+  get_display_light:
+    display: "查询亮度"
+    display_en: "Read the current screen/backlight brightness level (0-100). Use when the user asks what the current brightness is, how bright the screen currently is, or wants to check brightness without changing it. For changing brightness use set_brightness or adjust_brightness."
+    short: "display_light_status"
+    aliases: ["当前亮度", "现在亮度", "查看亮度"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:现在|当前|目前)?(?:的)?(?:屏幕|显示器|系统)?(?:背光|亮度)(?:是)?(?:多少|多大|百分之几|什么情况|怎么样了|有多高)?$"
+          - "^(?:亮度|背光|屏幕亮度)(?:现在|当前|目前)?(?:是|有)?(?:多少|多大|百分之几|什么情况|怎么样了|有多高|多少了)$"
+          - "^(?:查看|查|看|看看)(?:一下|下)?(?:当前|现在|目前)?(?:屏幕|显示器)?(?:亮度|背光)$"
+          - "^(?:what(?:'s| is)|whats)\\s+(?:the\\s+)?(?:current\\s+)?(?:screen\\s+)?(?:brightness|backlight)(?:\\s+level)?\\??$"
+          - "^(?:show|view|check|display|get)\\s+(?:the\\s+)?(?:current\\s+)?(?:screen\\s+)?(?:brightness|backlight)(?:\\s+level)?\\??$"
+        keywords: ["当前亮度", "现在亮度", "亮度是多少", "亮度多大", "背光是多少", "背光多大"]
+      local: "display_light_status()"
+    system:
+      type: sysfs
+      path: "/sys/class/backlight/*/brightness"
+      mcp:
+        group: readonly
+
+  set_brightness:
+    display: "设置屏幕亮度"
+    display_en: "Set the screen brightness to an absolute level (0-100). Use only when the user gives a target brightness/backlight level. For increasing or decreasing brightness without a target value use adjust_brightness. If the user gives only a target value without naming brightness/backlight, ask which setting they mean. For resolution use set_resolution; for UI scaling/zoom use set_aspect_ratio; for refresh rate use set_refresh_rate; for rotation use rotate_screen."
+    short: "bright"
+    aliases: ["brightness", "screen brightness", "backlight", "display brightness", "亮度", "屏幕亮度"]
+    params:
+      level: {type: int, range: [0, 100], unit: "%"}
+    routes:
+      rule:
+        patterns:
+          - "^(?:set|turn)\\s+(?:the\\s+)?brightness\\s+(?:to\\s+)?(?P<level>\\d{1,3})(?:%| percent)?$"
+          - "^(?:please\\s+)?(?:set|put|adjust|change)\\s+(?:the\\s+)?(?:brightness|screen brightness|backlight)(?:\\s+level)?\\s*(?:to|at|on)?\\s*(?P<level>\\d{1,3})%?(?:\\s*percent)?$"
+          - "(亮度|屏幕亮).{0,6}(调|设|改)\\D{0,4}(?P<level>\\d+(?!成))"
+          - "(亮度|屏幕亮).{0,6}(调|设|改)\\D{0,4}(?P<level>百分之[零一二两三四五六七八九十百]+|[零一二两三四五六七八九]成|\\d+成|半)"
+          - "(?P<level>\\d+(?!成)).{0,4}(亮度|屏幕)"
+          - "(?:屏幕|亮度).{0,4}(?:调|开|设)(?:到|成|为)?.{0,2}(?:最亮|最暗)"
+        keywords: ["亮度", "屏幕亮度", "最亮", "最暗", "brightness", "screen brightness", "backlight"]
+        slot_map_anchor: ["屏幕", "亮度", "背光", "显示器", "画面", "brightness", "screen", "backlight"]
+        slot_map:
+          拉满: {level: 100}
+          开到最大: {level: 100}
+          最亮: {level: 100}
+          最大: {level: 100}
+          百分百: {level: 100}
+          百分之百: {level: 100}
+          最暗: {level: 0}
+          最小: {level: 0}
+      local: "bright(level:0-100)"
+    system:
+      type: sysfs
+      path: "/sys/class/backlight/*/brightness"
+
+  adjust_brightness:
+    display: "调节屏幕亮度"
+    display_en: "Adjust the screen brightness relative to its current level. Use when the user asks to make the screen brighter/dimmer or says it is too dark/bright without a target level. Pass direction (up/down) and optional amount (default 10). For a specific target level use set_brightness."
+    short: "bright_adj"
+    aliases: ["adjust brightness", "brighten", "dim", "brighter", "dimmer", "调亮亮度", "调暗亮度", "亮度调亮", "亮度调暗", "屏幕太暗", "屏幕太亮"]
+    params:
+      direction: {type: str, enum: [up, down]}
+      amount: {type: int, default: 10, range: [1, 100], unit: "%"}
+    routes:
+      rule:
+        patterns:
+          - "^(?:turn|make)\\s+(?:the\\s+)?(?:brightness|screen)\\s+(?:up|higher|brighter|down|lower|dimmer|darker)$"
+          - "^(?:brighten|dim)(?:\\s+the\\s+screen)?$"
+          - "^(?:亮|暗)(?:一点|一些|些|点)$"
+          - "(?:屏幕|画面).{0,4}(?:刺眼|晃眼|太扎眼)"
+          - "^(?:调|设)(?:亮|暗)(?:屏幕|画面|一点|一些)?$"
+          - "^(?:调高|调亮|提高|增大)(?:一下|一点)?(?:亮度|屏幕亮度)$"
+          - "^(?:调低|调暗|降低|减小)(?:一下|一点)?(?:亮度|屏幕亮度)$"
+          - "^(?:亮度|屏幕亮度)(?:调高|调亮|调低|调暗|亮一点|暗一点)(?:一下|一点)?$"
+        keywords: ["亮度", "屏幕亮度", "太暗", "看不清", "太亮", "刺眼", "晃眼", "brightness", "brighten", "dim", "dimmer", "darker", "调亮", "调暗"]
+        slot_map_anchor: ["屏幕", "亮度", "背光", "显示器", "画面", "brightness", "screen", "backlight"]
+        slot_map:
+          亮一点: {direction: up, amount: 10}
+          调亮: {direction: up, amount: 10}
+          亮些: {direction: up, amount: 10}
+          太暗: {direction: up, amount: 10}
+          看不清: {direction: up, amount: 10}
+          调高: {direction: up, amount: 10}
+          暗一点: {direction: down, amount: 10}
+          调暗: {direction: down, amount: 10}
+          调低: {direction: down, amount: 10}
+          太亮: {direction: down, amount: 10}
+          刺眼: {direction: down, amount: 10}
+          晃眼: {direction: down, amount: 10}
+          调高亮度: {direction: up}
+          调亮亮度: {direction: up}
+          提高亮度: {direction: up}
+          增大亮度: {direction: up}
+          调低亮度: {direction: down}
+          调暗亮度: {direction: down}
+          降低亮度: {direction: down}
+          减小亮度: {direction: down}
+      local: "bright_adj(direction:up|down,amount:1-100)"
+    system:
+      type: sysfs
+      path: "/sys/class/backlight/*/brightness"
+
+  # ── 屏幕显示（display）──────────────────────────────────────────────
+  # 与 set_brightness 同域。声明位置刻意排在 launch_app 之前：
+  # _pattern_match 遇同置信度只保留先命中者，"开启扩展屏模式" 这类
+  # 「动词+屏幕名词」输入才不会被 launch_app 吃掉（另见 launch_app 负向前瞻）。
+  # 执行实现在 tools/display.py（合并进 tools/system.py::HANDLERS）：
+  # 与设置中心 bianbu-displays 同路径——wlr-randr 即时生效 + 写
+  # ~/.config/kanshi/config 并 SIGHUP 持久化。下方 cmd 仅作声明，
+  # 真实调用带 --output/--json 参数并注入 Wayland 会话环境。
+
+  set_resolution:
+    display: "设置屏幕分辨率"
+    display_en: "Change/adjust the screen resolution. Use when the user complains the resolution is too low or too high, the screen looks blurry, or text is too small or large, or asks to change the resolution. Do not use just to ask what the current resolution is (that is sys_resolution). For brightness use set_brightness; for UI scaling/zoom use set_aspect_ratio; for refresh rate use set_refresh_rate. Give an exact resolution via size (e.g. 1920x1080, optionally with a refresh rate 1920x1080@50) or a relative step via mode (up/down/max/min). Only resolutions the display really reports are accepted; use display_modes to list them."
+    short: "setres"
+    aliases: ["resolution", "分辨率", "屏幕分辨率", "显示分辨率"]
+    params:
+      # 相对档位走 mode；绝对值走 size（两者至少给一个，缺则执行层反问）。
+      # mode 保留 enum 供端侧 grammar，另加 pattern 放行云端直给的 WxH。
+      mode:
+        type: str
+        enum: [up, down, max, min]
+        required: false
+        pattern: "(?:up|down|max|min|\\d{3,4}\\s*[x×*]\\s*\\d{3,4}(?:\\s*@\\s*\\d{2,3}(?:\\.\\d+)?)?)"
+        hint: "up/down/max/min，或具体分辨率如 1920x1080（可带 @50）"
+      size: {type: str, required: false, hint: "目标分辨率，如 1920x1080 或 1920x1080@50"}
+    routes:
+      rule:
+        # 只吃「调节」语义；"查看/看/显示分辨率" 归 sys_resolution（只读）
+        patterns:
+          - "^(?:set|change)\\s+(?:the\\s+)?screen\\s+resolution\\s+to\\s+(?P<mode>max|min|higher|lower)$"
+          - "^(?:set|change)\\s+(?:the\\s+)?screen\\s+resolution\\s+to\\s+(?P<size>\\d{3,4}\\s*[x×*]\\s*\\d{3,4}(?:\\s*@\\s*\\d{2,3}(?:\\.\\d+)?)?)$"
+          # 绝对值（WxH）直通：不命中则落回下面的调节语义 pattern，由执行层反问
+          - "(?:分辨率|清晰度).{0,6}(?:调到|调成|设为|设成|设置成|改成|改为|换成|换为|到|成|为)\\s*(?<![\\d.])(?P<size>\\d{3,4}\\s*[x×*]\\s*\\d{3,4}(?:\\s*@\\s*\\d{2,3}(?:\\.\\d+)?)?)(?![\\d.])"
+          - "(?:分辨率|清晰度).{0,6}(?:调|设|改|换)(?:到|成|为)?.{0,4}(?:最高|最大|最低|最小|高|低|大|小)"
+          # 「分辨率在前 + 调节动作在后」但无程度词的口语（"分辨率帮我换一下"/
+          # "把分辨率给我调整一下"）——旧 pattern 要求动作后带高/低/大/小，吃不到这类。
+          # 动词集不含"设"（用"设成"），避免误伤只读锚点"分辨率设置"。
+          - "(?:分辨率|清晰度).{0,6}(?:调整|换|调|改|设成|处理|弄)(?:一下|下|点儿|点)?"
+          - "(?:调|设|改|换)(?:高|低|大|小)?.{0,4}(?:分辨率|清晰度)(?:调)?(?:高|低|大|小)?"
+          - "(?:屏幕|画面|字).{0,8}(?:太糊|太模糊|看不清|太小|太大).{0,8}(?:分辨率|清晰度)"
+          # 口语抱怨直通：分辨率太低/太高/太糊这类抱怨式表达在端侧规则层定死为
+          # set_resolution（改），避免升级云端后被模型误选成只读的 sys_resolution（查）。
+          - "(?:屏幕|显示|画面)?(?:分辨率|清晰度).{0,4}(?:太低|太高|太糊|太模糊|字太小|看不清)"
+          # 口语直通：分辨率的事帮我看看（无显式调节动作词的"处理类"请求）
+          - "(?:分辨率|清晰度).{0,6}(?:的事|的问题|这块).{0,10}(?:帮我|给我|麻烦|你).{0,8}(?:看看|处理|弄|调|换|搞定)"
+        keywords: ["分辨率", "清晰度", "屏幕分辨率", "调分辨率", "分辨率调"]
+        slot_map:
+          最高: {mode: max}
+          最大: {mode: max}
+          最低: {mode: min}
+          最小: {mode: min}
+          调高: {mode: up}
+          高点: {mode: up}
+          太糊: {mode: up}
+          太模糊: {mode: up}
+          太低: {mode: up}
+          太高: {mode: down}
+          调低: {mode: down}
+          低点: {mode: down}
+          字太小: {mode: down}
+          # ASCII 相对档位（"刷新率up"/"分辨率down"）：只在关键词「刷新率/分辨率」
+          # 同时出现时才会走到 slot_map，故不会让裸 "up" 直通。
+          up: {mode: up}
+          down: {mode: down}
+          max: {mode: max}
+          min: {mode: min}
+      local: "setres(mode:up|down|max|min|size:WxH如1920x1080)"
+    system:
+      type: shell
+      cmd: "wlr-randr --output <out> --mode <WxH@rate>"
+
+  set_refresh_rate:
+    display: "设置屏幕刷新率"
+    display_en: "Adjust the screen refresh rate (smoothness/frame rate). Use when the user asks for a high refresh rate, says the screen feels laggy or stuttery, wants a specific Hz value such as 50Hz, or wants to lower the rate to save power. Give an exact refresh rate via rate (Hz, e.g. 50) or a relative step via mode (up/down/max/min). Only rates the display really reports are accepted; use display_modes to list them. For resolution use set_resolution; for brightness use set_brightness."
+    short: "setrate"
+    aliases: ["refresh", "刷新率", "高刷", "帧率"]
+    params:
+      # 相对档位走 mode；绝对值走 rate（Hz）。两者至少给一个，缺则执行层反问。
+      mode:
+        type: str
+        enum: [up, down, max, min]
+        required: false
+        pattern: "(?:up|down|max|min|\\d{2,3}(?:\\.\\d+)?)"
+        hint: "up/down/max/min，或具体刷新率 Hz 如 50 / 59.94"
+      # float：小数刷新率（59.94/29.97）必须原样传下来，int 会把 59.94 截成错值
+      rate:
+        type: float
+        required: false
+        pattern: "\\d{2,3}(?:\\.\\d+)?"
+        hint: "目标刷新率（Hz），如 50 / 59.94"
+    routes:
+      rule:
+        patterns:
+          - "^(?:set|change)\\s+(?:the\\s+)?refresh\\s+rate\\s+to\\s+(?P<rate>\\d{2,3}(?:\\.\\d+)?)\\s*Hz$"
+          # 绝对值（Hz）直通："刷新率调到50Hz"/"刷新率设成50"/"刷新率调为59.94hz"
+          # 数字两侧加 (?<![\d.])/(?![\d.]) 断言：否则 ".{0,6}" 会把 59.94 从中间切开，
+          # 只剩 "94hz" 能匹配，用户就被报「不支持 94Hz」。
+          - "(?:刷新率|帧率).{0,6}(?:调到|调成|调整到|设为|设成|设置成|改成|改为|换成|换为|到|成|为)?\\s*(?<![\\d.])(?P<rate>\\d{2,3}(?:\\.\\d+)?)(?![\\d.])\\s*(?:Hz|hz|HZ|赫兹|帧|fps)?"
+          # 带 Hz 单位的句子一律按刷新率处理（"分辨率调到50Hz" 里的 Hz 只可能指刷新率）
+          - "(?:分辨率|清晰度|屏幕|显示).{0,4}(?:调到|调成|设为|设成|改成|改为|到|成|为)\\s*(?<![\\d.])(?P<rate>\\d{2,3}(?:\\.\\d+)?)(?![\\d.])\\s*(?:Hz|hz|HZ|赫兹)"
+          - "(?:刷新率|帧率).{0,6}(?:调|设|改|开)(?:到|成|为)?.{0,4}(?:最高|最大|最低|最小|高|低)"
+          - "(?:调|设|改|开)(?:高|低)?.{0,4}(?:刷新率|帧率)(?:调)?(?:高|低)?"
+          - "^(?:开|打开|开启|切到).{0,2}(?:高刷|高帧)(?:模式)?$"
+          - "(?:省电|降耗|费电).{0,6}(?:刷新率|帧率).{0,4}(?:调低|降低|低点)"
+        keywords: ["刷新率", "高刷", "帧率", "调刷新率", "刷新率调"]
+        slot_map:
+          最高: {mode: max}
+          最大: {mode: max}
+          最低: {mode: min}
+          最小: {mode: min}
+          高刷: {mode: max}
+          调高: {mode: up}
+          高点: {mode: up}
+          调低: {mode: down}
+          低点: {mode: down}
+          # ASCII 相对档位（"刷新率up"）：见 set_resolution 同名说明
+          up: {mode: up}
+          down: {mode: down}
+          max: {mode: max}
+          min: {mode: min}
+      local: "setrate(mode:up|down|max|min|rate:数字Hz)"
+    system:
+      type: shell
+      cmd: "wlr-randr --output <out> --mode <WxH@rate>"
+
+  display_modes:
+    display: "查看屏幕支持的显示模式"
+    display_en: "List every display output with the resolutions and refresh rates it supports, marking the current one (read-only). Use when the user asks which refresh rates or resolutions are supported or available, e.g. 'which refresh rates are supported'. To change them use set_refresh_rate or set_resolution."
+    short: "modes"
+    aliases: ["display_modes", "支持的刷新率", "支持的分辨率", "可用刷新率", "可用分辨率", "显示模式列表"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          # 全匹配（置信度 1.0）优先：只读查询与写工具的弱命中会打平在 0.85，
+          # 打平后由注册顺序决定，所以用锚定 pattern 把「查询语义」钉死。
+          # 必须带查询标记（可用/支持/有哪些/多高…）：裸「分辨率」「刷新率」不能被
+          # 吃掉——那是 sys_resolution 的 keyword（test_skill_routes 有护栏）。
+          - "^(?:可用|可选的|支持的|可选)(?:刷新率|帧率|分辨率|清晰度|显示模式|屏幕模式)(?:有哪些|是什么|是多少)?$"
+          - "^(?:屏幕|显示器|显示屏|显示|这台|这台机器|本机|系统)?(?:能|可以|支持)?(?:调到多高|调多高|能到多高|能有多高|最高能到多少|最高能到|最高多少|最高支持多少|最高支持|最大支持)(?:刷新率|帧率|帧|赫兹|分辨率|清晰度|显示模式|屏幕模式)(?:有哪些|都有哪些|有哪些档|有几档)?$"
+          - "^(?:屏幕|显示器|显示屏|显示|这台|这台机器|本机|系统)?(?:刷新率|帧率|帧|赫兹|分辨率|清晰度|显示模式|屏幕模式)(?:有哪些|都有哪些|有哪些档|有几档)$"
+          - "^(?:show|list|what|which)\\s+.*(?:refresh\\s+rate|resolution|display\\s+mode)s?\\s*(?:are|is)?\\s*(?:supported|available)\\??$"
+          # 「查看/看/显示 + 支持/可用/可选/多少 + 档位词」；裸「查看分辨率」不吃，
+          # 那是 sys_resolution（当前值）的语义
+          - "(?:查看|查|看|看看|显示|列出|列|告诉我|说说).{0,4}(?:支持|可用|可选|能调|可调|有哪些|多少|几档).{0,6}(?:刷新率|帧率|帧|赫兹|分辨率|清晰度|显示模式|屏幕模式)"
+          - "(?:有哪些|支持哪些|支持什么|支持哪几种|都有哪些|能调哪些|可以调哪些|可选哪些|有哪些可选).{0,8}(?:刷新率|帧率|帧|赫兹|分辨率|清晰度|显示模式|屏幕模式)"
+          - "(?:刷新率|帧率|分辨率|清晰度|显示模式|屏幕模式).{0,8}(?:有哪些|有几种|有几档|几档|多少种|有多少|哪几种|支持哪些|支持什么|都有哪些|可以选哪些|能选哪些|可选的|可选值|支持的|列表)"
+          # 量词/程度类口语：「屏幕支持多少刷新率」「能上多少刷新率」
+          - "(?:支持|可用|可选|最高|最大|能上|能跑|能到|可达).{0,4}(?:多少|哪些|几档|几种|几多).{0,4}(?:刷新率|帧率|帧|赫兹|分辨率|清晰度|显示模式|屏幕模式)"
+          - "(?:最高|支持|可用|可选).{0,4}(?:刷新率|帧率|分辨率|清晰度|显示模式).{0,4}(?:是多少|多少|是什么|是哪些|分别是多少)"
+        keywords: ["支持哪些刷新率", "支持哪些分辨率", "可用刷新率", "可用分辨率", "刷新率有哪些", "分辨率有哪些", "显示模式列表", "支持多少刷新率", "刷新率有几档", "支持哪些显示模式", "可用显示模式", "显示模式有哪些"]
+      local: "modes()"
+    system:
+      type: proc
+      mcp:
+        group: readonly
+
+  rotate_screen:
+    display: "旋转屏幕"
+    display_en: "Rotate the screen orientation (landscape/portrait/upside-down). Use when the user asks to rotate or flip the screen, or switch between landscape and portrait. For external monitor extend/mirror modes use set_display_mode; for resolution use set_resolution."
+    short: "rotate"
+    aliases: ["rotate", "旋转", "横屏", "竖屏", "屏幕方向", "显示方向"]
+    params:
+      angle: {type: int, range: [0, 270], default: 90}
+    routes:
+      rule:
+        patterns:
+          - "(?:把|将)?(?:屏幕|画面|显示|显示器).{0,4}(?:旋转|转)(?:到|成)?\\D{0,2}(?P<angle>\\d+)\\s*度?"
+          - "(?:旋转|转)(?:一下)?(?:屏幕|画面|显示|显示器)"
+          - "(?:把|将)(?:屏幕|画面|显示|显示器)(?:旋转|转)(?:一下|一圈)?$"
+          - "^(?:屏幕|画面|显示)?(?:切换到|切到|设为|设成)?(?:横屏|竖屏)(?:模式)?$"
+          - "(?:把|将)?(?:屏幕|画面|显示).{0,4}(?:倒过来|翻过来|反过来|颠倒)"
+          - "(?:屏幕|画面|显示).{0,2}方向.{0,4}(?:反了|错了|不对|转|调)"
+          - "(?:把|将)?(?:屏幕|画面|显示|显示器).{0,2}(?:竖起来|竖过来|竖着|竖放)"
+          - "(?:把|将)?(?:屏幕|画面|显示|显示器).{0,2}(?:横过来|横着|横放)"
+        keywords: ["旋转屏幕", "屏幕旋转", "横屏", "竖屏", "屏幕方向", "显示方向", "屏幕倒"]
+        slot_map:
+          竖屏: {angle: 90}
+          横屏: {angle: 0}
+          倒过来: {angle: 180}
+          翻过来: {angle: 180}
+          反过来: {angle: 180}
+          颠倒: {angle: 180}
+          竖起来: {angle: 90}
+          竖过来: {angle: 90}
+          竖着: {angle: 90}
+          竖放: {angle: 90}
+          横过来: {angle: 0}
+          横着: {angle: 0}
+          横放: {angle: 0}
+      local: "rotate(angle:0|90|180|270)"
+    system:
+      type: shell
+      cmd: "wlr-randr --output <out> --transform normal|90|180|270"
+
+  set_aspect_ratio:
+    display: "设置屏幕缩放比例"
+    display_en: "Set the display scaling/zoom ratio (size of UI elements). Use when the user says the interface, text, or icons are too small or too large and wants to zoom in/out or reset the scale. For resolution use set_resolution; for brightness use set_brightness."
+    short: "setratio"
+    aliases: ["scale", "缩放", "比例", "屏幕比例", "缩放比例", "显示比例"]
+    params:
+      # 缩放倍率，只支持这五档；刻意不给 default——无值时让执行层反问，
+      # 避免模型漏参时被静默重置成 1.00。
+      # pattern 放行 enum 之外的写法（1 / 1.5 / 125%），由执行层归一化到五档之一。
+      ratio:
+        type: str
+        enum: ["1.00", "1.25", "1.50", "1.75", "2.00"]
+        pattern: "\\d{1,3}(?:\\.\\d+)?\\s*%?|\\d{1,2}\\s*倍"
+        hint: "如 1.25，也可说 1 / 1.5 / 125%"
+    routes:
+      rule:
+        # 数值多数交给 slot_map 归一到 "1.50" 这类规范值；但 slot_map 是子串匹配，
+        # 裸 "1"/"2" 放进去会命中任何含 1 的句子，所以整数/小数/百分比由下面这条
+        # 命名捕获组抽取，执行层再归一化（"1"→1.00、"150"→1.50、"125%"→1.25）。
+        patterns:
+          - "^(?:set|change)\\s+(?:the\\s+)?aspect\\s+ratio\\s+to\\s+(?P<ratio>\\d+:\\d+)$"
+          # 两侧断言防止 ".{0,6}" 把 "1.25" 从中间切开只吃到 "25"
+          - "(?:屏幕|画面|显示|界面)?\\s*(?:缩放|比例).{0,6}(?<![\\d.])(?P<ratio>\\d{1,3}(?:\\.\\d+)?\\s*%?)(?![\\d.%])"
+          - "(?:屏幕|画面|显示|界面)?.{0,2}(?:缩放)?比例.{0,4}(?:调|设|改|换|恢复)(?:成|到|为)?.{0,8}"
+          - "(?:缩放|比例).{0,6}(?:1\\.00|1\\.25|1\\.50|1\\.75|2\\.00|1\\.5|2\\.0|100%|125%|150%|175%|200%)"
+          - "(?:把|将)?(?:屏幕|画面|显示|界面|字|图标).{0,6}(?:放大|缩小).{0,6}"
+          - "(?:屏幕|画面|显示|界面).{0,4}(?:缩放).{0,4}(?:调|设|改)(?:大|小|成|到|为)?.{0,6}"
+          - "(?:字|图标|界面).{0,4}(?:太小|太大).{0,8}(?:放大|缩小|调大|调小|缩回|比例|缩放).{0,4}"
+        keywords: ["屏幕比例", "缩放比例", "显示比例", "屏幕缩放", "缩放倍率", "放大界面", "缩小界面"]
+        slot_map:
+          # 显式倍率。键是子串匹配，故 "1.5" 同时吃 "1.5" 和 "1.50"，
+          # 无需再列 "1.50"；"1.0"/"2.0" 同理覆盖 "1.00"/"2.00"。
+          "1.0": {ratio: "1.00"}
+          "100%": {ratio: "1.00"}
+          "1倍": {ratio: "1.00"}
+          "1.25": {ratio: "1.25"}
+          "125%": {ratio: "1.25"}
+          "1.5": {ratio: "1.50"}
+          "150%": {ratio: "1.50"}
+          "1.75": {ratio: "1.75"}
+          "175%": {ratio: "1.75"}
+          "2.0": {ratio: "2.00"}
+          "200%": {ratio: "2.00"}
+          "2倍": {ratio: "2.00"}
+          "两倍": {ratio: "2.00"}
+          # 无倍率的口语：给确定性档位，别让 1B 猜
+          恢复默认: {ratio: "1.00"}
+          还原: {ratio: "1.00"}
+          默认比例: {ratio: "1.00"}
+          原始比例: {ratio: "1.00"}
+          不缩放: {ratio: "1.00"}
+          缩回: {ratio: "1.00"}
+          最小: {ratio: "1.00"}
+          放大: {ratio: "1.50"}
+          调大: {ratio: "1.50"}
+          大一点: {ratio: "1.50"}
+          太小: {ratio: "1.50"}
+          看不清: {ratio: "1.50"}
+          缩小: {ratio: "1.25"}
+          调小: {ratio: "1.25"}
+          小一点: {ratio: "1.25"}
+          太大: {ratio: "1.25"}
+          最大: {ratio: "2.00"}
+      local: "setratio(ratio:1.00|1.25|1.50|1.75|2.00)"
+    system:
+      type: shell
+      cmd: "wlr-randr --output <out> --scale {ratio}"
+
+  set_display_mode:
+    display: "设置外接屏显示模式"
+    display_en: "Set the external monitor display mode: extend, mirror/duplicate, primary-only, or secondary-only. Use when the user asks to extend or duplicate screens, or set a primary/secondary display. For rotation use rotate_screen; for resolution use set_resolution."
+    short: "dispmode"
+    aliases: ["display_mode", "扩展屏", "复制屏", "投屏", "双屏", "主屏", "副屏"]
+    params:
+      mode: {type: str, enum: [extend, mirror, primary, secondary]}
+    routes:
+      rule:
+        patterns:
+          - "^(?:switch\\s+to|set\\s+to|change\\s+to|enable)\\s+(?:the\\s+)?(?P<mode>extend|extended|mirror|mirrored|duplicate|primary|secondary)\\s+(?:display\\s+)?(?:mode)?$"
+          - "^(?:mirror|duplicate)\\s+(?:the\\s+)?(?:screens?|displays?)$"
+          - "(?:开启|打开|切换到|切到|设为|设成|用).{0,4}(?:扩展屏|扩展模式|扩展)(?:模式|显示)?"
+          - "(?:开启|打开|切换到|切到|设为|设成|用).{0,4}(?:复制屏|复制模式|复制|镜像)(?:模式|显示)?"
+          - "(?:外接|第二|副)(?:显示屏|屏幕|屏).{0,6}(?:设为|设成|切换?到?|改成).{0,4}(?:复制|扩展|镜像)"
+          - "^只在(?P<which>主屏|副屏|外接屏|第二屏).{0,2}显示$"
+          - "(?:把|将).{0,4}(?:电脑|笔记本)?(?:画面|屏幕|内容).{0,4}(?:投|投射|投影|镜像)(?:到|上).{0,6}"
+          - "(?:让|使).{0,4}(?:两个|双)(?:屏幕|屏).{0,8}(?:不一样|不同|各自|分别)"
+          - "(?:外接|第二|副)(?:屏幕|显示屏|屏).{0,8}(?:没画面|黑屏|没显示|没信号).{0,8}(?:切|调|换)"
+          # 口语直通：双屏显示的配置/事/这块 + 弄/处理/调/动，规则层定死，
+          # 绕开 1B 因 aliases 里 "display/屏幕" 把双屏误选成 set_brightness。
+          - "双屏.{0,6}(?:配置|设置|模式|事|这块|这|弄|处理|调|动|搞|改)"
+          - "^(?:打开|开启|启用)\\s*(?:外接屏|第二屏|副屏)(?:模式)?$"
+        keywords: ["扩展屏", "复制模式", "镜像模式", "投屏", "外接显示屏", "双屏显示", "主屏显示", "副屏显示"]
+        slot_map:
+          扩展: {mode: extend}
+          复制: {mode: mirror}
+          镜像: {mode: mirror}
+          投: {mode: mirror}
+          主屏: {mode: primary}
+          副屏: {mode: secondary}
+          外接屏: {mode: extend}
+          第二屏: {mode: extend}
+          # 描述性口语（无"扩展/复制"字样）：mode 无默认值，不定值会被
+          # 执行层当缺参反问，故按语义归档。
+          不一样: {mode: extend}
+          不同: {mode: extend}
+          各自: {mode: extend}
+          没画面: {mode: extend}
+          黑屏: {mode: extend}
+          没信号: {mode: extend}
+      local: "dispmode(mode:extend|mirror|primary|secondary)"
+    system:
+      type: shell
+      cmd: "wlr-randr --output <out> --on/--off --pos x,y"
+
+  window_list:
+    display: "查询窗口/应用列表"
+    display_en: "List currently open windows/applications. Use when the user asks which windows or apps are open. For launching apps use launch_app; for closing apps use close_app."
+    short: "winlist"
+    aliases: ["window_list", "windows", "窗口列表", "应用列表", "所有窗口", "列出窗口"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|list)\\s+(?:all\\s+)?open\\s+windows$"
+          - "^(?:查询|查看|看看|列出|显示|打开)?\\s*(?:当前|所有)?(?:窗口|应用)列表$"
+          - "^(?:有哪些|列出|看看|查看|显示)\\s*(?:当前)?窗口$"
+          - "^(?:所有|当前)窗口$"
+        keywords: ["窗口列表", "应用列表", "所有窗口", "有哪些窗口", "列出窗口"]
+      local: "winlist()"
+    system:
+      type: shell
+      cmd: "wlrctl toplevel list"
+      mcp:
+        group: readonly
+
+  window_activate:
+    display: "切换/激活窗口"
+    display_en: "Switch to or bring a window/application to the foreground. Use when the user asks to switch to, activate, or focus a specific window or app."
+    short: "winact"
+    aliases: ["window_activate", "switch", "切换窗口", "激活窗口", "切换", "激活"]
+    params:
+      target: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "切换(?:到|至|换到)?\\s*(?P<target>.{0,20}(?:窗口|应用|程序|软件|浏览器|编辑器|终端).*?)$"
+          - "激活\\s*(?P<target>.{0,20}(?:窗口|应用|程序|软件|浏览器|编辑器|终端).*?)$"
+          - "(?:把|将)?\\s*(?P<target>.+?)(?:窗口|应用)\\s*(?:切换|激活|调出|拉出|打开)"
+        keywords: ["切换", "激活", "切换窗口", "激活窗口", "窗口"]
+        # §4.4-C 候选注入护栏：裸「切换/激活/窗口」过宽，会把「切换kernel」这类
+        # 改写/切换其它对象（内核、显示模式、音频输出…）误注入窗口工具。
+        # 弱命中必须句中出现窗口/应用直接宾语之一。
+        require_object: ["窗口", "应用", "程序", "软件", "浏览器", "编辑器", "终端"]
+      local: "winact(target:窗口名或应用名)"
+    system:
+      type: shell
+      cmd: "wlrctl toplevel activate app_id:<target>"
+
+  window_minimize:
+    display: "最小化窗口"
+    display_en: "Minimize a window. Use when the user asks to minimize a specific window or app. For maximizing use window_maximize."
+    short: "winmin"
+    aliases: ["window_minimize", "minimize", "最小化窗口", "最小化"]
+    params:
+      target: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "最小化\\s*(?!音量|声音|亮度|屏幕|背光)(?P<target>.+)$"
+          - "把\\s*(?!音量|声音|亮度|屏幕|背光)(?P<target>.+?)\\s*最小化$"
+        keywords: ["最小化", "最小化窗口"]
+      local: "winmin(target:窗口名或应用名)"
+    system:
+      type: shell
+      cmd: "wlrctl toplevel minimize app_id:<target>"
+
+  window_maximize:
+    display: "最大化窗口"
+    display_en: "Maximize a window. Use when the user asks to maximize a specific window or app. For minimizing use window_minimize."
+    short: "winmax"
+    aliases: ["window_maximize", "maximize", "最大化窗口", "最大化"]
+    params:
+      target: {type: str}
+    routes:
+      rule:
+        patterns:
+          - "最大化\\s*(?!音量|声音|亮度|屏幕|背光)(?P<target>.+)$"
+          - "把\\s*(?!音量|声音|亮度|屏幕|背光)(?P<target>.+?)\\s*最大化$"
+        keywords: ["最大化", "最大化窗口"]
+      local: "winmax(target:窗口名或应用名)"
+    system:
+      type: shell
+      cmd: "wlrctl toplevel maximize app_id:<target>"
+
+
+  mute:
+    display: "静音/取消静音"
+    display_en: "Mute or unmute the system output sound. Use when the user asks to mute, unmute, or silence the speakers/audio. For setting a volume level use set_volume; for muting the microphone use audio_input_mute."
+    short: "mute"
+    params:
+      "on": {type: bool, default: true}
+    routes:
+      rule:
+        patterns:
+          - "^(?:mute|unmute)(?:\\s+the)?\\s+(?:system\\s+)?(?:sound|audio|volume)$"
+          - "^静音$"
+          - "(开启|打开)静音"
+          - "(取消|关闭|解除)静音"
+          - "(输出|扬声器|喇叭).{0,4}(静音|消音)"
+          - "(?:把|将)?(?:声音|音量|音频|扬声器|喇叭|外放).{0,4}(?:关掉|关了|别出声|不出声|消音|静掉)"
+          - "^(?:别出声|不出声)$"
+        keywords: ["静音"]
+        slot_map: {"取消静音": {"on": false}, "关闭静音": {"on": false}, "解除静音": {"on": false}, "unmute audio": {"on": false}, "unmute the sound": {"on": false}, "unmute sound": {"on": false}}
+      local: "mute(on:true/false)"
+    system:
+      type: alsa
+      cmd: "amixer sset Master {on}"
+
+  camera_open:
+    display: "打开相机"
+    display_en: "Open the camera application (snapshot). Use only when the user asks to open, launch, or start the camera app. For actually capturing a picture use take_photo; for closing the camera use camera_close."
+    short: "cam_on"
+    aliases: ["camera", "相机", "摄像头"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:帮我)?(?:打开|启动|开启|运行)(?:一下)?.{0,4}(相机|摄像头|照相机)(?:应用|软件|程序)?$"
+          - "^(相机|摄像头)(?:给我)?(?:打开|启动|开启)(?:一下)?$"
+          - "^(?:open|launch|start)\\s+(?:the\\s+)?camera(?:\\s+app)?$"
+        keywords: ["打开相机", "打开摄像头", "启动相机", "open camera"]
+      local: "cam_on()"
+    system:
+      type: shell
+      cmd: "snapshot &"
+
+  take_photo:
+    display: "拍照"
+    display_en: "Capture a still photo with the camera. Use when the user asks to take a photo, take a picture, or take a selfie, e.g. 拍照 / 拍个照 / 照相 / 自拍. Opens the camera if it is not running and returns to the capture page if the gallery is showing. For opening the camera app without capturing use camera_open."
+    short: "camsnap"
+    aliases: ["take photo", "take a photo", "take picture", "take a picture", "selfie", "拍照", "照相", "自拍"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:我)?想(?:要)?(?:拍照|照相|自拍|拍个照|拍张照|拍一张|照张相|拍个自拍)$"
+          - "^(?:帮我|给我)?(?:拍照|照相|自拍|拍个照|拍张照|拍一张|照张相|拍个自拍)(?:吧|啊|呀)?$"
+          - "^I\\s+want\\s+to\\s+(?:take\\s+)?(?:a\\s+)?(?:photo|picture|selfie)$"
+          - "^(?:take|snap)\\s+(?:a\\s+)?(?:photo|picture|selfie)$"
+        keywords: ["拍照", "照相", "自拍", "拍个照", "拍张照"]
+      local: "camsnap()"
+    system:
+      # 执行走 HANDLERS["take_photo"]（AT-SPI 触发 snapshot 的 take-picture 动作），
+      # 此处 cmd 仅作声明，不参与执行。
+      type: shell
+      cmd: "AT-SPI win.take-picture"
+      mcp:
+        group: control
+
+  camera_close:
+    display: "关闭相机"
+    display_en: "Close the camera app. Use when the user asks to close or exit the camera, or is done taking photos. For opening the camera use camera_open."
+    short: "cam_off"
+    aliases: ["相机", "摄像头"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:帮我)?(?:关闭|退出|停止|结束)(?:一下)?.{0,4}(相机|摄像头|照相机)(?:应用|软件|程序)?$"
+          - "^(?:不(?:拍照|照相)(?:了)?|(?:拍照|照相)(?:了)?(?:关掉|关闭|退出|结束|停止)(?:相机|摄像头)?|(?:拍照|照相)(?:了)?(?:相机|摄像头)(?:关掉|关闭|退出|结束|停止)?)$"
+          - "^(相机|摄像头)(?:给我)?(?:关闭|关掉|退出)(?:一下)?$"
+          - "^(?:close|exit|stop)\\s+(?:the\\s+)?camera(?:\\s+app)?$"
+          - "^done\\s+taking\\s+photos$"
+        keywords: ["关闭相机", "camera", "close"]
+      local: "cam_off()"
+    system:
+      type: shell
+      cmd: "pkill -x snapshot"
+
+  audio_output_switch:
+    display: "切换音频输出设备"
+    display_en: "Switch the audio output device (speaker/analog, headphone, HDMI, DP). Use when the user asks to change where sound plays from, e.g. switch to analog/speaker/headphone/HDMI. The built-in ES8326 codec is analog; identifiers such as snd-es8326, snd-8326, es8326 should be passed as device=analog. For switching the microphone/input device use audio_input_switch; for volume use set_volume."
+    short: "audio_out"
+    aliases: ["output", "sink", "输出设备", "扬声器", "喇叭", "耳机", "模拟输出", "snd-es8326", "snd-8326", "es8326"]
+    params:
+      device: {type: str, enum: [speaker, headphone, hdmi, dp, analog, auto, snd-es8326, snd_es8326, sndes8326, snd-8326, snd8326, es8326], default: auto}
+    routes:
+      rule:
+        patterns:
+          - "(切换|换|改为|更改|改|设)(?:到|成|为)?(?!.{0,2}(?:蓝牙|无线)).{0,4}(扬声器|喇叭|外放|音箱)"
+          - "(切换|换|改为|更改|改|设)(?:到|成|为)?(?!.{0,2}(?:蓝牙|无线)).{0,4}(耳机|有线耳机)"
+          - "(切换|换|改为|更改|改|设)(?:到|成|为)?.{0,4}(HDMI|hdmi|DP|dp|显示器)(?:音频|声音|输出)?"
+          - "(切换|换|改为|更改|改|设)(?:到|成|为)?.{0,4}(snd[-_ ]?(?:es)?8326|es8326|ES8326|snd8326|SND8326|模拟(?:输出|音频))"
+          - "(声音|音频).{0,4}(输出|播放).{0,4}(切换|换|改为|更改|改)"
+          - "(?:切|换|转)(?:到|成|为|回)(?!.{0,2}(?:蓝牙|无线)).{0,4}(扬声器|喇叭|外放|音箱)"
+          - "(?:切|换|转)(?:到|成|为|回)(?!.{0,2}(?:蓝牙|无线)).{0,4}(耳机|有线耳机)"
+          - "(?:切|换|转)(?:到|成|为|回).{0,4}(HDMI|hdmi|DP|dp|显示器)(?:音频|声音|输出)?"
+          - "(?:切|换|转)(?:到|成|为|回).{0,4}(snd[-_ ]?(?:es)?8326|es8326|ES8326|snd8326|SND8326|模拟(?:输出|音频))"
+          - "(?:从|由)(?:耳机|扬声器|喇叭|外放|音箱).{0,6}(?:切|换|转)(?:到|成|为|回)(?!.{0,2}(?:蓝牙|无线)).{0,4}(扬声器|喇叭|外放|音箱|耳机|有线耳机)"
+          - "^(?:switch|change)\\s{1,3}(?:to|audio\\s{1,3}output\\s{1,3}to)\\s{1,3}(?:speakers?|headphones?|HDMI\\s{1,3}output)$"
+          - "^I\\s{1,3}want\\s{1,3}to\\s{1,3}use\\s{1,3}the\\s{1,3}speakers?$"
+          - "^switch\\s{1,3}audio\\s{1,3}output\\s{1,3}device$"
+        # Keep generic headphone phrases available through the patterns above;
+        # omitting the bare "耳机" keyword avoids hijacking Bluetooth headset
+        # intents (e.g. "蓝牙耳机", "旧耳机").
+        keywords: ["输出设备", "扬声器", "喇叭", "切换输出", "output", "speaker", "headphone"]
+        slot_map_anchor: ["切换", "换", "改", "switch", "change"]
+        slot_map_neg_lookbehind: ["蓝牙", "无线"]
+        slot_map:
+          扬声器: {device: speaker}
+          喇叭: {device: speaker}
+          外放: {device: speaker}
+          音箱: {device: speaker}
+          耳机: {device: headphone}
+          有线耳机: {device: headphone}
+          speaker: {device: speaker}
+          speakers: {device: speaker}
+          headphone: {device: headphone}
+          headphones: {device: headphone}
+          HDMI: {device: hdmi}
+          hdmi: {device: hdmi}
+          DP: {device: dp}
+          dp: {device: dp}
+          显示器: {device: hdmi}
+          模拟: {device: analog}
+          模拟输出: {device: analog}
+          analog: {device: analog}
+          snd-8326: {device: analog}
+          snd-es8326: {device: analog}
+          snd_es8326: {device: analog}
+          sndes8326: {device: analog}
+          snd8326: {device: analog}
+          es8326: {device: analog}
+          ES8326: {device: analog}
+      local: "audio_out(device:speaker|headphone|hdmi|dp|analog|auto)"
+    system:
+      type: pipewire
+      cmd: "wpctl set-default {device_id}"
+
+  audio_input_volume:
+    display: "调节输入音量"
+    display_en: "Set the microphone/recording input volume level (0-100). Use when the user asks to change the microphone or recording volume. For system output volume use set_volume; for muting the microphone use audio_input_mute."
+    short: "mic_vol"
+    aliases: ["input_volume", "mic", "microphone", "麦克风音量", "录音音量", "输入音量"]
+    params:
+      level: {type: int, range: [0, 100], default: 80, unit: "%"}
+      direction: {type: str, required: false, enum: [up, down]}
+      amount: {type: int, required: false, default: 10, range: [1, 100], unit: "%"}
+    routes:
+      rule:
+        patterns:
+          - "(麦克风|话筒|输入|录音(?:设备)?).{0,6}(音量|声音).{0,6}(调|设|改)\\D{0,4}(?P<level>\\d+(?!成))"
+          - "(调|设|改)\\D{0,4}(麦克风|话筒|输入|录音(?:设备)?).{0,4}(音量|声音)\\D{0,4}(?P<level>\\d+(?!成))"
+          # 支持"调大麦克风声音"、"把录音音量开大一点"等无数字的相对调整
+          - "(调大|提高|开大|增大|放大).{0,4}(麦克风|话筒|输入|录音(?:设备)?).{0,4}(音量|声音|音频)?"
+          - "(麦克风|话筒|输入|录音(?:设备)?).{0,4}(音量|声音).{0,4}(调大|提高|开大|增大|放大)"
+          - "^set\\s+(?:microphone|mic)\\s+volume\\s+to\\s+(?P<level>\\d+)$"
+          - "^(?:increase|turn\\s+up|raise)\\s+(?:the\\s+)?(?:microphone|mic|recording)\\s+volume$"
+          - "^input\\s+volume\\s+is\\s+too\\s+low$"
+        keywords: ["麦克风", "话筒", "输入音量", "录音音量", "录音设备", "microphone", "mic", "input"]
+        slot_map:
+          开大: {direction: up, amount: 10}
+          调大: {direction: up, amount: 10}
+          大一点: {direction: up, amount: 10}
+          提高: {direction: up, amount: 10}
+          调小: {direction: down, amount: 10}
+          小一点: {level: 20}
+          降低: {direction: down, amount: 10}
+          最大: {level: 100}
+          最小: {level: 0}
+      local: "mic_vol(level:0-100)"
+    system:
+      type: pipewire
+      cmd: "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ {level}%"
+
+  audio_input_switch:
+    display: "切换音频输入设备"
+    display_en: "Switch the audio input device (built-in microphone, headset). Use when the user asks to change which microphone/recording device is used. For switching the output device use audio_output_switch."
+    short: "audio_in"
+    aliases: ["input", "source", "输入设备", "麦克风", "话筒"]
+    params:
+      device: {type: str, enum: [builtin, headset, auto], default: auto}
+    routes:
+      rule:
+        patterns:
+          - "(切换|换|改为|更改|改|设)(?:到|成|为)?.{0,4}(内置|板载|主板).{0,4}(麦克风|话筒|输入|录音(?:设备)?)"
+          - "(切换|换|改为|更改|改|设)(?:到|成|为)?.{0,4}(耳机|外接).{0,4}(麦克风|话筒|输入|录音(?:设备)?)"
+          - "(麦克风|话筒|输入|录音(?:设备)?).{0,4}(切换|换|改)"
+          # 支持"录音设备换成板载的"等表述
+          - "(录音(?:设备)?).{0,4}(换成|改成|切成|设成).{0,4}(内置|板载|主板|耳机|外接)"
+          - "^(?:switch|change)\\s+to\\s+(?:built-in|internal|onboard)\\s+(?:microphone|mic)$"
+          - "^(?:use|change\\s+to)\\s+(?:the\\s+)?(?:headset|headphone)\\s+mic$"
+          - "^switch\\s+microphone$"
+          - "^use\\s+the\\s+laptop'?s\\s+built-in\\s+mic$"
+        keywords: ["输入设备", "麦克风", "话筒", "切换输入", "录音设备", "microphone", "mic", "input", "switch"]
+        slot_map:
+          内置: {device: builtin}
+          板载: {device: builtin}
+          主板: {device: builtin}
+          耳机: {device: headset}
+          外接: {device: headset}
+      local: "audio_in(device:builtin|headset|auto)"
+    system:
+      type: pipewire
+      cmd: "wpctl set-default {device_id}"
+
+  audio_input_mute:
+    display: "输入设备静音/取消静音"
+    display_en: "Mute or unmute the microphone/input device. Use when the user asks to mute the microphone or stop the mic from picking up sound. For muting the system output sound use mute."
+    short: "mic_mute"
+    aliases: ["input_mute", "麦克风静音", "话筒静音"]
+    params:
+      "on": {type: bool, default: true}
+    routes:
+      rule:
+        patterns:
+          - "^(?:把|将)?(麦克风|话筒|输入|录音(?:设备)?).{0,4}(静音|消音|关闭|禁用|不要发声)(?:一下|吧)?$"
+          - "^(?:把|将)?(打开|开启|启用).{0,4}(麦克风|话筒|输入|录音(?:设备)?)(?:一下|吧)?$"
+          - "^(?:把|将)?(取消|关闭).{0,4}(麦克风|话筒|输入|录音(?:设备)?).{0,4}(静音|消音)(?:一下|吧)?$"
+          - "^mute\\s+(?:the\\s+)?(?:microphone|mic)$"
+          - "^(?:turn\\s+off|disable)\\s+(?:the\\s+)?(?:microphone|mic)$"
+          - "^(?:unmute|turn\\s+on|enable)\\s+(?:the\\s+)?(?:microphone|mic)$"
+          - "^mute\\s+my\\s+mic\\s+during\\s+the\\s+meeting$"
+        keywords: ["麦克风静音", "话筒静音", "输入静音", "录音设备", "mute", "microphone", "mic"]
+        slot_map:
+          打开: {"on": false}
+          开启: {"on": false}
+          启用: {"on": false}
+          取消: {"on": false}
+      local: "mic_mute(on:true/false)"
+    system:
+      type: pipewire
+      cmd: "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ {on}"
+
+  get_system_info:
+    display: "查询系统状态"
+    display_en: "Query system status: CPU usage, memory, temperature, or disk usage. Use when the user asks about CPU/memory/temperature/disk status, or whether the machine is busy or hot. For a specific process list use proc_list; for disk partitions use disk_partitions."
+    short: "sysinfo"
+    aliases: ["cpu", "memory", "mem", "temperature", "temp", "disk", "status", "sysinfo", "占用", "卡不卡", "整机状态"]
+    params:
+      item: {type: str, enum: [cpu, memory, temp, cpu_temp, disk, all], default: all}
+    routes:
+      rule:
+        patterns:
+          - "(?!.*(?:USB|usb))(?:查看|查|看|显示|看看).{0,6}(?:系统|设备|机器|整机)(?!.{0,4}(?:IP|ip|地址)).{0,4}(?:状态|情况|状况|信息|运行|性能|怎么样|如何)"
+          # “查看cpu和cpu温度/查看cpu温度以及cpu”同时要 CPU 与温度，
+          # 用更具体的 slot_map 组合词固定 item，避免“查看cpu和内存温度”误判。
+          - "^(?:查看|查|看|显示|看看)(?:一下|下)?(?:当前|现在)?(?:CPU|cpu|处理器)(?:和|及|与|还有|以及)(?:当前|现在)?(?:CPU|cpu)?(?:的)?温度(?:信息|状态|情况|多少|高|低|几度)?$"
+          - "^(?:查看|查|看|显示|看看)(?:一下|下)?(?:当前|现在)?(?:CPU|cpu)?温度(?:和|及|与|还有|以及)(?:当前|现在)?(?:CPU|cpu|处理器)(?:信息|状态|情况|多少|高|低|几度)?$"
+          - "^(?:[Ss]how|[Vv]iew|[Cc]heck|[Dd]isplay|[Gg]et)\\s+(?:the\\s+)?(?:CPU|cpu|[Pp]rocessor)\\s+and\\s+(?:(?:CPU|cpu)\\s+)?[Tt]emperature$"
+          # 先匹配“查看 CPU 温度/温度”，避免被下面的“查看 CPU”规则抢走。
+          - "(?:查看|查|看|显示|看看).{0,4}(?:温度|CPU温度|cpu温度|机器温度|设备温度).{0,4}(?:多少|高|低|状态|信息|几度)?"
+          - "^(?:[Ss]how|[Vv]iew|[Cc]heck|[Dd]isplay|[Gg]et)\\s+(?:the\\s+)?(?:CPU\\s+)?[Tt]emperature(?:\\s+(?:info|status))?$"
+          # CPU 占用状态查询："现在CPU占用高吗/CPU使用率" → 只读直通，
+          # 避免口语查询漏给 1B 后波动（实测在 vol/sysinfo/topcpu 间乱选）。
+          - "(?:CPU|cpu|处理器).{0,6}(?!.{0,3}(?:最高|最多|排行|排名|top))(?:占用|使用|使用率|占用率).{0,8}(?:高|低|多|少|满|吗|呢|多少|%|百分比|百分之\\d+)?"
+          # 查看 CPU/内存本身也走本地只读直通，避免“查看cpu/查看内存”被云端拦截。
+          - "^(?:查看|查|看|显示|看看)(?:一下|下)?(?:当前|现在)?(?:CPU|cpu|处理器)(?:信息|状态|情况|型号|核心|核数|占用|使用|使用率|占用率)?$"
+          - "^(?:查看|查|看|显示|看看)(?:一下|下)?(?:当前|现在)?(?:内存|RAM|ram)(?:信息|状态|情况|占用|使用|使用率|占用率)?$"
+          - "^(?:[Ss]how|[Vv]iew|[Cc]heck|[Dd]isplay|[Gg]et)\\s+(?:the\\s+)?(?:CPU|cpu|[Pp]rocessor)(?:\\s+(?:info|status|usage|load))?$"
+          - "^(?:[Ss]how|[Vv]iew|[Cc]heck|[Dd]isplay|[Gg]et)\\s+(?:the\\s+)?(?:[Mm]emory|RAM|ram)(?:\\s+(?:info|status|usage|load))?$"
+        keywords: ["CPU使用", "温度", "系统状态", "系统信息", "整机状态"]
+        # 裸词「温度」需与查询/系统语境同现，防止「温度过高」这类陈述句
+        # 注入只读查询候选。
+        require_object: ["系统", "状态", "信息", "整机", "CPU", "cpu", "使用", "占用", "内存", "磁盘", "查看", "查", "看", "显示", "多少", "几度", "吗", "呢"]
+        slot_map:
+          CPU和CPU温度: {item: cpu_temp}
+          cpu和cpu温度: {item: cpu_temp}
+          CPU和CPU的温度: {item: cpu_temp}
+          cpu和cpu的温度: {item: cpu_temp}
+          CPU和温度: {item: cpu_temp}
+          cpu和温度: {item: cpu_temp}
+          CPU与CPU温度: {item: cpu_temp}
+          cpu与cpu温度: {item: cpu_temp}
+          CPU与CPU的温度: {item: cpu_temp}
+          cpu与cpu的温度: {item: cpu_temp}
+          CPU与温度: {item: cpu_temp}
+          cpu与温度: {item: cpu_temp}
+          CPU及CPU温度: {item: cpu_temp}
+          cpu及cpu温度: {item: cpu_temp}
+          CPU及CPU的温度: {item: cpu_temp}
+          cpu及cpu的温度: {item: cpu_temp}
+          CPU及温度: {item: cpu_temp}
+          cpu及温度: {item: cpu_temp}
+          CPU还有CPU温度: {item: cpu_temp}
+          cpu还有cpu温度: {item: cpu_temp}
+          CPU还有CPU的温度: {item: cpu_temp}
+          cpu还有cpu的温度: {item: cpu_temp}
+          CPU还有温度: {item: cpu_temp}
+          cpu还有温度: {item: cpu_temp}
+          CPU以及CPU温度: {item: cpu_temp}
+          cpu以及cpu温度: {item: cpu_temp}
+          CPU以及CPU的温度: {item: cpu_temp}
+          cpu以及cpu的温度: {item: cpu_temp}
+          CPU以及温度: {item: cpu_temp}
+          cpu以及温度: {item: cpu_temp}
+          处理器和温度: {item: cpu_temp}
+          处理器与温度: {item: cpu_temp}
+          处理器及温度: {item: cpu_temp}
+          处理器还有温度: {item: cpu_temp}
+          处理器以及温度: {item: cpu_temp}
+          CPU温度以及CPU: {item: cpu_temp}
+          cpu温度以及cpu: {item: cpu_temp}
+          CPU温度和CPU: {item: cpu_temp}
+          cpu温度和cpu: {item: cpu_temp}
+          CPU温度与CPU: {item: cpu_temp}
+          cpu温度与cpu: {item: cpu_temp}
+          CPU温度及CPU: {item: cpu_temp}
+          cpu温度及cpu: {item: cpu_temp}
+          CPU温度还有CPU: {item: cpu_temp}
+          cpu温度还有cpu: {item: cpu_temp}
+          温度以及CPU: {item: cpu_temp}
+          温度以及cpu: {item: cpu_temp}
+          温度还有CPU: {item: cpu_temp}
+          温度还有cpu: {item: cpu_temp}
+          温度和CPU: {item: cpu_temp}
+          温度和cpu: {item: cpu_temp}
+          温度与CPU: {item: cpu_temp}
+          温度与cpu: {item: cpu_temp}
+          温度及CPU: {item: cpu_temp}
+          温度及cpu: {item: cpu_temp}
+          "CPU and CPU temperature": {item: cpu_temp}
+          "cpu and cpu temperature": {item: cpu_temp}
+          "CPU and Temperature": {item: cpu_temp}
+          "cpu and Temperature": {item: cpu_temp}
+          "Processor and Temperature": {item: cpu_temp}
+          "processor and Temperature": {item: cpu_temp}
+          CPU温度: {item: temp}
+          cpu温度: {item: temp}
+          温度: {item: temp}
+          temperature: {item: temp}
+          Temperature: {item: temp}
+          CPU: {item: cpu}
+          cpu: {item: cpu}
+          processor: {item: cpu}
+          Processor: {item: cpu}
+          处理器: {item: cpu}
+          内存: {item: memory}
+          内存条: {item: memory}
+          memory: {item: memory}
+          Memory: {item: memory}
+          RAM: {item: memory}
+          ram: {item: memory}
+          磁盘: {item: disk}
+          系统状态: {item: all}
+          整机状态: {item: all}
+      local: "sysinfo(what:cpu|mem|temp|cpu_temp|disk|all)"
+    system:
+      type: proc
+      mcp:
+        group: readonly
+
+  reboot:
+    display: "重启设备"
+    display_en: "Reboot/restart the device. Use when the user asks to reboot or restart the system or computer. Destructive operation: requires confirmation."
+    short: "reboot"
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:reboot|restart)\\s+(?:the\\s+)?(?:system|computer|machine)$"
+          - "^(重启|重新启动)(设备|系统)?$"
+        keywords: ["重启", "重新启动"]
+      local: "reboot()"
+    system:
+      type: shell
+      cmd: "reboot"
+      confirm: true   # 危险操作，执行层需二次确认
+
+  shutdown:
+    display: "关机"
+    display_en: "Power off the device. Use when the user asks to shut down, power off, or switch off the system or computer. Destructive operation: requires confirmation."
+    short: "poweroff"
+    aliases: ["poweroff", "power off", "shutdown", "关机", "关闭设备", "关闭系统", "关闭电脑", "关闭主机"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:please\\s+)?(?:shutdown|poweroff|power\\s+off)\\s+(?:the\\s+)?(?:system|computer|machine|device|pc)$"
+          - "^(?:please\\s+)?(?:shut\\s*down|turn\\s+off|switch\\s+off|power\\s+off)\\s+(?:the\\s+|my\\s+)?(?:system|computer|machine|device|pc)$"
+          - "^(?:关机|关闭(?:设备|系统|电脑|主机|机器))\\s*(?:一下|吧|了)?$"
+          - "^(?:帮我|给我|请|麻烦|我要|我想|想要)?\\s*(?:把)?(?:设备|系统|电脑|主机|机器)?\\s*(?:关机|关掉|关闭电源)\\s*(?:一下|吧|了)?$"
+          - "^(?:帮我|给我|请|麻烦|我要|我想|想要)?\\s*(?:把)?(?:关掉|关闭|关一下)\\s*(?:设备|系统|电脑|主机|机器)\\s*(?:一下|吧|了)?$"
+        keywords: ["关机", "关闭设备", "关闭系统", "关闭电脑", "关闭主机", "poweroff", "shutdown", "power off"]
+      local: "poweroff()"
+    system:
+      type: shell
+      cmd: "systemctl poweroff"
+      confirm: true   # 危险操作，执行层需二次确认
+
+  sleep:
+    display: "睡眠/休眠"
+    display_en: "Suspend or hibernate the device. Use when the user asks to sleep, suspend, hibernate or put the system in standby. Destructive operation: requires confirmation."
+    short: "sleep"
+    aliases: ["sleep", "suspend", "hibernate", "standby", "睡眠", "休眠", "待机", "挂起", "睡眠模式", "休眠模式"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:please\\s+)?(?:sleep|suspend|hibernate|standby|stand\\s+by)$"
+          - "^(?:please\\s+)?(?:sleep|suspend|hibernate)\\s+(?:the\\s+)?(?:system|computer|machine|device|pc)$"
+          - "^(?:please\\s+)?(?:put|send)\\s+(?:the\\s+|my\\s+)?(?:system|computer|machine|device|pc)\\s+to\\s+(?:sleep|standby)$"
+          - "^(?:进入)?(?:睡眠|休眠|待机|挂起)(?:模式)?\\s*(?:一下|吧|了)?$"
+          - "^(?:帮我|给我|请|麻烦|我要|我想|想要)?\\s*(?:把)?(?:设备|系统|电脑|主机|机器)?\\s*(?:休眠|睡眠|待机|挂起|待机一下)\\s*(?:一下|吧|了)?$"
+        keywords: ["睡眠", "休眠", "待机", "挂起", "sleep", "suspend", "hibernate", "standby"]
+      local: "sleep()"
+    system:
+      type: shell
+      cmd: "systemctl suspend"
+      confirm: true   # 打断当前工作，执行层需二次确认
+
+  lock_screen:
+    display: "锁屏"
+    display_en: "Lock the screen. Use when the user asks to lock the screen, computer, or desktop."
+    short: "lock"
+    aliases: ["lock", "锁屏", "锁定屏幕", "锁住屏幕", "锁桌面", "屏幕锁"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:lock)\\s+(?:the\\s+)?screen$"
+          - "^锁屏$"
+          - "^(把屏幕)?(锁|锁定)(?:屏幕|一下)?$"
+          - "(?:帮我|给我)?(?:锁|锁定|锁上|锁住)(?:屏幕|电脑|系统|桌面)"
+          - "把(?:屏幕|电脑|系统|桌面)(?:锁上|锁住|锁定)"
+        keywords: ["锁屏", "锁定屏幕", "锁住屏幕", "锁一下", "锁桌面", "锁上屏幕", "屏幕锁"]
+      local: "lock()"
+    system:
+      # 实际执行在 tools/system.py::lock_screen：注入桌面会话环境变量
+      # （WAYLAND_DISPLAY/XDG_RUNTIME_DIR/DBUS…，root 下缺失）后后台启动，
+      # 见 _find_desktop_session_env()；会话环境里的 WAYLAND_SOCKET 是 fd 编号，
+      # 必须剔除否则 gtklock 连不上 Wayland。启动后轮询 gtklock 存活才回成功，
+      # 避免「已锁屏」但屏幕没锁。下方 cmd 仅作声明。
+      type: shell
+      cmd: "bianbu-gtklock"
+
+  launch_app:
+    display: "启动应用"
+    display_en: "Launch a single application by name. To open multiple applications in one request, call launch_apps with an array of app_names instead."
+    description_en: "Launch an application by its display name, desktop ID, command, or common alias. Known aliases include terminal → qterminal and settings → bianbu-control-center-shell."
+    short: "launch"
+    aliases: ["open", "launch", "start", "run", "open app", "launch application", "打开", "启动", "运行", "开启"]
+    params:
+      app_name: {type: str}
+    routes:
+      rule:
+        # 负向前瞻 + 特例豁免：紧跟"打开/启动/运行/开启"的若是硬件设备/系统功能
+        # 关键词（蓝牙/WiFi/摄像头等），交给对应硬件 skill；但如果这些词后跟应用
+        # 后缀（设置/管理器/面板/中心/应用/程序/软件），则仍视为应用名放行。
+        # 第一条pattern专门处理"硬件词+应用后缀"的合法应用名。
+        patterns:
+          - "^(?:please\\s+)?(?:open|launch|start|run)\\s+(?:the\\s+)?(?!benchmark$|script$|tests?$|backups?$|updates?$|upgrades?$|diagnostic(?:s)?$|commands?$|tasks?$|jobs?$|services?$|process(?:es)?$|logs?$|syncs?$|prox(?:y|ies)$|firewall$|recording$|location$|bluetooth$|wi-?fi$|camera$|microphones?$|mics?$|speakers?$|headphones?$|ethernet$|nic$|music$|videos?$|audios?$|songs?$|movies?$|playlists?$|files?$|documents?$|folders?$|director(?:y|ies)$|windows?$|lids?$|doors?$|box(?:es)?$|books?$|pages?$|tabs?$|curtains?$|drawers?$|cabinets?$|blinds?$|deals?$)(?P<app_name>[a-zA-Z0-9_-]+)$"
+          - "^(?:please\\s+)?(?:open|launch|start|run)\\s+(?:the\\s+)?(?P<app_name>[a-zA-Z0-9][a-zA-Z0-9 _-]{0,30}?)(?:\\s+app|\\s+application)$"
+          # 特例豁免：硬件关键词 + 应用后缀 = 合法应用名（如"蓝牙设置""WiFi管理器"）
+          - "^(?:帮我)?(?:打开|启动|运行|开启)\\s*(?P<app_name>(?:蓝牙|WiFi|wifi|WIFI|wi-fi|Wi-Fi|无线|摄像头|相机|麦克风|话筒|扬声器|喇叭|耳机|有线|以太网|网卡|省电|低功耗|高性能|性能模式|CPU|Boost|加速|超频|静音|飞行)(?:设置|管理器|面板|中心|应用|程序|软件|控制|助手))$"
+          # 通用规则：排除单独的硬件关键词（无后缀）+ 排除"XX服务"（交给 service_start）
+          - "^(?:帮我)?(?:打开|启动|运行|开启)\\s*(?!一下|那个|这个|正在|现在|一会儿|在跑的|蓝牙(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|WiFi(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|wifi(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|WIFI(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|wi-fi|Wi-Fi|无线(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|摄像头(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|相机(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|麦克风|话筒|扬声器|喇叭|耳机|有线|以太网|网卡|省电|低功耗|高性能|性能模式|CPU|Boost|加速|超频|静音|飞行|nat|NAT|ip转发|IP转发|端口转发|防火墙(?![一-龥])|自动更新(?![一-龥])|录音(?![一-龥])|定位(?![一-龥])|脚本(?![一-龥])|日志(?![一-龥])|备份(?![一-龥])|同步(?![一-龥])|代理(?![一-龥])|进程(?![一-龥])|多久|多长时间|时间|上限|限制|(?:的)?文件(?!管理器|管理|系统|夹)|窗口|应用列表|所有窗口)(?P<app_name>[a-zA-Z0-9\\-_一-龥]+?)(?<!服务)$"
+        keywords: ["打开", "启动", "运行", "开启", "应用", "程序", "open", "launch", "start", "run"]
+      local: "launch(app:...)"
+    system:
+      type: app_control
+      handler: "launch"
+      aliases: &app_control_aliases
+        terminal: qterminal
+        qterminal: qterminal
+        settings: bianbu-control-center-shell
+        system settings: bianbu-control-center-shell
+        control center: bianbu-control-center-shell
+        bianbu control center: bianbu-control-center-shell
+        browser: chromium
+        web browser: chromium
+        file manager: pcmanfm-qt
+        file browser: pcmanfm-qt
+        text editor: featherpad
+        notepad: featherpad
+        终端: qterminal
+        设置: bianbu-control-center-shell
+        系统设置: bianbu-control-center-shell
+        控制中心: bianbu-control-center-shell
+        "bianbu控制中心": bianbu-control-center-shell
+        "bianbu-control-center": bianbu-control-center-shell
+        浏览器: chromium
+        文件管理器: pcmanfm-qt
+        文件浏览器: pcmanfm-qt
+        编辑器: featherpad
+        记事本: featherpad
+      mcp:
+        group: control
+        discovery: list_apps
+
+  close_app:
+    display: "关闭应用"
+    display_en: "Close a running application by its display name, desktop ID, or common alias."
+    description_en: "Close a running GUI application. The process is resolved through the shared alias table and .desktop Exec entries, then terminated with pkill. If nothing is running, suggest similar installed applications when available; otherwise report that the app was not found."
+    short: "close"
+    aliases: ["close", "quit", "stop", "exit", "kill", "close app", "关闭", "退出", "停止", "结束"]
+    params:
+      app_name: {type: str}
+    routes:
+      rule:
+        # 负向前瞻与 launch_app 完全对称：硬件/系统功能词交给对应 skill
+        #（相机/麦克风/蓝牙等），窗口语义词交给 window_* 或上云，进程归本工具。
+        patterns:
+          # 排除硬件关键词 + 排除"XX服务"（交给 service_stop）+ 排除窗口语义词
+          - "^(?:帮我)?(?:关闭|退出|停止|结束)\\s*(?!一下|那个|这个|正在|现在|一会儿|在跑的|蓝牙(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|WiFi(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|wifi(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|WIFI(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|wi-fi|Wi-Fi|无线(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|摄像头(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|相机(?!设置|管理器|面板|中心|应用|程序|软件|控制|助手)|麦克风|话筒|扬声器|喇叭|耳机|有线|以太网|网卡|省电|低功耗|高性能|性能模式|CPU|Boost|加速|超频|静音|飞行|nat|NAT|ip转发|IP转发|端口转发|进程(?![一-龥])|防火墙(?![一-龥])|自动更新(?![一-龥])|录音(?![一-龥])|定位(?![一-龥])|脚本(?![一-龥])|日志(?![一-龥])|备份(?![一-龥])|同步(?![一-龥])|代理(?![一-龥])|多久|多长时间|时间|上限|限制|(?:的)?文件(?!管理器|管理|系统|夹)|窗口|窗口列表|应用列表|所有窗口)(?P<app_name>[a-zA-Z0-9\\-_一-龥]+?)(?<!服务)$"
+          - "^(?:please\\s+)?(?:close|quit|exit|stop|kill)\\s+(?:the\\s+)?(?!benchmark$|script$|tests?$|backups?$|updates?$|upgrades?$|diagnostic(?:s)?$|commands?$|tasks?$|jobs?$|services?$|process(?:es)?$|logs?$|syncs?$|prox(?:y|ies)$|firewall$|recording$|location$|bluetooth$|wi-?fi$|camera$|microphones?$|mics?$|speakers?$|headphones?$|ethernet$|nic$|music$|videos?$|audios?$|songs?$|movies?$|playlists?$|files?$|documents?$|folders?$|director(?:y|ies)$|windows?$|lids?$|doors?$|box(?:es)?$|books?$|pages?$|tabs?$|curtains?$|drawers?$|cabinets?$|blinds?$|deals?$)(?P<app_name>[a-zA-Z0-9_-]+)$"
+          # 英文多词：要求 app/application 后缀，与 launch_app 的英文多词规则对称
+          - "^(?:please\\s+)?(?:close|quit|exit|stop|kill)\\s+(?:the\\s+)?(?P<app_name>[a-zA-Z0-9][a-zA-Z0-9 _-]{0,30}?)(?:\\s+app|\\s+application)$"
+        keywords: ["关闭", "退出", "停止", "结束", "应用", "程序"]
+      local: "close(app:...)"
+    system:
+      type: app_control
+      handler: "close"
+      # 与 launch_app.system.aliases 共用同一张别名表（YAML 锚点），
+      # 保证"打开/关闭 控制中心"等同一应用名的解析完全对称。
+      aliases: *app_control_aliases
+      mcp:
+        group: control
+        discovery: list_apps
+
+  close_apps:
+    display: "批量关闭应用"
+    display_en: "Close multiple running applications in a single call. Pass app_names as an array of names, e.g. [\"terminal\", \"file manager\"]."
+    short: "closes"
+    aliases: ["关闭多个应用", "批量关闭", "close multiple apps", "close several apps", "close apps"]
+    params:
+      app_names: {type: list, items: {type: str}}
+    routes:
+      rule: null        # 多动作由 multi_action 检测升级云端，规则层不拆
+      local: null       # 不给端侧 1B 模型注入
+    system:
+      type: app_control
+      handler: "closes"
+      mcp:
+        group: control
+
+  launch_apps:
+    display: "批量启动应用"
+    display_en: "Launch multiple applications in a single call. Pass app_names as an array of names, e.g. [\"terminal\", \"file manager\"]."
+    short: "launchs"
+    aliases: ["打开多个应用", "批量打开", "launch multiple apps", "open several apps"]
+    params:
+      app_names: {type: list, items: {type: str}}
+    routes:
+      rule: null        # 多动作由 multi_action 检测升级云端，规则层不拆
+      local: null       # 不给端侧 1B 模型注入
+    system:
+      type: app_control
+      handler: "launchs"
+      mcp:
+        group: control
+
+  list_apps:
+    display: "列出可启动的应用"
+    display_en: "List launchable applications"
+    short: "apps"
+    aliases: ["list apps", "应用列表", "列出应用", "可用应用", "list_apps"]
+    params:
+      query: {type: str, default: ""}
+    routes:
+      rule: null        # 只读发现工具，不进规则层（规则路径从原文抽应用名）
+      local: null       # 不给端侧 1B 模型注入（不参与 CALL 决策）
+    system:
+      type: app_control
+      handler: "list"
+      mcp:
+        group: readonly
+        discovery: true
+
+  query_knowledge:
+    display: "查询知识库"
+    display_en: "Query the local knowledge base for how-to or informational questions (e.g. how to adjust brightness, how to connect WiFi). Use when the user asks how to do something or wants an explanation, not when they ask to perform an action directly."
+    short: "kb"
+    params:
+      query: {type: str}
+    routes:
+      rule: null        # 知识库查询不走规则引擎，从第二段起
+      local: "kb(query:...)"
+    system:
+      type: knowledge_base
+      mcp:
+        group: readonly
+
+  file_search:
+    display: "本地搜索文件"
+    display_en: "Search for files locally on the device by name or content. Use when the user asks to find, locate, or search for a file or document on this machine."
+    short: "fs"
+    params:
+      query: {type: str}
+    routes:
+      rule:
+        # 补充前置层 _LOCAL_SEARCH_RE 漏掉的口语：方位词与检索动词之间隔了
+        # 礼貌/修饰词（"电脑上帮我找一下"），前置层要求紧邻故漏网。
+        # 方位词沿用带后缀精确集，避免裸"电脑"误吃"查一下电脑的IP地址"；
+        # 对象不限：媒体文件（照片/视频/音乐）不在 _FILE_OR_MEDIA_TRAP_RE 的
+        # 文档名词表内，正好由规则引擎补上本地搜索。
+        # query 不设命名捕获组，命中后由 router 整句透传（与前置层直通一致）。
+        patterns:
+          - "(?:本地|本机|电脑上|电脑里|我电脑)[^。！？!?\\n]{0,8}(?:搜索|查找|找一下|找找|(?<![检核审复排清])查一下|(?<![检核审复排清])查查|检索|搜|看看|翻一下)"
+          - "(?:搜索|查找|找一下|找找|(?<![检核审复排清])查一下|(?<![检核审复排清])查查|检索|搜)[^。！？!?\\n]{0,6}(?:本地|本机|电脑上|电脑里|我电脑)"
+        keywords: ["本地搜索", "本地查找", "搜索本地", "本机搜索", "电脑上找"]
+      local: "fs(query:...)"
+    system:
+      type: filesearch
+      mcp:
+        group: readonly
+
+  open_file:
+    display: "打开本地文件"
+    display_en: "Open a local file or document with its default desktop application. Use this after file_search returns a file path and the user asks to open it, or when the user gives an explicit file path. Do not use launch_app for document files and do not run libreoffice/xdg-open in terminal; launch_app only starts an application without a file."
+    short: "openfile"
+    aliases: ["open file", "open document", "open local file", "打开文件", "打开文档", "用默认应用打开", "打开这个文件"]
+    params:
+      path: {type: str}
+    routes:
+      rule: null
+      local: null
+    system:
+      type: file_open
+      handler: open_file
+      mcp:
+        group: control
+
+  open_folder:
+    display: "打开文件夹"
+    display_en: "Open a local directory with the file manager. Use for well-known locations (desktop/documents/downloads/home/root), an explicit absolute directory path, a fuzzy directory name, or a location-qualified name (open the bianbu folder on the desktop). Do not use launch_app for directories and do not run pcmanfm-qt/gio in terminal; open_file only opens a regular file."
+    short: "opendir"
+    aliases: ["open folder", "open directory", "打开文件夹", "打开目录", "打开位置"]
+    params:
+      path: {type: str}
+      location: {type: str, required: false, hint: "可选位置限定词，如 桌面/文档/下载；给出时在该位置目录内定位名称。"}
+    routes:
+      rule: null
+      local: null
+    system:
+      type: file_open
+      handler: open_folder
+      mcp:
+        group: control
+
+  # ── 有线网络（ethernet）────────────────────────────────────────────
+  # 不需要独立 skill，直接用 nmcli/ip 命令内联实现。
+  # iface 默认 eth0，实际环境可能是 enp3s0/eth1 等，执行层按需替换。
+
+  eth_up:
+    display: "启用有线网卡"
+    display_en: "Enable the wired (Ethernet) network interface. Use when the user asks to turn on, enable, or reconnect the wired or Ethernet connection."
+    short: "ethup"
+    # 别名只留名词式：动作式别名会喂 core_control_cues()，触发核心工具兜底注入。
+    aliases: ["eth_up", "有线连接"]
+    params: {}
+    routes:
+      rule:
+        # 动词必须二级（开启/打开/启用/启动/恢复/接入，不用单字"开"）+ 宾语白名单 + 句尾锚定，
+        # 否则"开有线电视"会去开网卡。
+        patterns:
+          - "(?:开启|打开|启用|启动|恢复|接入)\\s*(?:一下)?\\s*(?:有线网络|有线网卡|有线网|有线|以太网卡|以太网|网卡|ethernet|eth)\\s*(?:连接|网络)?\\s*[。！!]?$"
+          - "把\\s*(?:有线网络|有线网卡|有线网|以太网|网卡)\\s*(?:打开|开起来|开启|跑起来|连上)"
+        # 关键词只收"动词+宾语"短语，不收"有线网络/以太网/网卡"这类裸名词
+        # （否则 IP、类型、历史类提问都会被注入本工具）。
+        keywords: ["开有线网", "开有线网络", "启用有线网", "打开有线", "开启有线", "恢复有线", "连上有线", "网卡跑起来"]
+        # §4.4-C 候选注入护栏：本工具有副作用（nmcli device connect）。
+        # 弱命中必须句中出现有线/以太网/网卡直接宾语才生效（当前关键词均已自带宾语，
+        # 属防御性声明）。
+        require_object: ["有线", "以太网", "网卡", "ethernet", "eth"]
+      local: "ethup()"
+    system:
+      # 实际网卡名由 tools/system.py:eth_up 探测（end0/enp3s0/eth0 等各异），
+      # 此处仅作声明；执行走 HANDLERS["eth_up"]。
+      type: shell
+      cmd: "nmcli device connect <自动探测的有线网卡>"
+
+  eth_down:
+    display: "禁用有线网卡"
+    display_en: "Disable the wired (Ethernet) network interface. Use when the user asks to turn off, disconnect, or stop the wired or Ethernet connection."
+    short: "ethdown"
+    # 别名只留名词式：动作式/裸名词别名会喂 core_control_cues()，触发核心工具兜底注入。
+    aliases: ["eth_down", "有线断开"]
+    params: {}
+    routes:
+      rule:
+        # 宾语白名单 + 句尾锚定，p1 为「把 + 白名单宾语 + 动作」，
+        # 否则"关掉有线电视"会禁掉网卡。
+        patterns:
+          - "(?:关闭|禁用|断开|切断|停止|停掉|关掉)\\s*(?:一下)?\\s*(?:有线网络|有线网卡|有线网|有线|以太网卡|以太网|网卡|ethernet|eth)\\s*(?:连接|网络)?\\s*[。！!]?$"
+          - "把\\s*(?:有线网络|有线网卡|有线网|以太网|网卡)\\s*(?:关了|关掉|关闭|停了|停掉|断开|切断|禁用)"
+        keywords: ["禁用有线", "关有线", "断有线", "关闭有线", "关以太网"]
+        # §4.4-C 候选注入护栏：本工具有副作用（nmcli device disconnect，会切断 SSH）。
+        # 弱命中必须句中出现有线/以太网直接宾语才生效（防御性声明，同 eth_up）。
+        require_object: ["有线", "以太网", "网卡", "ethernet", "eth"]
+      local: "ethdown()"
+    system:
+      # 同 eth_up：网卡名探测得来。eth_down 另有自保护——拒绝断开正承载
+      # 当前 SSH 会话的网卡。
+      type: shell
+      cmd: "nmcli device disconnect <自动探测的有线网卡>"
+
+  eth_status:
+    display: "查看有线网络状态"
+    display_en: "Show the wired (Ethernet) connection status and whether a cable is plugged in. Use when the user asks if the wired or Ethernet connection is up, connected, or working."
+    short: "ethstat"
+    aliases: ["eth_status", "有线状态", "网线状态", "网卡状态"]
+    params: {}
+    routes:
+      rule:
+        patterns:
+          - "^(?:show|check|display|get)\\s+(?:the\\s+)?(?i:ethernet)\\s+(?:connection\\s+)?status$"
+          - "^(?:is\\s+)?(?:the\\s+)?(?i:ethernet)\\s+(?:connection\\s+)?(?:up|down|connected|active)\\??$"
+          # 备选词「长词在前」（IP地址 在 IP 之前）+ 宾语白名单：confidence 取决于匹配跨度
+          # 是否等于整句，短词在前只能吃到"连接"，会被 net_conn 的整句命中抢走。
+          - "(?:查看|查询|检查|看看|看|显示)\\s*(?:一下)?\\s*(?:有线网络|有线网卡|有线网|以太网|网卡|网线)\\s*(?:的)?\\s*(?:连接状态|是不是好的?|好了没|通不通|状态|连接)(?!.*(?:IP|ip|地址|内网))"
+          - "(?:有线网卡|有线网|网线|网卡|以太网)\\s*(?:插上了吗|连上了没|接好了吗|有没有接好|正常吗|通吗|通不通|好了没|是不是好的?|坏了吗)"
+        # 关键词只留带动作或疑问的短语："网卡状态"这类纯名词会喂 core_control_cues()。
+        keywords: ["有线状态", "网线连接", "网线插上", "网卡是不是好的"]
+      local: "ethstat()"
+    system:
+      # 实现用 `nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device status`
+      # 加读 /sys/class/net/<夹>/carrier 判断网线是否插着。
+      type: shell
+      cmd: "nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device status"
+      mcp:
+        group: readonly
+
+  eth_ip:
+    display: "查看有线网络 IP"
+    display_en: "Show the wired (Ethernet) interface's IP address. Use only when the user explicitly says wired or Ethernet. For a generic IP query use net_ip; for wireless use wifi_ip; for the public IP use net_ext_ip."
+    short: "ethip"
+    aliases: ["eth_ip", "有线ip", "以太网ip", "网卡ip"]
+    params: {}
+    routes:
+      rule:
+        # 只吃显式含"有线/以太网"的 IP 查询：通用"当前IP"归 net_ip、"网卡地址"归 net_mac、
+        # 含"无线/wifi"归 wifi_ip；宾语白名单 + 长词在前（IP地址 在 IP 之前）。
+        patterns:
+          - "(?:查看|查询|获取|看|帮我查)\\s*(?:一下|下)?\\s*(?:有线网络|有线网卡|有线网|以太网卡|以太网)\\s*(?:的)?\\s*(?:内网|局域网)?\\s*(?:IP地址|ip地址|网络地址|IP|ip|地址)(?!.*(?:MAC|mac|物理))"
+          - "(?:有线网络|有线网卡|有线网|以太网卡|以太网)\\s*(?:的)?\\s*(?:内网|局域网)?\\s*(?:IP地址|ip地址|内网地址|IP|ip|地址)(?:是多少|是啥|是什么)?(?!.*(?:MAC|mac|物理))"
+          - "(?:有线网络|有线网|以太网)\\s*(?:分配的|分配)\\s*(?:地址|IP|ip)(?:是什么|是多少|是啥)?"
+        # 关键词只留显式含"有线/以太网"的短语。
+        keywords: ["有线ip", "以太网ip", "有线IP地址", "以太网IP"]
+      local: "ethip()"
+    system:
+      # 实现用 `nmcli -t -f IP4.ADDRESS,IP4.GATEWAY device show <夹>`。
+      type: shell
+      cmd: "nmcli -t -f IP4.ADDRESS,IP4.GATEWAY device show <自动探测的有线网卡>"
+      mcp:
+        group: readonly

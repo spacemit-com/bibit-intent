@@ -1,0 +1,116 @@
+{"group":"rule","expect":"set_volume","input":"set the volume level"}
+{"group":"rule","expect":"set_volume","input":"make the sound louder"}
+{"group":"rule","expect":"set_brightness","input":"adjust screen brightness"}
+{"group":"rule","expect":"set_brightness","input":"make the display brighter"}
+{"group":"rule","expect":"launch_app","input":"open an application"}
+{"group":"rule","expect":"close_app","input":"close an application"}
+{"group":"rule","expect":"reboot","input":"restart the computer"}
+{"group":"rule","expect":"get_system_info","input":"show cpu information"}
+{"group":"rule","expect":"set_volume","input":"turn the volume down"}
+{"group":"rule","expect":"set_resolution","input":"change the screen resolution to max"}
+{"group":"rule","expect":"set_refresh_rate","input":"set the refresh rate to 60 Hz"}
+{"group":"rule","expect":"set_aspect_ratio","input":"change the aspect ratio to 16:9"}
+{"group":"rule","expect":"rotate_screen","input":"rotate the screen"}
+{"group":"rule","expect":"set_display_mode","input":"switch to mirror display mode"}
+{"group":"rule","expect":"window_list","input":"show all open windows"}
+{"group":"rule","expect":"mute","input":"mute the system audio"}
+{"group":"rule","expect":"lock_screen","input":"lock the screen"}
+{"group":"rule","expect":"wifi_scan","input":"scan for available Wi-Fi networks"}
+{"group":"rule","expect":"wifi_connect","input":"connect to Wi-Fi HomeNet"}
+{"group":"rule","expect":"wifi_disconnect","input":"disconnect the Wi-Fi network"}
+{"group":"rule","expect":"wifi_status","input":"show Wi-Fi status"}
+{"group":"rule","expect":"wifi_ip","input":"show my Wi-Fi IP address"}
+{"group":"rule","expect":"bt_on","input":"turn on Bluetooth"}
+{"group":"rule","expect":"bt_off","input":"turn off Bluetooth"}
+{"group":"rule","expect":"bt_scan","input":"scan for Bluetooth devices"}
+{"group":"rule","expect":"bt_connect","input":"connect to Bluetooth headphones"}
+{"group":"rule","expect":"bt_disconnect","input":"disconnect the current Bluetooth device"}
+{"group":"rule","expect":"bt_forget","input":"forget the Bluetooth device headset"}
+{"group":"rule","expect":"bt_set_recv_dir","input":"set the Bluetooth receive directory to /home/user/Downloads"}
+{"group":"rule","expect":"eth_up","input":"enable the Ethernet connection"}
+{"group":"rule","expect":"eth_down","input":"disable the Ethernet connection"}
+{"group":"rule","expect":"eth_status","input":"show Ethernet status"}
+{"group":"rule","expect":"net_ip","input":"show the network IP address"}
+{"group":"rule","expect":"eth_ip","input":"show the Ethernet IP address"}
+{"group":"escalate","expect":"ESCALATE","input":"write a poem in English"}
+{"group":"rule","expect":"rotate_screen","input":"rotate the display clockwise"}
+{"group":"rule","expect":"rotate_screen","input":"turn the screen orientation upside down"}
+{"group":"rule","expect":"set_resolution","input":"set display resolution to the highest setting"}
+{"group":"rule","expect":"set_resolution","input":"lower the screen resolution"}
+{"group":"rule","expect":"set_refresh_rate","input":"change refresh rate to 120 Hz"}
+{"group":"rule","expect":"set_aspect_ratio","input":"use a 21:9 aspect ratio"}
+{"group":"rule","expect":"set_display_mode","input":"switch the display to extended mode"}
+{"group":"rule","expect":"set_display_mode","input":"mirror the screens"}
+{"group":"rule","expect":"launch_app","input":"please open Chrome"}
+{"group":"rule","expect":"launch_app","input":"start the terminal application"}
+{"group":"rule","expect":"close_app","input":"quit Firefox"}
+{"group":"rule","expect":"wifi_scan","input":"find nearby wireless networks"}
+{"group":"rule","expect":"wifi_scan","input":"list available Wi-Fi connections"}
+{"group":"rule","expect":"wifi_connect","input":"join Wi-Fi OfficeNet"}
+{"group":"rule","expect":"wifi_disconnect","input":"turn off the wireless network"}
+{"group":"rule","expect":"wifi_status","input":"is Wi-Fi connected"}
+{"group":"rule","expect":"wifi_ip","input":"what is my wireless IP address"}
+{"group":"rule","expect":"bt_on","input":"enable the Bluetooth adapter"}
+{"group":"rule","expect":"bt_off","input":"disable Bluetooth to save power"}
+{"group":"rule","expect":"bt_scan","input":"discover nearby Bluetooth devices"}
+{"group":"rule","expect":"bt_connect","input":"pair my Bluetooth headset"}
+{"group":"rule","expect":"bt_disconnect","input":"disconnect the Bluetooth headphones"}
+{"group":"rule","expect":"bt_forget","input":"unpair the Bluetooth speaker"}
+{"group":"rule","expect":"bt_set_recv_dir","input":"save Bluetooth files in /home/user/Downloads"}
+{"group":"rule","expect":"eth_up","input":"enable the wired network"}
+{"group":"rule","expect":"eth_down","input":"turn off the Ethernet adapter"}
+{"group":"rule","expect":"eth_status","input":"check the Ethernet connection status"}
+{"group":"rule","expect":"eth_ip","input":"show my wired network IP"}
+{"group":"rule","expect":"usb_list","input":"show connected USB devices"}
+{"group":"rule","expect":"usb_detail","input":"inspect the USB device information"}
+{"group":"rule","expect":"usb_tree","input":"display the USB topology"}
+{"group":"rule","expect":"usb_reset","input":"reset the connected USB device"}
+{"group":"rule","expect":"usb_list","input":"list USB devices"}
+{"group":"rule","expect":"usb_detail","input":"show USB device details"}
+{"group":"rule","expect":"usb_tree","input":"show the USB device tree"}
+{"group":"rule","expect":"usb_reset","input":"reset the USB device"}
+{"group":"rule","expect":"audio_output_switch","input":"switch to speakers"}
+{"group":"rule","expect":"audio_output_switch","input":"change audio output to headphones"}
+{"group":"rule","expect":"audio_output_switch","input":"switch to HDMI output"}
+{"group":"rule","expect":"audio_output_switch","input":"switch audio output device"}
+{"group":"model","expect":"audio_output_switch","input":"I want to use the speakers"}
+{"group":"rule","expect":"audio_input_volume","input":"set microphone volume to 80"}
+{"group":"rule","expect":"audio_input_volume","input":"increase microphone volume"}
+{"group":"rule","expect":"audio_input_volume","input":"turn up the mic"}
+{"group":"rule","expect":"audio_input_volume","input":"raise the recording volume"}
+{"group":"model","expect":"audio_input_volume","input":"input volume is too low"}
+{"group":"rule","expect":"audio_input_switch","input":"switch to built-in microphone"}
+{"group":"rule","expect":"audio_input_switch","input":"use the headset mic"}
+{"group":"rule","expect":"audio_input_switch","input":"switch microphone"}
+{"group":"rule","expect":"audio_input_switch","input":"change to onboard mic"}
+{"group":"model","expect":"audio_input_switch","input":"use the laptop's built-in mic"}
+{"group":"rule","expect":"audio_input_mute","input":"mute the microphone"}
+{"group":"rule","expect":"audio_input_mute","input":"turn off the mic"}
+{"group":"rule","expect":"audio_input_mute","input":"unmute the microphone"}
+{"group":"rule","expect":"audio_input_mute","input":"turn on the mic"}
+{"group":"model","expect":"audio_input_mute","input":"mute my mic during the meeting"}
+{"group":"rule","expect":"camera_open","input":"open the camera"}
+{"group":"rule","expect":"camera_open","input":"launch the camera"}
+{"group":"rule","expect":"camera_open","input":"start the camera app"}
+{"group":"rule","expect":"take_photo","input":"I want to take a photo"}
+{"group":"rule","expect":"camera_open","input":"open camera"}
+{"group":"rule","expect":"camera_close","input":"close the camera"}
+{"group":"rule","expect":"camera_close","input":"exit the camera"}
+{"group":"rule","expect":"camera_close","input":"stop the camera"}
+{"group":"rule","expect":"camera_close","input":"done taking photos"}
+{"group":"rule","expect":"camera_close","input":"close camera"}
+{"group":"rule","expect":"file_search","input":"search files on this machine"}
+{"group":"rule","expect":"file_search","input":"find local documents"}
+{"group":"rule","expect":"file_search","input":"on my computer search pdf files"}
+{"group":"escalate","expect":"ESCALATE","input":"search the latest news online"}
+{"group":"rule","expect":"shutdown","input":"shut down the computer"}
+{"group":"rule","expect":"shutdown","input":"power off the system"}
+{"group":"rule","expect":"shutdown","input":"turn off my computer"}
+{"group":"rule","expect":"shutdown","input":"poweroff"}
+{"group":"rule","expect":"sleep","input":"suspend the computer"}
+{"group":"rule","expect":"sleep","input":"put the system to sleep"}
+{"group":"rule","expect":"sleep","input":"hibernate the computer"}
+{"group":"rule","expect":"sleep","input":"standby"}
+{"group":"rule","expect":"sleep","input":"sleep"}
+{"group": "rule", "expect": "display_modes", "input": "which refresh rates are supported"}
+{"group": "rule", "expect": "display_modes", "input": "what resolutions are available"}

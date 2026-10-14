@@ -1,0 +1,45 @@
+bibit-intent (0.1.24) resolute-porting; urgency=medium
+
+  * Add regression tests locking the MCP group partition used by the Runtime's
+    three-MCP split: readonly/control/admin stay disjoint and complete, and the
+    BIBIT_MCP_GROUPS filter matches the MCP ToolAnnotations boundaries.
+  * Detect the Runtime's split Bibit MCP plugin members instead of the old single
+    bibit-intent manifest when deciding whether postinst should install the
+    per-user fallback MCP.
+
+ -- Bianbu Agent <bianbu@spacemit.com>  Thu, 17 Sep 2026 19:00:00 +0800
+
+bibit-intent (0.1.23) resolute-porting; urgency=medium
+
+  * Expose the local intent HTTP service through FastAPI with API documentation.
+  * Support client-known cancellation IDs and reject delayed cancelled requests.
+  * Prevent cloud replay after permission denial or partial device execution.
+  * Own the fixed local model catalog and lifecycle through the HTTP service.
+  * Deliver the MCP definition only through the Runtime package's plugin and
+    retire the user-home copy installs used to write, so one Bibit Intent MCP
+    is loaded instead of two identical sets of tools.
+  * Launch desktop applications from trusted Host workers through the user
+    service manager so terminals use the desktop filesystem namespace.
+  * Keep sandbox launches isolated and reject missing Host identity markers
+    or failed user-service activation without silently falling back.
+
+ -- liudecheng <decheng.liu@spacemit.com>  Thu, 10 Sep 2026 20:00:00 +0800
+
+bibit-intent (0.1.1) resolute-porting; urgency=medium
+
+  * Enable and start the three user services (bibit-intent, bibit-intent-llm,
+    bibit-intent-embed) for logged-in users right after install.
+  * Restart the user services on upgrade so changed unit config (model path,
+    ExecStart commands) and new code take effect.
+  * Enable per-user only (no global enablement) to avoid port conflicts when
+    multiple users are logged in.
+  * Order bibit-intent after the llm and embedding servers.
+
+ -- fanxiaogang <xiaogang.henry@spacemit.com>  Sat, 29 Aug 2026 00:00:00 +0800
+
+bibit-intent (0.1.0) resolute-porting; urgency=medium
+
+  * Initial Bianbu package for the edge-first intent router.
+  * Install source and vendored text-normalization dependencies under /opt/bibit-intent.
+
+ -- fanxiaogang <xiaogang.henry@spacemit.com>  Thu, 27 Aug 2026 00:00:00 +0800

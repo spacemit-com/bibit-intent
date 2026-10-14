@@ -1,0 +1,29 @@
+app:
+  host: "127.0.0.1"
+  port: 18790
+
+auth:
+  enabled: false
+  api_keys: []
+
+llm:
+  backend: "glm-edge-1.5b-chat-q4_0"
+  port_pool:
+    start: 18920
+    end: 18939
+  default_args: ["--ctx-size", "8192", "--threads", "7", "--jinja"]
+  storage:
+    base_dir: "~/.cache/spacemit-ai-gateway/llm"
+    models_dir: "~/.cache/models/llm"
+    db_path: "~/.cache/spacemit-ai-gateway/llm/db.sqlite"
+
+embed:
+  backend: "qwen3-embedding-0.6b-q4_0"
+  port_pool:
+    start: 18920
+    end: 18939
+  default_args: ["--embedding", "--pooling", "mean", "--embd-normalize", "2", "--ctx-size", "2048", "--threads", "8", "--cache-ram", "0"]
+  storage:
+    base_dir: "~/.cache/spacemit-ai-gateway/embed"
+    models_dir: "~/.cache/models/embed"
+    db_path: "~/.cache/spacemit-ai-gateway/embed/db.sqlite"

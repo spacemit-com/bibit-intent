@@ -1,0 +1,133 @@
+# 开发者依赖管理 Skill（只读）
+# 依据 docs/design/dependency_management.md：
+#   扫描项目代码找依赖（import / #include / pkg-config / package.json）
+#   → 判定本机满足度 → 干跑生成安装计划（带来源/体积/风险）→ 装后回代码层复验。
+# 本 Skill 全部为只读工具（读文件 + pkg-config/ldconfig/which + pip --dry-run），
+# 不安装任何东西；执行安装的 dep_apply 在 ubuntu_admin（confirm: true + sudo）。
+
+name: dev_deps
+version: "0.1"
+display: "开发者依赖管理"
+description: "扫描代码依赖、判定缺失、生成带来源与风险的安装计划并验证（只读）"
+author: "bibit"
+
+requires:
+  - python3
+  - pkg-config
+
+tools:
+
+  dep_scan:
+    display: "扫描项目依赖（只读）"
+    display_en: "Scan a project for dependency requirements (read-only)"
+    short: "depscan"
+    aliases: ["扫描依赖", "检查依赖", "依赖扫描", "看看缺什么依赖"]
+    params:
+      path: {type: str}
+      limit: {type: int, default: 200}
+    routes:
+      rule:
+        patterns:
+          - "^(?:检查|扫描|分析)(?:一下)?(?:项目|代码)?依赖\\s+(?P<path>[/~][^\\s]+)$"
+          - "^(?:check|scan|analy[sz]e)\\s+(?:project\\s+)?dependencies\\s+(?:in\\s+)?(?P<path>[/~][^\\s]+)$"
+        keywords: ["检查依赖", "扫描依赖", "依赖扫描", "check dependencies"]
+      local: null
+    confirm: false
+    handler: "dep_scan"
+    mcp: {group: readonly}
+
+  dep_status:
+    display: "查看依赖缺失情况（只读）"
+    display_en: "Report which project dependencies are missing (read-only)"
+    short: "depstatus"
+    aliases: ["依赖状态", "缺哪些依赖", "依赖缺失情况"]
+    params:
+      path: {type: str}
+      python: {type: str, default: ""}
+    routes:
+      rule:
+        patterns:
+          - "^(?:查看|看看|检查)(?:项目)?(?:还)?缺(?:哪些|什么)?依赖\\s+(?P<path>[/~][^\\s]+)$"
+          - "^(?:which|what)\\s+dependencies\\s+are\\s+missing\\s+(?:in\\s+)?(?P<path>[/~][^\\s]+)$"
+        keywords: ["依赖状态", "缺哪些依赖", "missing dependencies"]
+      local: null
+    confirm: false
+    handler: "dep_status"
+    mcp: {group: readonly}
+
+  dep_plan:
+    display: "生成依赖安装计划（只读，干跑）"
+    display_en: "Build a dependency install plan with sources, sizes and risks (read-only dry-run)"
+    short: "depplan"
+    aliases: ["依赖计划", "安装依赖计划", "生成依赖计划"]
+    params:
+      path: {type: str}
+      scope: {type: str, default: "auto"}
+      python: {type: str, default: ""}
+      max_dry_runs: {type: int, default: 8}
+    routes:
+      rule:
+        patterns:
+          - "^(?:生成|给我|做个|来个)?(?:依赖)?(?:安装)?计划\\s+(?P<path>[/~][^\\s]+)$"
+          - "^(?:dependency|deps?)\\s+plan\\s+(?:for\\s+)?(?P<path>[/~][^\\s]+)$"
+        keywords: ["依赖计划", "安装计划", "dependency plan"]
+      local: null
+    confirm: false
+    handler: "dep_plan"
+    mcp: {group: readonly}
+
+  dep_verify:
+    display: "验证依赖是否装好（只读）"
+    display_en: "Verify a stored dependency plan is satisfied (read-only)"
+    short: "depverify"
+    aliases: ["验证依赖", "依赖验证"]
+    params:
+      plan_id: {type: str}
+      python: {type: str, default: ""}
+    routes:
+      rule:
+        patterns:
+          - "^验证依赖\\s+(?P<plan_id>dep-[0-9a-f]+)$"
+          - "^verify\\s+dependencies\\s+(?P<plan_id>dep-[0-9a-f]+)$"
+        keywords: ["验证依赖", "依赖验证", "verify dependencies"]
+      local: null
+    confirm: false
+    handler: "dep_verify"
+    mcp: {group: readonly}
+
+  dep_history:
+    display: "查看依赖安装记录（只读）"
+    display_en: "List recent dependency install records (read-only)"
+    short: "dephistory"
+    aliases: ["依赖安装记录", "安装历史", "依赖历史"]
+    params:
+      limit: {type: int, default: 5}
+    routes:
+      rule:
+        patterns:
+          - "^(?:查看|看看|列出)(?:依赖)?安装(?:记录|历史)(?:\\s+(?P<limit>\\d+))?$"
+          - "^(?:dependency|deps?)\\s+(?:install\\s+)?history(?:\\s+(?P<limit>\\d+))?$"
+        keywords: ["依赖安装记录", "安装历史", "dependency history"]
+      local: null
+    confirm: false
+    handler: "dep_history"
+    mcp: {group: readonly}
+
+  dep_notice:
+    display: "写下文件后提醒缺失依赖（只读，不安装）"
+    display_en: "Post-write dependency notice (read-only, never installs)"
+    short: "depnotice"
+    aliases: ["依赖提醒", "依赖提示"]
+    params:
+      path: {type: str}
+      limit: {type: int, default: 5}
+    routes:
+      rule:
+        patterns:
+          - "^依赖提醒\\s+(?P<path>[/~][^\\s]+)$"
+          - "^(?:dependency|deps?)\\s+notice\\s+(?:for\\s+)?(?P<path>[/~][^\\s]+)$"
+        keywords: ["依赖提醒", "dependency notice"]
+      local: null
+    confirm: false
+    handler: "dep_notice"
+    mcp: {group: readonly}

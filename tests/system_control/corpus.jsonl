@@ -1,0 +1,385 @@
+{"id": "H001", "group": "rule", "input": "关闭WiFi", "expect": "wifi_off", "note": "WiFi/关闭 WiFi（关网卡开关）"}
+{"id": "H002", "group": "rule", "input": "把WiFi关了", "expect": "wifi_off", "note": "WiFi/关闭 WiFi（关网卡开关）"}
+{"id": "H003", "group": "rule", "input": "关闭无线网络", "expect": "wifi_off", "note": "WiFi/关闭 WiFi（关网卡开关）"}
+{"id": "H004", "group": "rule", "input": "断开WiFi", "expect": "wifi_disconnect", "note": "WiFi/关闭 WiFi"}
+{"id": "H005", "group": "rule", "input": "把WiFi切断", "expect": "wifi_disconnect", "note": "WiFi/关闭 WiFi"}
+{"id": "H006", "group": "rule", "input": "关掉无线网", "expect": "wifi_off", "note": "WiFi/关闭 WiFi（关网卡开关）"}
+{"id": "H007", "group": "rule", "input": "WiFi关闭", "expect": "wifi_off", "note": "WiFi/关闭 WiFi（关网卡开关）"}
+{"id": "H008", "group": "rule", "input": "关掉WIFI", "expect": "wifi_off", "note": "WiFi/关闭 WiFi（关网卡开关）"}
+{"id": "H009", "group": "model", "input": "帮我切断网络连接", "expect": "wifi_disconnect", "note": "WiFi/关闭 WiFi"}
+{"id": "H010", "group": "model", "input": "不想连无线网了关一下", "expect": "wifi_disconnect", "note": "WiFi/关闭 WiFi"}
+{"id": "H011", "group": "model", "input": "把无线网络停掉", "expect": "wifi_disconnect", "note": "WiFi/关闭 WiFi"}
+{"id": "H014", "group": "model", "input": "连回刚才那个WiFi", "expect": "wifi_connect", "note": "WiFi/连接指定网络"}
+{"id": "H015", "group": "rule", "input": "看看WiFi连上了吗", "expect": "wifi_status", "note": "WiFi/查询连接状态"}
+{"id": "H016", "group": "rule", "input": "WiFi断了吗", "expect": "wifi_status", "note": "WiFi/查询连接状态"}
+{"id": "H017", "group": "rule", "input": "现在的WiFi连接状态", "expect": "wifi_status", "note": "WiFi/查询连接状态"}
+{"id": "H018", "group": "rule", "input": "查看WiFi状态", "expect": "wifi_status", "note": "WiFi/查询连接状态"}
+{"id": "H019", "group": "rule", "input": "我是不是连着网络", "expect": "wifi_status", "note": "WiFi/查询连接状态"}
+{"id": "H020", "group": "rule", "input": "检查WiFi网络", "expect": "wifi_status", "note": "WiFi/查询连接状态"}
+{"id": "H021", "group": "model", "input": "我现在网络通不通", "expect": "wifi_status", "note": "WiFi/查询连接状态"}
+{"id": "H022", "group": "model", "input": "网速正常吗看看连接", "expect": "wifi_status", "note": "WiFi/查询连接状态"}
+{"id": "H023", "group": "model", "input": "检查下无线网好了没", "expect": "wifi_status", "note": "WiFi/查询连接状态"}
+{"id": "H024", "group": "rule", "input": "附近有哪些无线网络", "expect": "wifi_scan", "note": "WiFi/扫描周边网络"}
+{"id": "H025", "group": "rule", "input": "搜一下WiFi", "expect": "wifi_scan", "note": "WiFi/扫描周边网络"}
+{"id": "H026", "group": "rule", "input": "查找周边的WiFi", "expect": "wifi_scan", "note": "WiFi/扫描周边网络"}
+{"id": "H027", "group": "rule", "input": "刷新WiFi列表", "expect": "wifi_scan", "note": "WiFi/扫描周边网络"}
+{"id": "H028", "group": "rule", "input": "有哪些可以连的网络", "expect": "wifi_scan", "note": "WiFi/扫描周边网络"}
+{"id": "H029", "group": "rule", "input": "扫描WiFi", "expect": "wifi_scan", "note": "WiFi/扫描周边网络"}
+{"id": "H030", "group": "model", "input": "这周围有能用的网络吗", "expect": "wifi_scan", "note": "WiFi/扫描周边网络"}
+{"id": "H031", "group": "model", "input": "看看这里能不能上网", "expect": "wifi_scan", "note": "WiFi/扫描周边网络"}
+{"id": "H032", "group": "rule", "input": "查看WiFi的IP地址", "expect": "wifi_ip", "note": "WiFi/WIFI IP地址"}
+{"id": "H033", "group": "rule", "input": "我的无线IP是多少", "expect": "wifi_ip", "note": "WiFi/WIFI IP地址"}
+{"id": "H034", "group": "rule", "input": "获取WiFi IP", "expect": "wifi_ip", "note": "WiFi/WIFI IP地址"}
+{"id": "H035", "group": "rule", "input": "查询WiFi网络IP", "expect": "wifi_ip", "note": "WiFi/WIFI IP地址"}
+{"id": "H036", "group": "rule", "input": "查看WIFI IP地址", "expect": "wifi_ip", "note": "WiFi/WIFI IP地址"}
+{"id": "H037", "group": "model", "input": "现在的无线网络地址是多少", "expect": "wifi_ip", "note": "WiFi/WIFI IP地址"}
+{"id": "H038", "group": "model", "input": "帮我查下无线的内网地址", "expect": "wifi_ip", "note": "WiFi/WIFI IP地址"}
+{"id": "H039", "group": "rule", "input": "打开蓝牙", "expect": "bt_on", "note": "蓝牙/开启蓝牙"}
+{"id": "H040", "group": "rule", "input": "把蓝牙打开", "expect": "bt_on", "note": "蓝牙/开启蓝牙"}
+{"id": "H041", "group": "rule", "input": "开启蓝牙", "expect": "bt_on", "note": "蓝牙/开启蓝牙"}
+{"id": "H042", "group": "rule", "input": "开蓝牙", "expect": "bt_on", "note": "蓝牙/开启蓝牙"}
+{"id": "H043", "group": "rule", "input": "蓝牙开启", "expect": "bt_on", "note": "蓝牙/开启蓝牙"}
+{"id": "H044", "group": "model", "input": "想用蓝牙连下设备启动蓝牙", "expect": "bt_on", "note": "蓝牙/开启蓝牙"}
+{"id": "H045", "group": "model", "input": "帮我把蓝牙模块跑起来", "expect": "bt_on", "note": "蓝牙/开启蓝牙"}
+{"id": "H046", "group": "rule", "input": "关闭蓝牙", "expect": "bt_off", "note": "蓝牙/关闭蓝牙"}
+{"id": "H047", "group": "rule", "input": "关掉蓝牙", "expect": "bt_off", "note": "蓝牙/关闭蓝牙"}
+{"id": "H048", "group": "rule", "input": "把蓝牙关了", "expect": "bt_off", "note": "蓝牙/关闭蓝牙"}
+{"id": "H049", "group": "rule", "input": "蓝牙关闭", "expect": "bt_off", "note": "蓝牙/关闭蓝牙"}
+{"id": "H050", "group": "rule", "input": "断开所有蓝牙", "expect": "bt_off", "note": "蓝牙/关闭蓝牙"}
+{"id": "H051", "group": "model", "input": "不用蓝牙了帮我关一下省电", "expect": "bt_off", "note": "蓝牙/关闭蓝牙"}
+{"id": "H052", "group": "model", "input": "把蓝牙关掉节省电量", "expect": "bt_off", "note": "蓝牙/关闭蓝牙"}
+{"id": "H053", "group": "rule", "input": "搜一下附近的蓝牙设备", "expect": "bt_scan", "note": "蓝牙/扫描蓝牙设备"}
+{"id": "H054", "group": "rule", "input": "查找蓝牙设备", "expect": "bt_scan", "note": "蓝牙/扫描蓝牙设备"}
+{"id": "H055", "group": "rule", "input": "扫描蓝牙", "expect": "bt_scan", "note": "蓝牙/扫描蓝牙设备"}
+{"id": "H056", "group": "rule", "input": "搜蓝牙", "expect": "bt_scan", "note": "蓝牙/扫描蓝牙设备"}
+{"id": "H057", "group": "rule", "input": "看看周围有什么蓝牙", "expect": "bt_scan", "note": "蓝牙/扫描蓝牙设备"}
+{"id": "H058", "group": "model", "input": "找一下我的蓝牙耳机在不在附近", "expect": "bt_scan", "note": "蓝牙/扫描蓝牙设备"}
+{"id": "H059", "group": "model", "input": "看看附近有啥能连的蓝牙", "expect": "bt_scan", "note": "蓝牙/扫描蓝牙设备"}
+{"id": "H060", "group": "model", "input": "把我的蓝牙鼠标连上来", "expect": "bt_connect", "note": "蓝牙/连接指定设备"}
+{"id": "H061", "group": "model", "input": "重新连下刚才的耳机", "expect": "bt_connect", "note": "蓝牙/连接指定设备"}
+{"id": "H062", "group": "rule", "input": "断开蓝牙连接", "expect": "bt_disconnect", "note": "蓝牙/断开蓝牙连接"}
+{"id": "H063", "group": "rule", "input": "把蓝牙断开", "expect": "bt_disconnect", "note": "蓝牙/断开蓝牙连接"}
+{"id": "H064", "group": "rule", "input": "拔掉蓝牙", "expect": "bt_disconnect", "note": "蓝牙/断开蓝牙连接"}
+{"id": "H065", "group": "rule", "input": "断开当前蓝牙设备", "expect": "bt_disconnect", "note": "蓝牙/断开蓝牙连接"}
+{"id": "H066", "group": "model", "input": "先别用这个蓝牙音响了", "expect": "bt_disconnect", "note": "蓝牙/断开蓝牙连接"}
+{"id": "H067", "group": "model", "input": "把耳机的蓝牙切断", "expect": "bt_disconnect", "note": "蓝牙/断开蓝牙连接"}
+{"id": "H068", "group": "model", "input": "蓝牙传的文件帮我放桌面", "expect": "bt_set_recv_dir", "note": "蓝牙/切换蓝牙文件输出位置"}
+{"id": "H069", "group": "model", "input": "把蓝牙接收的文件换个地方存", "expect": "bt_set_recv_dir", "note": "蓝牙/切换蓝牙文件输出位置"}
+{"id": "H070", "group": "model", "input": "以后别自动连这个旧耳机了", "expect": "bt_forget", "note": "蓝牙/忽略设备（取消配对）"}
+{"id": "H071", "group": "model", "input": "把那个失效的蓝牙设备删掉", "expect": "bt_forget", "note": "蓝牙/忽略设备（取消配对）"}
+{"id": "H072", "group": "model", "input": "屏幕太暗了", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H073", "group": "model", "input": "亮一点", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H074", "group": "model", "input": "帮我调低亮度", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H075", "group": "model", "input": "屏幕有点刺眼", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H076", "group": "model", "input": "屏幕调到最亮", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H077", "group": "model", "input": "亮度开最大", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H078", "group": "rule", "input": "屏幕看着太糊了调高点分辨率", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H079", "group": "rule", "input": "把分辨率调到最高", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H080", "group": "rule", "input": "字太小了分辨率调低点", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H081", "group": "rule", "input": "感觉屏幕有点卡把刷新率调高点", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H082", "group": "rule", "input": "开高刷", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H083", "group": "rule", "input": "省电点把刷新率调低", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H084", "group": "rule", "input": "屏幕竖屏", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H085", "group": "rule", "input": "屏幕横屏", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H086", "group": "rule", "input": "把屏幕旋转90度", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H087", "group": "rule", "input": "旋转屏幕", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H088", "group": "rule", "input": "帮我把屏幕倒过来", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H089", "group": "rule", "input": "屏幕方向反了调一下", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H090", "group": "rule", "input": "把显示方向转一下", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H091", "group": "rule", "input": "画面看着太小了放大点", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H092", "group": "rule", "input": "界面元素太大了缩回去", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H093", "group": "rule", "input": "把显示比例还原成默认", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H094", "group": "rule", "input": "开启扩展屏模式", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H095", "group": "rule", "input": "切换到复制模式", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H096", "group": "rule", "input": "切换到扩展屏", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H097", "group": "rule", "input": "外接显示屏设为复制", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H098", "group": "rule", "input": "只在主屏显示", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H099", "group": "rule", "input": "只在副屏显示", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H100", "group": "rule", "input": "把电脑画面投到大屏上", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H101", "group": "rule", "input": "让两个屏幕显示不一样的窗口", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H102", "group": "rule", "input": "外接屏幕怎么没画面帮我切一下", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H348", "group": "rule", "input": "把亮度调到70", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H349", "group": "rule", "input": "亮度设成30", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H350", "group": "rule", "input": "屏幕调到最暗", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H351", "group": "rule", "input": "亮度调高", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H352", "group": "rule", "input": "亮度调低", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H353", "group": "rule", "input": "调亮屏幕", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H354", "group": "rule", "input": "调暗屏幕", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H355", "group": "rule", "input": "暗一点", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H356", "group": "rule", "input": "屏幕太亮", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H357", "group": "rule", "input": "屏幕晃眼", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H358", "group": "rule", "input": "看不清屏幕", "expect": "set_brightness", "note": "屏幕/亮度调节"}
+{"id": "H359", "group": "rule", "input": "分辨率调到最高", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H360", "group": "rule", "input": "分辨率调到最低", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H361", "group": "rule", "input": "把分辨率调高", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H362", "group": "rule", "input": "把分辨率调低", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H363", "group": "rule", "input": "调高分辨率", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H364", "group": "rule", "input": "调低分辨率", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H365", "group": "rule", "input": "分辨率设成最大", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H366", "group": "rule", "input": "屏幕太糊了调分辨率", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H367", "group": "rule", "input": "刷新率调到最高", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H368", "group": "rule", "input": "刷新率调到最低", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H369", "group": "rule", "input": "把刷新率调高", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H370", "group": "rule", "input": "把刷新率调低", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H371", "group": "rule", "input": "开启高刷模式", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H372", "group": "rule", "input": "调高刷新率", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H373", "group": "rule", "input": "切换到横屏", "expect": "rotate_screen", "note": "屏幕/旋转"}
+{"id": "H374", "group": "rule", "input": "切换到竖屏", "expect": "rotate_screen", "note": "屏幕/旋转"}
+{"id": "H375", "group": "rule", "input": "把屏幕旋转180度", "expect": "rotate_screen", "note": "屏幕/旋转"}
+{"id": "H376", "group": "rule", "input": "把屏幕旋转270度", "expect": "rotate_screen", "note": "屏幕/旋转"}
+{"id": "H377", "group": "rule", "input": "把屏幕转一下", "expect": "rotate_screen", "note": "屏幕/旋转"}
+{"id": "H378", "group": "rule", "input": "把屏幕倒过来", "expect": "rotate_screen", "note": "屏幕/旋转"}
+{"id": "H379", "group": "rule", "input": "屏幕方向反了", "expect": "rotate_screen", "note": "屏幕/旋转"}
+{"id": "H380", "group": "rule", "input": "显示方向不对", "expect": "rotate_screen", "note": "屏幕/旋转"}
+{"id": "H381", "group": "rule", "input": "屏幕比例调成1.50", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H382", "group": "rule", "input": "屏幕比例调到2.00", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H383", "group": "rule", "input": "缩放比例设成1.25", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H384", "group": "rule", "input": "屏幕比例恢复默认", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H385", "group": "rule", "input": "把界面放大一点", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H386", "group": "rule", "input": "屏幕缩放调到最大", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H387", "group": "rule", "input": "开启复制模式", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H388", "group": "rule", "input": "外接显示屏设为扩展", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H389", "group": "rule", "input": "把画面投到大屏上", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H390", "group": "rule", "input": "切换到镜像模式", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H149", "group": "rule", "input": "开启有线网络", "expect": "eth_up", "note": "有线网络/启用网卡"}
+{"id": "H150", "group": "rule", "input": "打开有线网", "expect": "eth_up", "note": "有线网络/启用网卡"}
+{"id": "H151", "group": "rule", "input": "把有线网络打开", "expect": "eth_up", "note": "有线网络/启用网卡"}
+{"id": "H152", "group": "rule", "input": "开启以太网", "expect": "eth_up", "note": "有线网络/启用网卡"}
+{"id": "H153", "group": "rule", "input": "启用有线网卡", "expect": "eth_up", "note": "有线网络/启用网卡"}
+{"id": "H154", "group": "model", "input": "网线插上了帮我把网卡跑起来", "expect": "eth_up", "note": "有线网络/启用网卡"}
+{"id": "H155", "group": "model", "input": "恢复有线连接", "expect": "eth_up", "note": "有线网络/启用网卡"}
+{"id": "H156", "group": "model", "input": "启动以太网网络", "expect": "eth_up", "note": "有线网络/启用网卡"}
+{"id": "H157", "group": "rule", "input": "禁用有线网卡", "expect": "eth_down", "note": "有线网络/禁用网卡"}
+{"id": "H158", "group": "rule", "input": "关闭有线网", "expect": "eth_down", "note": "有线网络/禁用网卡"}
+{"id": "H159", "group": "rule", "input": "把有线网断开", "expect": "eth_down", "note": "有线网络/禁用网卡"}
+{"id": "H160", "group": "rule", "input": "关闭以太网", "expect": "eth_down", "note": "有线网络/禁用网卡"}
+{"id": "H161", "group": "rule", "input": "切断有线网卡", "expect": "eth_down", "note": "有线网络/禁用网卡"}
+{"id": "H162", "group": "model", "input": "先把有线网关了用无线", "expect": "eth_down", "note": "有线网络/禁用网卡"}
+{"id": "H163", "group": "model", "input": "停掉有线网卡连接", "expect": "eth_down", "note": "有线网络/禁用网卡"}
+{"id": "H164", "group": "model", "input": "切断以太网", "expect": "eth_down", "note": "有线网络/禁用网卡"}
+{"id": "H165", "group": "rule", "input": "有线网插上了吗", "expect": "eth_status", "note": "有线网络/查询网卡状态"}
+{"id": "H166", "group": "rule", "input": "网线连上了没", "expect": "eth_status", "note": "有线网络/查询网卡状态"}
+{"id": "H167", "group": "rule", "input": "查看有线网络状态", "expect": "eth_status", "note": "有线网络/查询网卡状态"}
+{"id": "H168", "group": "rule", "input": "网卡正常吗", "expect": "eth_status", "note": "有线网络/查询网卡状态"}
+{"id": "H169", "group": "rule", "input": "查询有线网卡状态", "expect": "eth_status", "note": "有线网络/查询网卡状态"}
+{"id": "H170", "group": "rule", "input": "检查以太网连接", "expect": "eth_status", "note": "有线网络/查询网卡状态"}
+{"id": "H171", "group": "model", "input": "看看有线网络通不通", "expect": "eth_status", "note": "有线网络/查询网卡状态"}
+{"id": "H172", "group": "model", "input": "网线有没有接好", "expect": "eth_status", "note": "有线网络/查询网卡状态"}
+{"id": "H173", "group": "model", "input": "检查下以太网是不是好的", "expect": "eth_status", "note": "有线网络/查询网卡状态"}
+{"id": "H174", "group": "rule", "input": "查看当前IP地址", "expect": "net_ip", "note": "通用网络/查询 IP 地址"}
+{"id": "H175", "group": "rule", "input": "我的IP是多少", "expect": "net_ip", "note": "通用网络/查询 IP 地址"}
+{"id": "H176", "group": "rule", "input": "获取网卡IP", "expect": "net_ip", "note": "通用网络/查询 IP 地址"}
+{"id": "H177", "group": "rule", "input": "IP地址查询", "expect": "net_ip", "note": "通用网络/查询 IP 地址"}
+{"id": "H178", "group": "rule", "input": "查询有线网络IP", "expect": "eth_ip", "note": "有线网络/查询 IP 地址"}
+{"id": "H179", "group": "rule", "input": "查看以太网IP", "expect": "eth_ip", "note": "有线网络/查询 IP 地址"}
+{"id": "H180", "group": "model", "input": "有线网分配的地址是什么", "expect": "eth_ip", "note": "有线网络/查询 IP 地址"}
+{"id": "H181", "group": "model", "input": "帮我查下有线网的内网IP", "expect": "eth_ip", "note": "有线网络/查询 IP 地址"}
+{"id": "H332", "group": "model", "input": "帮我写一首关于秋天的诗", "expect": "ESCALATE", "note": "端侧能力外,应升级"}
+{"id": "H333", "group": "model", "input": "解释一下量子纠缠", "expect": "ESCALATE", "note": "端侧能力外,应升级"}
+{"id": "H334", "group": "model", "input": "给我讲个笑话", "expect": "ESCALATE", "note": "端侧能力外,应升级"}
+{"id": "H335", "group": "rule", "input": "打开蓝牙设置", "expect": "launch_app", "note": "硬件设置应用/蓝牙"}
+{"id": "H336", "group": "rule", "input": "启动蓝牙管理器", "expect": "launch_app", "note": "硬件设置应用/蓝牙"}
+{"id": "H337", "group": "rule", "input": "打开WiFi设置", "expect": "launch_app", "note": "硬件设置应用/WiFi"}
+{"id": "H338", "group": "rule", "input": "打开摄像头设置", "expect": "launch_app", "note": "硬件设置应用/摄像头"}
+{"id": "H339", "group": "rule", "input": "打开无线设置", "expect": "launch_app", "note": "硬件设置应用/无线"}
+{"id": "H340", "group": "rule", "input": "打开浏览器", "expect": "launch_app", "note": "普通应用"}
+{"id": "H341", "group": "rule", "input": "启动微信", "expect": "launch_app", "note": "普通应用"}
+{"id": "H342", "group": "rule", "input": "打开vim", "expect": "launch_app", "note": "普通应用"}
+{"id": "H343", "group": "rule", "input": "帮我打开控制中心", "expect": "launch_app", "note": "普通应用"}
+{"id": "H344", "group": "rule", "input": "启动终端", "expect": "launch_app", "note": "普通应用"}
+{"id": "H345", "group": "rule", "input": "关闭浏览器", "expect": "close_app", "note": "关闭应用"}
+{"id": "H346", "group": "rule", "input": "退出微信", "expect": "close_app", "note": "关闭应用"}
+{"id": "H347", "group": "rule", "input": "关闭chrome", "expect": "close_app", "note": "关闭应用"}
+{"id": "H391", "group": "model", "input": "分辨率的事帮我看看", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H392", "group": "model", "input": "分辨率帮我换一下", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H393", "group": "model", "input": "屏幕分辨率能改吗", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H394", "group": "model", "input": "分辨率你帮我处理", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H395", "group": "model", "input": "分辨率这块你看着弄", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H396", "group": "model", "input": "把分辨率给我调整一下", "expect": "set_resolution", "note": "屏幕/调节分辨率"}
+{"id": "H397", "group": "model", "input": "刷新率的事帮我弄下", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H398", "group": "model", "input": "屏幕刷新率能动吗", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H399", "group": "model", "input": "这个刷新率我想改改", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H400", "group": "model", "input": "刷新率帮我处理一下", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H401", "group": "model", "input": "刷新率这块你看着弄", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H402", "group": "model", "input": "屏幕刷新率我想换换", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H403", "group": "model", "input": "刷新率的设置动一下", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率"}
+{"id": "H404", "group": "model", "input": "屏幕方向的事帮我处理下", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H405", "group": "model", "input": "这个显示方向不太对", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H406", "group": "model", "input": "关于屏幕旋转我想调整", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H407", "group": "model", "input": "屏幕方向能改吗", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H408", "group": "model", "input": "帮我弄一下屏幕方向", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H409", "group": "model", "input": "显示方向我想换换", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H410", "group": "model", "input": "屏幕方向这块你看着弄", "expect": "rotate_screen", "note": "屏幕/旋转\n（0°/90°/180°/270°）"}
+{"id": "H411", "group": "model", "input": "帮我弄下屏幕缩放", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H412", "group": "model", "input": "缩放比例这块你看着调", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H413", "group": "model", "input": "屏幕比例的事处理一下", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H414", "group": "model", "input": "显示比例我想动一动", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H415", "group": "model", "input": "缩放倍率能不能改", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H416", "group": "model", "input": "屏幕缩放帮我处理下", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H417", "group": "model", "input": "显示比例这块你看着弄", "expect": "set_aspect_ratio", "note": "屏幕/屏幕缩放比例调节（1.00/1.25/1.50/1.75/2.00）"}
+{"id": "H418", "group": "model", "input": "双屏显示的配置帮我弄一下", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H419", "group": "model", "input": "双屏显示的事处理一下", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H420", "group": "model", "input": "双屏显示这块调一下", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "H421", "group": "model", "input": "双屏显示我想动一动", "expect": "set_display_mode", "note": "屏幕/外接显示屏显示模式（扩展/复制）"}
+{"id": "U001", "group": "rule", "input": "显示USB设备树", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "U002", "group": "rule", "input": "查看USB拓扑", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "U003", "group": "rule", "input": "USB设备树形图", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "U004", "group": "rule", "input": "查看USB层级关系", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "U005", "group": "rule", "input": "USB接口的层级结构给我看看", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "U006", "group": "rule", "input": "帮我查看USB设备的树状连接", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "U007", "group": "rule", "input": "查看USB设备详细信息", "expect": "usb_detail", "note": "USB设备/显示详细信息"}
+{"id": "U008", "group": "rule", "input": "USB设备详情", "expect": "usb_detail", "note": "USB设备/显示详细信息"}
+{"id": "U009", "group": "rule", "input": "显示USB详细参数", "expect": "usb_detail", "note": "USB设备/显示详细信息"}
+{"id": "U010", "group": "rule", "input": "USB设备完整信息", "expect": "usb_detail", "note": "USB设备/显示详细信息"}
+{"id": "U011", "group": "rule", "input": "这个USB设备的具体信息给我看下", "expect": "usb_detail", "note": "USB设备/显示详细信息"}
+{"id": "U012", "group": "rule", "input": "USB接口详细参数帮我查查", "expect": "usb_detail", "note": "USB设备/显示详细信息"}
+{"id": "U013", "group": "rule", "input": "查看USB接口", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "U014", "group": "rule", "input": "显示USB设备", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "U015", "group": "rule", "input": "有哪些USB外设", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "U016", "group": "rule", "input": "USB设备状态", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "U017", "group": "rule", "input": "现在有几个USB设备连着", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "U018", "group": "model", "input": "USB接口插了哪些东西", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "U019", "group": "rule", "input": "重新识别USB设备", "expect": "usb_reset", "note": "USB设备/USB诊断/重置"}
+{"id": "U020", "group": "rule", "input": "刷新USB设备", "expect": "usb_reset", "note": "USB设备/USB诊断/重置"}
+{"id": "U021", "group": "rule", "input": "USB接口重置", "expect": "usb_reset", "note": "USB设备/USB诊断/重置"}
+{"id": "U022", "group": "rule", "input": "USB设备连不上重新初始化一下", "expect": "usb_reset", "note": "USB设备/USB诊断/重置"}
+{"id": "U023", "group": "rule", "input": "U盘识别不了帮我重置下USB", "expect": "usb_reset", "note": "USB设备/USB诊断/重置"}
+{"id": "U024", "group": "rule", "input": "USB外设失灵了重新加载下", "expect": "usb_reset", "note": "USB设备/USB诊断/重置"}
+{"id": "U025", "group": "rule", "input": "查看USB总线", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "U026", "group": "rule", "input": "检查USB端口", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "U027", "group": "rule", "input": "USB Hub信息", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "U028", "group": "rule", "input": "USB Hub下面接了哪些设备", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "U029", "group": "rule", "input": "看看USB接口的连接情况", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "U030", "group": "rule", "input": "USB3.0接口有设备吗", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "H422", "group": "model", "input": "USB口上那些设备谁挂在谁下面", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "H423", "group": "model", "input": "我想搞清楚USB设备之间的上下级关系", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "H424", "group": "model", "input": "USB外设是直插主板还是过了扩展坞", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "H425", "group": "model", "input": "键盘的USB线插在机器上还是显示器上", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "H426", "group": "model", "input": "USB设备的父子关系给我梳理一遍", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "H427", "group": "model", "input": "USB集线器下面又接了几层", "expect": "usb_tree", "note": "USB设备/显示USB拓扑结构"}
+{"id": "H428", "group": "model", "input": "USB设备的厂商编号和固件版本是多少", "expect": "usb_detail", "note": "USB设备/显示详细信息"}
+{"id": "H429", "group": "model", "input": "那个USB外设支持多大速率和电流", "expect": "usb_detail", "note": "USB设备/显示详细信息"}
+{"id": "H430", "group": "model", "input": "USB设备的序列号帮我读出来", "expect": "usb_detail", "note": "USB设备/显示详细信息"}
+{"id": "H431", "group": "model", "input": "我要看USB设备的所有描述符", "expect": "usb_detail", "note": "USB设备/显示详细信息"}
+{"id": "H432", "group": "model", "input": "USB设备的规格参数全都列出来", "expect": "usb_detail", "note": "USB设备/显示详细信息"}
+{"id": "H433", "group": "model", "input": "这个USB外设的型号和协议版本查一下", "expect": "usb_detail", "note": "USB设备/显示详细信息"}
+{"id": "H434", "group": "model", "input": "USB键盘突然不好使了帮我弄一下", "expect": "usb_reset", "note": "USB设备/USB诊断/重置"}
+{"id": "H435", "group": "model", "input": "不想拔线让USB设备重新认一遍", "expect": "usb_reset", "note": "USB设备/USB诊断/重置"}
+{"id": "H436", "group": "model", "input": "USB外设掉线了帮我弄回来", "expect": "usb_reset", "note": "USB设备/USB诊断/重置"}
+{"id": "H437", "group": "model", "input": "USB口上那个东西卡住了想让它复活", "expect": "usb_reset", "note": "USB设备/USB诊断/重置"}
+{"id": "H438", "group": "model", "input": "USB鼠标不动了不拔线能救吗", "expect": "usb_reset", "note": "USB设备/USB诊断/重置"}
+{"id": "H439", "group": "model", "input": "USB设备抽风了重新初始化一遍", "expect": "usb_reset", "note": "USB设备/USB诊断/重置"}
+{"id": "H440", "group": "model", "input": "我插的USB外设系统认出来了吗", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "H441", "group": "model", "input": "USB上一共认到几个东西", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "H442", "group": "model", "input": "机器上USB外设都识别到了没", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "H443", "group": "model", "input": "USB口是空的还是有东西", "expect": "usb_list", "note": "USB设备/列出 USB 设备"}
+{"id": "H500", "group": "rule", "input": "切换到扬声器", "expect": "audio_output_switch", "note": "音频/切换输出设备"}
+{"id": "H501", "group": "rule", "input": "声音输出改成耳机", "expect": "audio_output_switch", "note": "音频/切换输出设备"}
+{"id": "H502", "group": "rule", "input": "切换到HDMI输出", "expect": "audio_output_switch", "note": "音频/切换输出设备"}
+{"id": "H503", "group": "rule", "input": "声音播放切换一下", "expect": "audio_output_switch", "note": "音频/切换输出设备"}
+{"id": "H504", "group": "rule", "input": "把声音从耳机换到喇叭", "expect": "audio_output_switch", "note": "音频/切换输出设备"}
+{"id": "H505", "group": "rule", "input": "音频输出设备帮我换一下", "expect": "audio_output_switch", "note": "音频/切换输出设备"}
+{"id": "H510", "group": "rule", "input": "麦克风音量调到80", "expect": "audio_input_volume", "note": "音频/调节输入音量"}
+{"id": "H511", "group": "rule", "input": "调大麦克风声音", "expect": "audio_input_volume", "note": "音频/调节输入音量"}
+{"id": "H512", "group": "rule", "input": "话筒音量提高", "expect": "audio_input_volume", "note": "音频/调节输入音量"}
+{"id": "H513", "group": "rule", "input": "把录音音量开大一点", "expect": "audio_input_volume", "note": "音频/调节输入音量"}
+{"id": "H514", "group": "model", "input": "输入音量太小了调高", "expect": "audio_input_volume", "note": "音频/调节输入音量"}
+{"id": "H520", "group": "rule", "input": "切换到内置麦克风", "expect": "audio_input_switch", "note": "音频/切换输入设备"}
+{"id": "H521", "group": "rule", "input": "改用耳机麦克风", "expect": "audio_input_switch", "note": "音频/切换输入设备"}
+{"id": "H522", "group": "rule", "input": "麦克风切换一下", "expect": "audio_input_switch", "note": "音频/切换输入设备"}
+{"id": "H523", "group": "rule", "input": "录音设备换成板载的", "expect": "audio_input_switch", "note": "音频/切换输入设备"}
+{"id": "H524", "group": "rule", "input": "话筒输入帮我换个设备", "expect": "audio_input_switch", "note": "音频/切换输入设备"}
+{"id": "H530", "group": "rule", "input": "麦克风静音", "expect": "audio_input_mute", "note": "音频/输入设备静音"}
+{"id": "H531", "group": "rule", "input": "话筒关闭", "expect": "audio_input_mute", "note": "音频/输入设备静音"}
+{"id": "H532", "group": "rule", "input": "打开麦克风", "expect": "audio_input_mute", "note": "音频/取消输入静音"}
+{"id": "H533", "group": "rule", "input": "取消话筒静音", "expect": "audio_input_mute", "note": "音频/取消输入静音"}
+{"id": "H534", "group": "rule", "input": "把麦克风消音一下", "expect": "audio_input_mute", "note": "音频/输入设备静音"}
+{"id": "H535", "group": "rule", "input": "录音设备不要发声", "expect": "audio_input_mute", "note": "音频/输入设备静音"}
+{"id": "H540", "group": "rule", "input": "扬声器静音", "expect": "mute", "note": "音频/输出设备静音"}
+{"id": "H541", "group": "rule", "input": "喇叭消音", "expect": "mute", "note": "音频/输出设备静音"}
+{"id": "H542", "group": "rule", "input": "解除静音", "expect": "mute", "note": "音频/取消输出静音"}
+{"id": "H600", "group": "rule", "input": "打开相机", "expect": "camera_open", "note": "相机/打开"}
+{"id": "H601", "group": "rule", "input": "启动相机", "expect": "camera_open", "note": "相机/打开"}
+{"id": "H602", "group": "rule", "input": "打开摄像头", "expect": "camera_open", "note": "相机/打开"}
+{"id": "H603", "group": "rule", "input": "我想拍照", "expect": "take_photo", "note": "相机/拍照"}
+{"id": "H604", "group": "rule", "input": "想自拍", "expect": "take_photo", "note": "相机/拍照"}
+{"id": "H605", "group": "rule", "input": "相机打开", "expect": "camera_open", "note": "相机/打开"}
+{"id": "H606", "group": "rule", "input": "拍照", "expect": "take_photo", "note": "相机/拍照"}
+{"id": "H607", "group": "rule", "input": "照相", "expect": "take_photo", "note": "相机/拍照"}
+{"id": "H608", "group": "rule", "input": "自拍", "expect": "take_photo", "note": "相机/拍照"}
+{"id": "H609", "group": "rule", "input": "拍个照", "expect": "take_photo", "note": "相机/拍照"}
+{"id": "H610", "group": "rule", "input": "关闭相机", "expect": "camera_close", "note": "相机/关闭"}
+{"id": "H611", "group": "rule", "input": "退出相机", "expect": "camera_close", "note": "相机/关闭"}
+{"id": "H612", "group": "rule", "input": "关闭摄像头", "expect": "camera_close", "note": "相机/关闭"}
+{"id": "H613", "group": "rule", "input": "不拍照了", "expect": "camera_close", "note": "相机/关闭/隐含"}
+{"id": "H614", "group": "rule", "input": "相机关掉", "expect": "camera_close", "note": "相机/关闭"}
+{"id": "FS001", "group": "rule", "input": "本地搜索一下GTK相关的文档", "expect": "file_search", "note": "本地文件检索/触发词直通"}
+{"id": "FS002", "group": "rule", "input": "帮我本地搜索一下周报", "expect": "file_search", "note": "本地文件检索/触发词直通"}
+{"id": "FS003", "group": "rule", "input": "本地文档里找一下会议纪要", "expect": "file_search", "note": "本地文件检索/方位词+名词"}
+{"id": "FS004", "group": "rule", "input": "本地资料搜索GTK", "expect": "file_search", "note": "本地文件检索/方位词+名词"}
+{"id": "FS005", "group": "rule", "input": "电脑上找一下上次的周报", "expect": "file_search", "note": "本地文件检索/方位词+检索动词"}
+{"id": "FS006", "group": "rule", "input": "搜索本地的pdf文件", "expect": "file_search", "note": "本地文件检索/检索动词+方位词"}
+{"id": "FS007", "group": "rule", "input": "本机有哪些文档", "expect": "file_search", "note": "本地文件检索/存在性询问"}
+{"id": "FS008", "group": "rule", "input": "本地文档", "expect": "file_search", "note": "本地文件检索/方位词+名词"}
+{"id": "FS009", "group": "rule", "input": "打开本地文件管理器", "expect": "launch_app", "note": "本地文件检索/管理器不劫持(误报修复)"}
+{"id": "FS010", "group": "model", "input": "帮我找一下GTK相关的文档", "expect": "ESCALATE", "note": "本地文件检索/无触发词→陷阱升级云端"}
+{"id": "FS011", "group": "model", "input": "互联网上找本地资料", "expect": "ESCALATE", "note": "本地文件检索/网络语境排除"}
+{"id": "FS012", "group": "rule", "input": "电脑上帮我找一下去年的照片", "expect": "file_search", "note": "本地文件检索/规则引擎补漏-方位词隔词"}
+{"id": "FS013", "group": "rule", "input": "本机里给我搜搜GTK相关的代码", "expect": "file_search", "note": "本地文件检索/规则引擎补漏-方位词隔词"}
+{"id": "FS014", "group": "rule", "input": "电脑里帮我查一下有什么视频", "expect": "file_search", "note": "本地文件检索/规则引擎补漏-方位词隔词"}
+{"id": "H444", "group": "model", "input": "帮我打开一下记事本", "expect": "launch_app", "note": "应用控制/打开应用(口语插入语→模型层)"}
+{"id": "H445", "group": "model", "input": "帮我把浏览器打开", "expect": "launch_app", "note": "应用控制/打开应用(主谓倒装→模型层)"}
+{"id": "H446", "group": "model", "input": "帮我把微信启动起来", "expect": "launch_app", "note": "应用控制/打开应用(倒装口语→模型层)"}
+{"id": "H447", "group": "model", "input": "把在跑的记事本退出去", "expect": "close_app", "note": "应用控制/关闭应用(倒装口语→模型层)"}
+{"id": "H448", "group": "model", "input": "帮我把视频软件退出一下", "expect": "close_app", "note": "应用控制/关闭应用(倒装口语→模型层)"}
+{"id": "H615", "group": "rule", "input": "把屏幕竖起来", "expect": "rotate_screen", "note": "屏幕/旋转（竖起来→竖屏90°）"}
+{"id": "H616", "group": "rule", "input": "把屏幕横过来", "expect": "rotate_screen", "note": "屏幕/旋转（横过来→横屏0°）"}
+{"id": "H617", "group": "rule", "input": "把声音关掉", "expect": "mute", "note": "音频/静音（关掉声音→静音）"}
+{"id": "H618", "group": "rule", "input": "把声音关掉别出声", "expect": "mute", "note": "音频/静音（别出声→静音）"}
+{"id": "H619", "group": "rule", "input": "切到喇叭", "expect": "audio_output_switch", "note": "音频/切换输出设备（切→裸动词）"}
+{"id": "H620", "group": "rule", "input": "声音从耳机切到喇叭", "expect": "audio_output_switch", "note": "音频/切换输出设备（从X切到Y）"}
+{"id": "H621", "group": "rule", "input": "分辨率太低了", "expect": "set_resolution", "note": "屏幕/调节分辨率（太低→调高，改vs查兜底）"}
+{"id": "H622", "group": "rule", "input": "屏幕分辨率太低了字都糊了", "expect": "set_resolution", "note": "屏幕/调节分辨率（抱怨式→set_resolution）"}
+{"id": "H630", "group": "rule", "input": "连接JDSK的wifi，密码是SpaceT20211102", "expect": "wifi_connect", "note": "WiFi/连接指定网络-类别词后置"}
+{"id": "H631", "group": "rule", "input": "连接JDSK的wifi，密码12345678", "expect": "wifi_connect", "note": "WiFi/连接指定网络-类别词后置"}
+{"id": "H632", "group": "rule", "input": "连接JDSK密码是12345678", "expect": "wifi_connect", "note": "WiFi/连接指定网络-密码是"}
+{"id": "H633", "group": "rule", "input": "连接wifi JDSK 密码是 12345678", "expect": "wifi_connect", "note": "WiFi/连接指定网络-密码是"}
+{"id": "H634", "group": "rule", "input": "连接 JDSK 密码为 12345678", "expect": "wifi_connect", "note": "WiFi/连接指定网络-密码为"}
+{"id": "H635", "group": "rule", "input": "连上JDSK的wifi密码12345678", "expect": "wifi_connect", "note": "WiFi/连接指定网络-连上"}
+{"id": "H636", "group": "rule", "input": "帮我连一下JDSK的wifi密码12345678", "expect": "wifi_connect", "note": "WiFi/连接指定网络-帮我连一下"}
+{"id": "H637", "group": "rule", "input": "连接无线网络JDSK密码12345678", "expect": "wifi_connect", "note": "WiFi/连接指定网络-无线网络"}
+{"id": "H638", "group": "rule", "input": "连接 JDSK，密码 12345678", "expect": "wifi_connect", "note": "WiFi/连接指定网络-标点分隔"}
+{"id": "H639", "group": "rule", "input": "连接JDSK的wifi", "expect": "wifi_connect", "note": "WiFi/连接指定网络-仅SSID后置"}
+{"id": "H640", "group": "rule", "input": "打开WiFi", "expect": "wifi_on", "note": "WiFi/开启 WiFi"}
+{"id": "H641", "group": "rule", "input": "打开无线网", "expect": "wifi_on", "note": "WiFi/开启 WiFi"}
+{"id": "H642", "group": "rule", "input": "开启无线网络", "expect": "wifi_on", "note": "WiFi/开启 WiFi"}
+{"id": "H643", "group": "rule", "input": "打开无线网卡", "expect": "wifi_on", "note": "WiFi/开启 WiFi"}
+{"id": "H644", "group": "rule", "input": "关闭无线网卡", "expect": "wifi_off", "note": "WiFi/关闭 WiFi（关网卡开关）"}
+{"id": "H950", "group": "rule", "input": "看下系统支持哪些刷新率", "expect": "display_modes", "note": "屏幕/查看支持的刷新率（只读）"}
+{"id": "H951", "group": "rule", "input": "屏幕支持哪些刷新率", "expect": "display_modes", "note": "屏幕/查看支持的刷新率（只读）"}
+{"id": "H952", "group": "rule", "input": "支持哪些刷新率", "expect": "display_modes", "note": "屏幕/查看支持的刷新率（只读）"}
+{"id": "H953", "group": "rule", "input": "屏幕支持多少刷新率", "expect": "display_modes", "note": "屏幕/查看支持的刷新率（只读）"}
+{"id": "H954", "group": "rule", "input": "这屏幕能上多少刷新率", "expect": "display_modes", "note": "屏幕/查看支持的刷新率（只读）"}
+{"id": "H955", "group": "rule", "input": "刷新率有几档", "expect": "display_modes", "note": "屏幕/查看支持的刷新率（只读）"}
+{"id": "H956", "group": "rule", "input": "屏幕支持哪些分辨率", "expect": "display_modes", "note": "屏幕/查看支持的分辨率（只读）"}
+{"id": "H957", "group": "rule", "input": "显示器支持的分辨率有哪些", "expect": "display_modes", "note": "屏幕/查看支持的分辨率（只读）"}
+{"id": "H958", "group": "rule", "input": "支持哪些显示模式", "expect": "display_modes", "note": "屏幕/查看显示模式（只读）"}
+{"id": "H959", "group": "rule", "input": "屏幕能调到多高刷新率", "expect": "display_modes", "note": "屏幕/查看支持的刷新率（只读）"}
+{"id": "H960", "group": "rule", "input": "支持的最高刷新率是多少", "expect": "display_modes", "note": "屏幕/查看支持的刷新率（只读）"}
+{"id": "H961", "group": "rule", "input": "可用分辨率", "expect": "display_modes", "note": "屏幕/查看支持的分辨率（只读）"}
+{"id": "H962", "group": "rule", "input": "这块屏能跑多少帧", "expect": "display_modes", "note": "屏幕/查看支持的刷新率（只读）"}
+{"id": "H963", "group": "rule", "input": "都有哪些显示模式", "expect": "display_modes", "note": "屏幕/查看显示模式（只读）"}
+{"id": "H964", "group": "rule", "input": "屏幕最高支持多少刷新率", "expect": "display_modes", "note": "屏幕/查看支持的刷新率（只读）"}
+{"id": "H965", "group": "rule", "input": "屏幕刷新率调到50Hz", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率（绝对值 Hz）"}
+{"id": "H966", "group": "rule", "input": "屏幕刷新率up", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率（相对档位，带「屏幕」前缀）"}
+{"id": "H967", "group": "rule", "input": "屏幕刷新率down", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率（相对档位，带「屏幕」前缀）"}
+{"id": "H968", "group": "rule", "input": "刷新率调到50", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率（绝对值 Hz）"}
+{"id": "H969", "group": "rule", "input": "屏幕分辨率调到1280x720", "expect": "set_resolution", "note": "屏幕/调节分辨率（绝对值 WxH）"}
+{"id": "H970", "group": "rule", "input": "刷新率调为59.94hz", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率（小数 Hz，不能被切成 94）"}
+{"id": "H971", "group": "rule", "input": "屏幕刷新率调到59.94Hz", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率（小数 Hz，带屏幕前缀）"}
+{"id": "H972", "group": "rule", "input": "刷新率设为29.97", "expect": "set_refresh_rate", "note": "屏幕/调节刷新率（无 Hz 单位的小数）"}
+{"id": "H973", "group": "rule", "input": "屏幕缩放调为1", "expect": "set_aspect_ratio", "note": "屏幕/缩放比例（整数 1 → 1.00）"}
+{"id": "H974", "group": "rule", "input": "屏幕缩放调到1.5", "expect": "set_aspect_ratio", "note": "屏幕/缩放比例（一位小数 1.5 → 1.50）"}
+{"id": "H975", "group": "rule", "input": "缩放比例设为2", "expect": "set_aspect_ratio", "note": "屏幕/缩放比例（整数 2 → 2.00）"}
+{"id": "H976", "group": "rule", "input": "把屏幕缩放调为2", "expect": "set_aspect_ratio", "note": "屏幕/缩放比例（把…调为 N）"}
+{"id": "H977", "group": "rule", "input": "屏幕缩放调到125%", "expect": "set_aspect_ratio", "note": "屏幕/缩放比例（百分比 125% → 1.25）"}

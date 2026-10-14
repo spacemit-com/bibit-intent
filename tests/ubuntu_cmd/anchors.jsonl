@@ -1,0 +1,915 @@
+{"group": "anchor", "expect": "close_app", "input": "关掉浏览器"}
+{"group": "anchor", "expect": "close_app", "input": "退出微信"}
+{"group": "anchor", "expect": "close_app", "input": "把编辑器关闭"}
+{"group": "anchor", "expect": "close_app", "input": "帮我关掉计算器"}
+{"group": "anchor", "expect": "close_app", "input": "关闭音乐软件"}
+{"group": "anchor", "expect": "close_app", "input": "帮我关掉浏览器"}
+{"group": "anchor", "expect": "close_app", "input": "把微信退出"}
+{"group": "anchor", "expect": "close_app", "input": "关闭音乐播放器"}
+{"group": "anchor", "expect": "close_app", "input": "退出编辑器"}
+{"group": "anchor", "expect": "close_app", "input": "把计算器关了"}
+{"group": "anchor", "expect": "disk_check", "input": "检查磁盘有没有坏道"}
+{"group": "anchor", "expect": "disk_check", "input": "fsck 检查硬盘"}
+{"group": "anchor", "expect": "disk_check", "input": "磁盘自检"}
+{"group": "anchor", "expect": "disk_check", "input": "修复文件系统"}
+{"group": "anchor", "expect": "disk_check", "input": "检查一下硬盘"}
+{"group": "anchor", "expect": "disk_check", "input": "对磁盘做检查"}
+{"group": "anchor", "expect": "disk_check", "input": "fsck 修复一下分区"}
+{"group": "anchor", "expect": "disk_check", "input": "检查文件系统完整性"}
+{"group": "anchor", "expect": "disk_check", "input": "磁盘体检"}
+{"group": "anchor", "expect": "disk_check", "input": "查一下硬盘有没有问题"}
+{"group": "anchor", "expect": "disk_dir_usage", "input": "这个目录多大"}
+{"group": "anchor", "expect": "disk_dir_usage", "input": "var 目录占了多少空间"}
+{"group": "anchor", "expect": "disk_dir_usage", "input": "哪个文件夹最占地方"}
+{"group": "anchor", "expect": "disk_dir_usage", "input": "查一下目录大小"}
+{"group": "anchor", "expect": "disk_dir_usage", "input": "看看这个目录多大"}
+{"group": "anchor", "expect": "disk_dir_usage", "input": "home 目录占用多大"}
+{"group": "anchor", "expect": "disk_dir_usage", "input": "哪些目录占用空间大"}
+{"group": "anchor", "expect": "disk_dir_usage", "input": "查一下 /var/log 的大小"}
+{"group": "anchor", "expect": "disk_dir_usage", "input": "这个文件夹多大"}
+{"group": "anchor", "expect": "disk_dir_usage", "input": "目录空间占用情况"}
+{"group": "anchor", "expect": "disk_format", "input": "格式化这块盘"}
+{"group": "anchor", "expect": "disk_format", "input": "mkfs 格式化分区"}
+{"group": "anchor", "expect": "disk_format", "input": "把 u 盘格式化"}
+{"group": "anchor", "expect": "disk_format", "input": "重建文件系统"}
+{"group": "anchor", "expect": "disk_format", "input": "格式化这个分区"}
+{"group": "anchor", "expect": "disk_format", "input": "把这块盘格式化掉"}
+{"group": "anchor", "expect": "disk_format", "input": "mkfs 重建文件系统"}
+{"group": "anchor", "expect": "disk_format", "input": "格式化一个新的分区"}
+{"group": "anchor", "expect": "disk_format", "input": "把 u 盘清空格式化"}
+{"group": "anchor", "expect": "disk_format", "input": "给分区做格式化"}
+{"group": "anchor", "expect": "disk_info", "input": "硬盘型号是什么"}
+{"group": "anchor", "expect": "disk_info", "input": "磁盘详细信息"}
+{"group": "anchor", "expect": "disk_info", "input": "hdparm 看硬盘"}
+{"group": "anchor", "expect": "disk_info", "input": "硬盘参数"}
+{"group": "anchor", "expect": "disk_info", "input": "这块盘是什么型号"}
+{"group": "anchor", "expect": "disk_info", "input": "查看硬盘型号"}
+{"group": "anchor", "expect": "disk_info", "input": "磁盘的具体信息"}
+{"group": "anchor", "expect": "disk_info", "input": "hdparm 的输出"}
+{"group": "anchor", "expect": "disk_info", "input": "硬盘详细参数"}
+{"group": "anchor", "expect": "disk_info", "input": "查一下这块盘的型号"}
+{"group": "anchor", "expect": "disk_io", "input": "磁盘读写速度"}
+{"group": "anchor", "expect": "disk_io", "input": "io 负载情况"}
+{"group": "anchor", "expect": "disk_io", "input": "iostat 看下磁盘"}
+{"group": "anchor", "expect": "disk_io", "input": "硬盘忙不忙"}
+{"group": "anchor", "expect": "disk_io", "input": "磁盘 io 怎么样"}
+{"group": "anchor", "expect": "disk_io", "input": "查看磁盘 io"}
+{"group": "anchor", "expect": "disk_io", "input": "磁盘读写负载"}
+{"group": "anchor", "expect": "disk_io", "input": "iostat 的输出"}
+{"group": "anchor", "expect": "disk_io", "input": "硬盘 io 忙不忙"}
+{"group": "anchor", "expect": "disk_io", "input": "查一下磁盘性能"}
+{"group": "anchor", "expect": "disk_lsblk", "input": "系统有几块磁盘"}
+{"group": "anchor", "expect": "disk_lsblk", "input": "块设备有哪些"}
+{"group": "anchor", "expect": "disk_lsblk", "input": "看看硬盘列表"}
+{"group": "anchor", "expect": "disk_lsblk", "input": "分区都在哪些盘上"}
+{"group": "anchor", "expect": "disk_lsblk", "input": "机器上挂了几块盘"}
+{"group": "anchor", "expect": "disk_lsblk", "input": "查看块设备列表"}
+{"group": "anchor", "expect": "disk_lsblk", "input": "有几块硬盘"}
+{"group": "anchor", "expect": "disk_lsblk", "input": "磁盘分区信息"}
+{"group": "anchor", "expect": "disk_lsblk", "input": "lsblk 看下"}
+{"group": "anchor", "expect": "disk_lsblk", "input": "这台机器有哪些盘"}
+{"group": "anchor", "expect": "disk_mount", "input": "挂载这个分区"}
+{"group": "anchor", "expect": "disk_mount", "input": "mount 到 /mnt"}
+{"group": "anchor", "expect": "disk_mount", "input": "把磁盘挂上"}
+{"group": "anchor", "expect": "disk_mount", "input": "挂载 u 盘"}
+{"group": "anchor", "expect": "disk_mount", "input": "挂载一下这个设备"}
+{"group": "anchor", "expect": "disk_mount", "input": "把分区挂载到目录"}
+{"group": "anchor", "expect": "disk_mount", "input": "mount /dev/sdb1 到 /mnt/data"}
+{"group": "anchor", "expect": "disk_mount", "input": "挂载外部磁盘"}
+{"group": "anchor", "expect": "disk_mount", "input": "把这个设备挂载上"}
+{"group": "anchor", "expect": "disk_mount", "input": "挂载一下这块盘"}
+{"group": "anchor", "expect": "disk_partitions", "input": "分区表是什么样"}
+{"group": "anchor", "expect": "disk_partitions", "input": "硬盘分区情况"}
+{"group": "anchor", "expect": "disk_partitions", "input": "fdisk 看分区"}
+{"group": "anchor", "expect": "disk_partitions", "input": "有哪些分区"}
+{"group": "anchor", "expect": "disk_partitions", "input": "分区列表"}
+{"group": "anchor", "expect": "disk_partitions", "input": "查看分区表"}
+{"group": "anchor", "expect": "disk_partitions", "input": "fdisk -l 的输出"}
+{"group": "anchor", "expect": "disk_partitions", "input": "硬盘有哪些分区"}
+{"group": "anchor", "expect": "disk_partitions", "input": "分区信息列表"}
+{"group": "anchor", "expect": "disk_partitions", "input": "查一下分区情况"}
+{"group": "anchor", "expect": "disk_raid", "input": "raid 阵列状态"}
+{"group": "anchor", "expect": "disk_raid", "input": "软 raid 情况"}
+{"group": "anchor", "expect": "disk_raid", "input": "mdstat 看下阵列"}
+{"group": "anchor", "expect": "disk_raid", "input": "磁盘阵列健康吗"}
+{"group": "anchor", "expect": "disk_raid", "input": "raid 状态怎么样"}
+{"group": "anchor", "expect": "disk_raid", "input": "查看 raid 状态"}
+{"group": "anchor", "expect": "disk_raid", "input": "软 raid 阵列信息"}
+{"group": "anchor", "expect": "disk_raid", "input": "mdstat 输出"}
+{"group": "anchor", "expect": "disk_raid", "input": "磁盘阵列状态"}
+{"group": "anchor", "expect": "disk_raid", "input": "查一下 raid 阵列"}
+{"group": "anchor", "expect": "disk_umount", "input": "卸载这个分区"}
+{"group": "anchor", "expect": "disk_umount", "input": "umount /mnt"}
+{"group": "anchor", "expect": "disk_umount", "input": "弹出磁盘"}
+{"group": "anchor", "expect": "disk_umount", "input": "卸载挂载点"}
+{"group": "anchor", "expect": "disk_umount", "input": "把盘卸下来"}
+{"group": "anchor", "expect": "disk_umount", "input": "卸载挂载的磁盘"}
+{"group": "anchor", "expect": "disk_umount", "input": "umount 掉这个分区"}
+{"group": "anchor", "expect": "disk_umount", "input": "把 u 盘弹出来"}
+{"group": "anchor", "expect": "disk_umount", "input": "取消挂载"}
+{"group": "anchor", "expect": "disk_umount", "input": "把挂载点卸载掉"}
+{"group": "anchor", "expect": "disk_usage", "input": "磁盘空间还剩多少"}
+{"group": "anchor", "expect": "disk_usage", "input": "硬盘满了没"}
+{"group": "anchor", "expect": "disk_usage", "input": "df 看下空间"}
+{"group": "anchor", "expect": "disk_usage", "input": "还有多少可用空间"}
+{"group": "anchor", "expect": "disk_usage", "input": "存储空间够不够"}
+{"group": "anchor", "expect": "disk_usage", "input": "查看磁盘剩余空间"}
+{"group": "anchor", "expect": "disk_usage", "input": "根分区还有多少空间"}
+{"group": "anchor", "expect": "disk_usage", "input": "硬盘空间使用情况"}
+{"group": "anchor", "expect": "disk_usage", "input": "磁盘还剩多少"}
+{"group": "anchor", "expect": "disk_usage", "input": "df -h 的结果"}
+{"group": "anchor", "expect": "file_info", "input": "这个文件是什么类型"}
+{"group": "anchor", "expect": "file_info", "input": "file 命令看下"}
+{"group": "anchor", "expect": "file_info", "input": "文件格式是什么"}
+{"group": "anchor", "expect": "file_info", "input": "这是文本文件还是二进制"}
+{"group": "anchor", "expect": "file_info", "input": "查一下文件类型"}
+{"group": "anchor", "expect": "file_info", "input": "查看文件类型"}
+{"group": "anchor", "expect": "file_info", "input": "file 命令的输出"}
+{"group": "anchor", "expect": "file_info", "input": "这个文件的格式"}
+{"group": "anchor", "expect": "file_info", "input": "文件是什么格式"}
+{"group": "anchor", "expect": "file_info", "input": "查一下这个文件"}
+{"group": "anchor", "expect": "get_system_info", "input": "系统状态怎么样"}
+{"group": "anchor", "expect": "get_system_info", "input": "查一下设备状态"}
+{"group": "anchor", "expect": "get_system_info", "input": "系统整体情况怎么样"}
+{"group": "anchor", "expect": "get_system_info", "input": "看看系统的运行状态"}
+{"group": "anchor", "expect": "get_system_info", "input": "设备现在什么情况"}
+{"group": "anchor", "expect": "get_system_info", "input": "设备整体运行情况"}
+{"group": "anchor", "expect": "get_system_info", "input": "系统现在怎么样"}
+{"group": "anchor", "expect": "get_system_info", "input": "查一下机器的状态"}
+{"group": "anchor", "expect": "get_system_info", "input": "当前系统状况"}
+{"group": "anchor", "expect": "get_system_info", "input": "看看设备的情况"}
+{"group": "anchor", "expect": "iptables_block", "input": "屏蔽这个 ip"}
+{"group": "anchor", "expect": "iptables_block", "input": "封掉这个地址"}
+{"group": "anchor", "expect": "iptables_block", "input": "iptables 拒绝来自这个 ip"}
+{"group": "anchor", "expect": "iptables_block", "input": "拉黑这个 ip"}
+{"group": "anchor", "expect": "iptables_block", "input": "把这个 ip 禁了"}
+{"group": "anchor", "expect": "iptables_block", "input": "禁止来自这个 ip 的访问"}
+{"group": "anchor", "expect": "iptables_block", "input": "iptables 屏蔽该地址"}
+{"group": "anchor", "expect": "iptables_block", "input": "把这个 ip 拉黑"}
+{"group": "anchor", "expect": "iptables_block", "input": "拦截这个 ip"}
+{"group": "anchor", "expect": "iptables_block", "input": "封禁这个来源地址"}
+{"group": "anchor", "expect": "iptables_list", "input": "防火墙规则"}
+{"group": "anchor", "expect": "iptables_list", "input": "iptables 规则列表"}
+{"group": "anchor", "expect": "iptables_list", "input": "nat 规则"}
+{"group": "anchor", "expect": "iptables_list", "input": "防火墙配置"}
+{"group": "anchor", "expect": "iptables_list", "input": "查看 iptables 规则"}
+{"group": "anchor", "expect": "iptables_list", "input": "查看防火墙规则"}
+{"group": "anchor", "expect": "iptables_list", "input": "iptables -L 的输出"}
+{"group": "anchor", "expect": "iptables_list", "input": "当前防火墙配置"}
+{"group": "anchor", "expect": "iptables_list", "input": "有哪些防火墙规则"}
+{"group": "anchor", "expect": "iptables_list", "input": "查一下 iptables 列表"}
+{"group": "anchor", "expect": "launch_app", "input": "打开浏览器"}
+{"group": "anchor", "expect": "launch_app", "input": "启动微信"}
+{"group": "anchor", "expect": "launch_app", "input": "运行一下编辑器"}
+{"group": "anchor", "expect": "launch_app", "input": "帮我开个计算器"}
+{"group": "anchor", "expect": "launch_app", "input": "把音乐软件打开"}
+{"group": "anchor", "expect": "launch_app", "input": "帮我打开浏览器"}
+{"group": "anchor", "expect": "launch_app", "input": "启动一下音乐播放器"}
+{"group": "anchor", "expect": "launch_app", "input": "开个记事本"}
+{"group": "anchor", "expect": "launch_app", "input": "把微信打开"}
+{"group": "anchor", "expect": "launch_app", "input": "运行浏览器"}
+{"group": "anchor", "expect": "login_records", "input": "最近的登录记录"}
+{"group": "anchor", "expect": "login_records", "input": "谁登录过这台机器"}
+{"group": "anchor", "expect": "login_records", "input": "查看登录日志"}
+{"group": "anchor", "expect": "login_records", "input": "last 看下登录记录"}
+{"group": "anchor", "expect": "login_records", "input": "这台机器哪些人登录过"}
+{"group": "anchor", "expect": "login_records", "input": "查看最近的登录历史"}
+{"group": "anchor", "expect": "login_records", "input": "last 命令的结果"}
+{"group": "anchor", "expect": "login_records", "input": "这台机器谁登录过"}
+{"group": "anchor", "expect": "login_records", "input": "登录日志里有什么"}
+{"group": "anchor", "expect": "login_records", "input": "查一下登录记录"}
+{"group": "anchor", "expect": "mute", "input": "静音一下"}
+{"group": "anchor", "expect": "mute", "input": "把声音关掉"}
+{"group": "anchor", "expect": "mute", "input": "不要出声了"}
+{"group": "anchor", "expect": "mute", "input": "先静音"}
+{"group": "anchor", "expect": "mute", "input": "把声音静掉"}
+{"group": "anchor", "expect": "mute", "input": "把声音关了"}
+{"group": "anchor", "expect": "mute", "input": "暂停一下声音"}
+{"group": "anchor", "expect": "mute", "input": "别出声"}
+{"group": "anchor", "expect": "mute", "input": "声音先关一下"}
+{"group": "anchor", "expect": "mute", "input": "让我静音"}
+{"group": "anchor", "expect": "net_conn", "input": "有哪些网络连接"}
+{"group": "anchor", "expect": "net_conn", "input": "监听端口有哪些"}
+{"group": "anchor", "expect": "net_conn", "input": "谁连着这台机器"}
+{"group": "anchor", "expect": "net_conn", "input": "netstat 看下连接"}
+{"group": "anchor", "expect": "net_conn", "input": "当前网络连接情况"}
+{"group": "anchor", "expect": "net_conn", "input": "查看网络连接"}
+{"group": "anchor", "expect": "net_conn", "input": "都有哪些端口在监听"}
+{"group": "anchor", "expect": "net_conn", "input": "本机的连接列表"}
+{"group": "anchor", "expect": "net_conn", "input": "ss 看下连接"}
+{"group": "anchor", "expect": "net_conn", "input": "查一下开放了哪些端口"}
+{"group": "anchor", "expect": "net_enable_nat", "input": "开启 ip 转发"}
+{"group": "anchor", "expect": "net_enable_nat", "input": "打开 nat"}
+{"group": "anchor", "expect": "net_enable_nat", "input": "让网络走 nat"}
+{"group": "anchor", "expect": "net_enable_nat", "input": "开启路由转发"}
+{"group": "anchor", "expect": "net_enable_nat", "input": "启用网络 nat"}
+{"group": "anchor", "expect": "net_enable_nat", "input": "打开 ip 转发功能"}
+{"group": "anchor", "expect": "net_enable_nat", "input": "开启 nat 转发"}
+{"group": "anchor", "expect": "net_enable_nat", "input": "sysctl 开启 ip 转发"}
+{"group": "anchor", "expect": "net_enable_nat", "input": "让网络支持 nat 转发"}
+{"group": "anchor", "expect": "net_enable_nat", "input": "开启路由转发功能"}
+{"group": "anchor", "expect": "net_ext_ip", "input": "我的公网 ip"}
+{"group": "anchor", "expect": "net_ext_ip", "input": "外网 ip 是多少"}
+{"group": "anchor", "expect": "net_ext_ip", "input": "出口 ip 地址"}
+{"group": "anchor", "expect": "net_ext_ip", "input": "查一下公网地址"}
+{"group": "anchor", "expect": "net_ext_ip", "input": "外部 ip 是什么"}
+{"group": "anchor", "expect": "net_ext_ip", "input": "查看公网 ip"}
+{"group": "anchor", "expect": "net_ext_ip", "input": "我的外网地址"}
+{"group": "anchor", "expect": "net_ext_ip", "input": "本机出口 ip"}
+{"group": "anchor", "expect": "net_ext_ip", "input": "公网地址是多少"}
+{"group": "anchor", "expect": "net_ext_ip", "input": "查一下外部 ip"}
+{"group": "anchor", "expect": "net_http_head", "input": "网站的响应头"}
+{"group": "anchor", "expect": "net_http_head", "input": "http 头信息"}
+{"group": "anchor", "expect": "net_http_head", "input": "curl 看响应头"}
+{"group": "anchor", "expect": "net_http_head", "input": "这个 url 的 header"}
+{"group": "anchor", "expect": "net_http_head", "input": "查一下响应头"}
+{"group": "anchor", "expect": "net_http_head", "input": "查看网页响应头"}
+{"group": "anchor", "expect": "net_http_head", "input": "curl -I 的结果"}
+{"group": "anchor", "expect": "net_http_head", "input": "这个网站的 header 信息"}
+{"group": "anchor", "expect": "net_http_head", "input": "http 响应头是什么"}
+{"group": "anchor", "expect": "net_http_head", "input": "查一下这个 url 的响应头"}
+{"group": "anchor", "expect": "net_ip", "input": "我的 ip 是多少"}
+{"group": "anchor", "expect": "net_mac", "input": "网卡地址是什么", "note": "2026-09-10 归属纠正：裸\"网卡地址\"默认读作 MAC/物理地址（IP 查询请说\"网卡IP\"）"}
+{"group": "anchor", "expect": "net_ip", "input": "查看 ip 地址"}
+{"group": "anchor", "expect": "net_ip", "input": "这台设备的 ip"}
+{"group": "anchor", "expect": "net_ip", "input": "ip 信息是什么"}
+{"group": "anchor", "expect": "net_ip", "input": "查一下这台机器的 ip"}
+{"group": "anchor", "expect": "net_ip", "input": "我的网络地址是多少"}
+{"group": "anchor", "expect": "net_ip", "input": "ip addr 看下"}
+{"group": "anchor", "expect": "net_ip", "input": "网卡 ip 地址"}
+{"group": "anchor", "expect": "net_ip", "input": "这台设备怎么查 ip"}
+{"group": "anchor", "expect": "net_mac", "input": "网卡 mac 地址"}
+{"group": "anchor", "expect": "net_mac", "input": "物理地址是什么"}
+{"group": "anchor", "expect": "net_mac", "input": "查一下 mac"}
+{"group": "anchor", "expect": "net_mac", "input": "网卡硬件地址"}
+{"group": "anchor", "expect": "net_mac", "input": "mac 地址是多少"}
+{"group": "anchor", "expect": "net_mac", "input": "查看网卡 mac"}
+{"group": "anchor", "expect": "net_mac", "input": "这个网卡的物理地址"}
+{"group": "anchor", "expect": "net_mac", "input": "ip link 看下 mac"}
+{"group": "anchor", "expect": "net_mac", "input": "网卡硬件地址是多少"}
+{"group": "anchor", "expect": "net_mac", "input": "查一下 mac 地址"}
+{"group": "anchor", "expect": "net_route", "input": "路由表是什么"}
+{"group": "anchor", "expect": "net_route", "input": "默认网关是多少"}
+{"group": "anchor", "expect": "net_route", "input": "route 看下路由"}
+{"group": "anchor", "expect": "net_route", "input": "网络路由信息"}
+{"group": "anchor", "expect": "net_route", "input": "查一下路由表"}
+{"group": "anchor", "expect": "net_route", "input": "查看路由表"}
+{"group": "anchor", "expect": "net_route", "input": "默认网关地址"}
+{"group": "anchor", "expect": "net_route", "input": "route -n 的输出"}
+{"group": "anchor", "expect": "net_route", "input": "网络网关信息"}
+{"group": "anchor", "expect": "net_route", "input": "查一下默认路由"}
+{"group": "anchor", "expect": "net_trace", "input": "到这个网站的路径"}
+{"group": "anchor", "expect": "net_trace", "input": "traceroute 看下"}
+{"group": "anchor", "expect": "net_trace", "input": "路由经过哪些节点"}
+{"group": "anchor", "expect": "net_trace", "input": "tracepath 查路径"}
+{"group": "anchor", "expect": "net_trace", "input": "跟踪一下网络路径"}
+{"group": "anchor", "expect": "net_trace", "input": "查看到某主机的路由路径"}
+{"group": "anchor", "expect": "net_trace", "input": "traceroute 的输出"}
+{"group": "anchor", "expect": "net_trace", "input": "到这个地址经过哪些节点"}
+{"group": "anchor", "expect": "net_trace", "input": "网络路径跟踪"}
+{"group": "anchor", "expect": "net_trace", "input": "查一下路由跟踪"}
+{"group": "anchor", "expect": "net_whois", "input": "这个域名的注册信息"}
+{"group": "anchor", "expect": "net_whois", "input": "whois 查下域名"}
+{"group": "anchor", "expect": "net_whois", "input": "域名归属"}
+{"group": "anchor", "expect": "net_whois", "input": "域名注册商"}
+{"group": "anchor", "expect": "net_whois", "input": "查一下域名的 whois"}
+{"group": "anchor", "expect": "net_whois", "input": "查看域名的注册信息"}
+{"group": "anchor", "expect": "net_whois", "input": "whois 查询结果"}
+{"group": "anchor", "expect": "net_whois", "input": "这个域名是谁的"}
+{"group": "anchor", "expect": "net_whois", "input": "域名信息查询"}
+{"group": "anchor", "expect": "net_whois", "input": "查一下域名归属"}
+{"group": "anchor", "expect": "online_users", "input": "现在谁在线"}
+{"group": "anchor", "expect": "online_users", "input": "当前登录了几个用户"}
+{"group": "anchor", "expect": "online_users", "input": "who 看下在线用户"}
+{"group": "anchor", "expect": "online_users", "input": "有几个用户登着"}
+{"group": "anchor", "expect": "online_users", "input": "看看谁在线"}
+{"group": "anchor", "expect": "online_users", "input": "查看当前登录的用户"}
+{"group": "anchor", "expect": "online_users", "input": "who 命令看下"}
+{"group": "anchor", "expect": "online_users", "input": "现在有几个用户在线"}
+{"group": "anchor", "expect": "online_users", "input": "在线用户列表"}
+{"group": "anchor", "expect": "online_users", "input": "看看谁登着这台机器"}
+{"group": "anchor", "expect": "pkg_archives", "input": "下载的安装包缓存在哪"}
+{"group": "anchor", "expect": "pkg_archives", "input": "apt 缓存目录在哪"}
+{"group": "anchor", "expect": "pkg_archives", "input": "包缓存占多少"}
+{"group": "anchor", "expect": "pkg_archives", "input": "安装包缓存目录"}
+{"group": "anchor", "expect": "pkg_archives", "input": "看看下载缓存目录"}
+{"group": "anchor", "expect": "pkg_archives", "input": "apt 下载缓存的位置"}
+{"group": "anchor", "expect": "pkg_archives", "input": "查看包缓存目录"}
+{"group": "anchor", "expect": "pkg_archives", "input": "下载的 deb 包存在哪"}
+{"group": "anchor", "expect": "pkg_archives", "input": "软件包缓存路径"}
+{"group": "anchor", "expect": "pkg_archives", "input": "查一下 apt 缓存目录"}
+{"group": "anchor", "expect": "pkg_autoremove", "input": "清理不再用的依赖"}
+{"group": "anchor", "expect": "pkg_autoremove", "input": "apt autoremove"}
+{"group": "anchor", "expect": "pkg_autoremove", "input": "删除无用的包"}
+{"group": "anchor", "expect": "pkg_autoremove", "input": "清掉孤立软件"}
+{"group": "anchor", "expect": "pkg_autoremove", "input": "自动移除多余包"}
+{"group": "anchor", "expect": "pkg_autoremove", "input": "删除不需要的依赖包"}
+{"group": "anchor", "expect": "pkg_autoremove", "input": "apt autoremove 一下"}
+{"group": "anchor", "expect": "pkg_autoremove", "input": "清理多余的软件包"}
+{"group": "anchor", "expect": "pkg_autoremove", "input": "移除孤立依赖"}
+{"group": "anchor", "expect": "pkg_autoremove", "input": "把没用的包清掉"}
+{"group": "anchor", "expect": "pkg_clean", "input": "清理 apt 缓存"}
+{"group": "anchor", "expect": "pkg_clean", "input": "清一下软件缓存"}
+{"group": "anchor", "expect": "pkg_clean", "input": "apt clean 一下"}
+{"group": "anchor", "expect": "pkg_clean", "input": "释放缓存空间"}
+{"group": "anchor", "expect": "pkg_clean", "input": "清理软件缓存"}
+{"group": "anchor", "expect": "pkg_clean", "input": "清理下载缓存"}
+{"group": "anchor", "expect": "pkg_clean", "input": "apt clean 清一下"}
+{"group": "anchor", "expect": "pkg_clean", "input": "清掉安装包缓存"}
+{"group": "anchor", "expect": "pkg_clean", "input": "释放磁盘缓存空间"}
+{"group": "anchor", "expect": "pkg_clean", "input": "清理包缓存"}
+{"group": "anchor", "expect": "pkg_depends", "input": "装这个包需要哪些依赖"}
+{"group": "anchor", "expect": "pkg_depends", "input": "curl 依赖什么库"}
+{"group": "anchor", "expect": "pkg_depends", "input": "这个软件要装哪些前置包"}
+{"group": "anchor", "expect": "pkg_depends", "input": "查一下这个包的依赖列表"}
+{"group": "anchor", "expect": "pkg_depends", "input": "这个包装之前要装什么"}
+{"group": "anchor", "expect": "pkg_depends", "input": "这个软件的依赖有哪些"}
+{"group": "anchor", "expect": "pkg_depends", "input": "安装 curl 前需要装什么"}
+{"group": "anchor", "expect": "pkg_depends", "input": "查一下这个包的依赖"}
+{"group": "anchor", "expect": "pkg_depends", "input": "git 依赖哪些包"}
+{"group": "anchor", "expect": "pkg_depends", "input": "这个包需要什么前置依赖"}
+{"group": "anchor", "expect": "pkg_files", "input": "这个软件装完都放了哪些文件"}
+{"group": "anchor", "expect": "pkg_files", "input": "git 安装后文件都在哪里"}
+{"group": "anchor", "expect": "pkg_files", "input": "看看 curl 装的内容"}
+{"group": "anchor", "expect": "pkg_files", "input": "nginx 这个包有哪些文件"}
+{"group": "anchor", "expect": "pkg_files", "input": "查一下这个软件装了哪些东西"}
+{"group": "anchor", "expect": "pkg_files", "input": "vim 安装后文件装到哪里了"}
+{"group": "anchor", "expect": "pkg_files", "input": "这个包的文件清单"}
+{"group": "anchor", "expect": "pkg_files", "input": "查一下 python3 装的文件都在哪"}
+{"group": "anchor", "expect": "pkg_files", "input": "软件安装的文件列表"}
+{"group": "anchor", "expect": "pkg_files", "input": "看看这个软件都装了哪些文件"}
+{"group": "anchor", "expect": "pkg_info", "input": "看看这个包的详细信息"}
+{"group": "anchor", "expect": "pkg_info", "input": "vim 的版本信息是什么"}
+{"group": "anchor", "expect": "pkg_info", "input": "查一下 openssh 的包描述"}
+{"group": "anchor", "expect": "pkg_info", "input": "这个软件是什么版本的"}
+{"group": "anchor", "expect": "pkg_info", "input": "看下这个包的说明"}
+{"group": "anchor", "expect": "pkg_info", "input": "这个软件包的详情"}
+{"group": "anchor", "expect": "pkg_info", "input": "查一下包的版本"}
+{"group": "anchor", "expect": "pkg_info", "input": "看看这个包的介绍"}
+{"group": "anchor", "expect": "pkg_info", "input": "软件包的描述信息"}
+{"group": "anchor", "expect": "pkg_info", "input": "这个包是干什么的"}
+{"group": "anchor", "expect": "pkg_install", "input": "帮我装一个 htop"}
+{"group": "anchor", "expect": "pkg_install", "input": "安装 vlc 播放器"}
+{"group": "anchor", "expect": "pkg_install", "input": "我要装一下这个软件"}
+{"group": "anchor", "expect": "pkg_install", "input": "apt 安装 curl"}
+{"group": "anchor", "expect": "pkg_install", "input": "帮我安装 nginx"}
+{"group": "anchor", "expect": "pkg_install", "input": "帮我装一下 git"}
+{"group": "anchor", "expect": "pkg_install", "input": "安装一个文本编辑器"}
+{"group": "anchor", "expect": "pkg_install", "input": "apt install 装个软件"}
+{"group": "anchor", "expect": "pkg_install", "input": "把 vim 装上"}
+{"group": "anchor", "expect": "pkg_install", "input": "帮我安装个软件"}
+{"group": "anchor", "expect": "pkg_installed", "input": "系统装了哪些软件"}
+{"group": "anchor", "expect": "pkg_installed", "input": "有没有安装 python3"}
+{"group": "anchor", "expect": "pkg_installed", "input": "查一下装了哪些包"}
+{"group": "anchor", "expect": "pkg_installed", "input": "我的机器上装了哪些程序"}
+{"group": "anchor", "expect": "pkg_installed", "input": "看看装了什么软件"}
+{"group": "anchor", "expect": "pkg_installed", "input": "我装过哪些软件"}
+{"group": "anchor", "expect": "pkg_installed", "input": "查查装没装 docker"}
+{"group": "anchor", "expect": "pkg_installed", "input": "已安装的软件列表"}
+{"group": "anchor", "expect": "pkg_installed", "input": "这台机器有没有装 nginx"}
+{"group": "anchor", "expect": "pkg_installed", "input": "看看都装了什么程序"}
+{"group": "anchor", "expect": "pkg_owns_file", "input": "这个文件是哪个包提供的"}
+{"group": "anchor", "expect": "pkg_owns_file", "input": "/bin/ls 属于哪个软件包"}
+{"group": "anchor", "expect": "pkg_owns_file", "input": "谁提供的这个命令"}
+{"group": "anchor", "expect": "pkg_owns_file", "input": "这个可执行文件来自哪个包"}
+{"group": "anchor", "expect": "pkg_owns_file", "input": "这个路径是哪个包装的"}
+{"group": "anchor", "expect": "pkg_owns_file", "input": "这个命令是哪个软件包里的"}
+{"group": "anchor", "expect": "pkg_owns_file", "input": "/usr/bin/python3 属于哪个包"}
+{"group": "anchor", "expect": "pkg_owns_file", "input": "哪个包包含了这个文件"}
+{"group": "anchor", "expect": "pkg_owns_file", "input": "这个程序是哪个包装的"}
+{"group": "anchor", "expect": "pkg_owns_file", "input": "查一下这个文件的来源包"}
+{"group": "anchor", "expect": "pkg_rdepends", "input": "哪些软件依赖这个包"}
+{"group": "anchor", "expect": "pkg_rdepends", "input": "谁在用这个库"}
+{"group": "anchor", "expect": "pkg_rdepends", "input": "这个包被谁依赖"}
+{"group": "anchor", "expect": "pkg_rdepends", "input": "反向查一下依赖关系"}
+{"group": "anchor", "expect": "pkg_rdepends", "input": "有哪些包依赖它"}
+{"group": "anchor", "expect": "pkg_rdepends", "input": "哪些包依赖这个库"}
+{"group": "anchor", "expect": "pkg_rdepends", "input": "查一下谁依赖这个软件"}
+{"group": "anchor", "expect": "pkg_rdepends", "input": "这个库被哪些程序使用"}
+{"group": "anchor", "expect": "pkg_rdepends", "input": "反向依赖列表"}
+{"group": "anchor", "expect": "pkg_rdepends", "input": "有什么包引用了它"}
+{"group": "anchor", "expect": "pkg_remove", "input": "卸载 vim"}
+{"group": "anchor", "expect": "pkg_remove", "input": "把 htop 删掉"}
+{"group": "anchor", "expect": "pkg_remove", "input": "移除这个软件"}
+{"group": "anchor", "expect": "pkg_remove", "input": "apt remove 一下"}
+{"group": "anchor", "expect": "pkg_remove", "input": "帮我卸载 git"}
+{"group": "anchor", "expect": "pkg_remove", "input": "把 nginx 卸载掉"}
+{"group": "anchor", "expect": "pkg_remove", "input": "卸载一个软件"}
+{"group": "anchor", "expect": "pkg_remove", "input": "apt remove 移除"}
+{"group": "anchor", "expect": "pkg_remove", "input": "删除这个程序"}
+{"group": "anchor", "expect": "pkg_remove", "input": "帮我卸掉 htop"}
+{"group": "anchor", "expect": "pkg_restore_selections", "input": "恢复之前的包列表"}
+{"group": "anchor", "expect": "pkg_restore_selections", "input": "dpkg set-selections 恢复"}
+{"group": "anchor", "expect": "pkg_restore_selections", "input": "还原软件安装清单"}
+{"group": "anchor", "expect": "pkg_restore_selections", "input": "从备份恢复已装软件"}
+{"group": "anchor", "expect": "pkg_restore_selections", "input": "恢复软件包选择"}
+{"group": "anchor", "expect": "pkg_restore_selections", "input": "按备份恢复软件列表"}
+{"group": "anchor", "expect": "pkg_restore_selections", "input": "恢复 dpkg 选择状态"}
+{"group": "anchor", "expect": "pkg_restore_selections", "input": "还原已安装的软件清单"}
+{"group": "anchor", "expect": "pkg_restore_selections", "input": "把软件列表恢复回来"}
+{"group": "anchor", "expect": "pkg_restore_selections", "input": "用备份文件恢复包列表"}
+{"group": "anchor", "expect": "pkg_search", "input": "apt 里有没有 vlc"}
+{"group": "anchor", "expect": "pkg_search", "input": "搜索一下仓库里的播放器"}
+{"group": "anchor", "expect": "pkg_search", "input": "想找找有没有 htop 这个包"}
+{"group": "anchor", "expect": "pkg_search", "input": "软件源里能找到 chrome 吗"}
+{"group": "anchor", "expect": "pkg_search", "input": "仓库里有这个软件吗"}
+{"group": "anchor", "expect": "pkg_search", "input": "帮我搜一下仓库里有没有 nginx"}
+{"group": "anchor", "expect": "pkg_search", "input": "apt 源里能查到 ffmpeg 吗"}
+{"group": "anchor", "expect": "pkg_search", "input": "软件仓库里找找有没有 git"}
+{"group": "anchor", "expect": "pkg_search", "input": "查一下软件源里有没有这个包"}
+{"group": "anchor", "expect": "pkg_search", "input": "搜索一下这个软件在不在仓库"}
+{"group": "anchor", "expect": "pkg_selections", "input": "备份一下已安装的包列表"}
+{"group": "anchor", "expect": "pkg_selections", "input": "导出当前软件清单"}
+{"group": "anchor", "expect": "pkg_selections", "input": "把已装软件列表存下来"}
+{"group": "anchor", "expect": "pkg_selections", "input": "备份软件包列表"}
+{"group": "anchor", "expect": "pkg_selections", "input": "保存当前包清单"}
+{"group": "anchor", "expect": "pkg_selections", "input": "导出已安装软件列表"}
+{"group": "anchor", "expect": "pkg_selections", "input": "备份 dpkg 选择状态"}
+{"group": "anchor", "expect": "pkg_selections", "input": "保存软件包清单"}
+{"group": "anchor", "expect": "pkg_selections", "input": "把当前装了的软件列表备份"}
+{"group": "anchor", "expect": "pkg_selections", "input": "生成已装软件清单"}
+{"group": "anchor", "expect": "pkg_stats", "input": "系统安装了多少个包"}
+{"group": "anchor", "expect": "pkg_stats", "input": "包的数量统计"}
+{"group": "anchor", "expect": "pkg_stats", "input": "软件包统计信息"}
+{"group": "anchor", "expect": "pkg_stats", "input": "一共装了多少软件"}
+{"group": "anchor", "expect": "pkg_stats", "input": "统计一下安装包"}
+{"group": "anchor", "expect": "pkg_stats", "input": "查看软件包统计"}
+{"group": "anchor", "expect": "pkg_stats", "input": "安装了多少软件包"}
+{"group": "anchor", "expect": "pkg_stats", "input": "dpkg 统计信息"}
+{"group": "anchor", "expect": "pkg_stats", "input": "系统里有多少个软件包"}
+{"group": "anchor", "expect": "pkg_stats", "input": "包的安装统计"}
+{"group": "anchor", "expect": "pkg_update", "input": "更新一下系统"}
+{"group": "anchor", "expect": "pkg_update", "input": "升级所有软件"}
+{"group": "anchor", "expect": "pkg_update", "input": "apt update 和 upgrade"}
+{"group": "anchor", "expect": "pkg_update", "input": "系统更新一下"}
+{"group": "anchor", "expect": "pkg_update", "input": "把软件都更新了"}
+{"group": "anchor", "expect": "pkg_update", "input": "把系统升级一下"}
+{"group": "anchor", "expect": "pkg_update", "input": "更新所有软件包"}
+{"group": "anchor", "expect": "pkg_update", "input": "apt upgrade 一下"}
+{"group": "anchor", "expect": "pkg_update", "input": "系统软件更新"}
+{"group": "anchor", "expect": "pkg_update", "input": "更新一下已安装的软件"}
+{"group": "anchor", "expect": "proc_kill", "input": "杀掉这个进程"}
+{"group": "anchor", "expect": "proc_kill", "input": "kill 1234"}
+{"group": "anchor", "expect": "proc_kill", "input": "终止这个程序"}
+{"group": "anchor", "expect": "proc_kill", "input": "结束这个进程"}
+{"group": "anchor", "expect": "proc_kill", "input": "把那个进程杀了"}
+{"group": "anchor", "expect": "proc_kill", "input": "结束掉这个进程"}
+{"group": "anchor", "expect": "proc_kill", "input": "kill 掉这个程序"}
+{"group": "anchor", "expect": "proc_kill", "input": "把 pid 1234 终止"}
+{"group": "anchor", "expect": "proc_kill", "input": "杀掉占用资源的进程"}
+{"group": "anchor", "expect": "proc_kill", "input": "结束这个程序"}
+{"group": "anchor", "expect": "proc_list", "input": "现在跑着哪些进程"}
+{"group": "anchor", "expect": "proc_list", "input": "看一下进程列表"}
+{"group": "anchor", "expect": "proc_list", "input": "有哪些程序在运行"}
+{"group": "anchor", "expect": "proc_list", "input": "ps 看下进程"}
+{"group": "anchor", "expect": "proc_list", "input": "当前有哪些进程"}
+{"group": "anchor", "expect": "proc_list", "input": "查看当前运行的进程"}
+{"group": "anchor", "expect": "proc_list", "input": "现在有哪些程序在跑"}
+{"group": "anchor", "expect": "proc_list", "input": "进程列表是什么"}
+{"group": "anchor", "expect": "proc_list", "input": "查一下进程"}
+{"group": "anchor", "expect": "proc_list", "input": "机器上正在跑什么"}
+{"group": "anchor", "expect": "proc_mem", "input": "内存还剩多少"}
+{"group": "anchor", "expect": "proc_mem", "input": "free 看下内存"}
+{"group": "anchor", "expect": "proc_mem", "input": "内存使用情况"}
+{"group": "anchor", "expect": "proc_mem", "input": "还有多少可用内存"}
+{"group": "anchor", "expect": "proc_mem", "input": "内存占用怎么样"}
+{"group": "anchor", "expect": "proc_mem", "input": "查看内存使用"}
+{"group": "anchor", "expect": "proc_mem", "input": "剩余内存有多少"}
+{"group": "anchor", "expect": "proc_mem", "input": "free 的输出"}
+{"group": "anchor", "expect": "proc_mem", "input": "内存总量和已用"}
+{"group": "anchor", "expect": "proc_mem", "input": "查一下内存占用"}
+{"group": "anchor", "expect": "proc_mem_stat", "input": "各程序内存占用统计"}
+{"group": "anchor", "expect": "proc_mem_stat", "input": "谁用的内存最多汇总"}
+{"group": "anchor", "expect": "proc_mem_stat", "input": "内存都花在哪了"}
+{"group": "anchor", "expect": "proc_mem_stat", "input": "按程序统计内存"}
+{"group": "anchor", "expect": "proc_mem_stat", "input": "内存耗用排行"}
+{"group": "anchor", "expect": "proc_mem_stat", "input": "查看各进程内存统计"}
+{"group": "anchor", "expect": "proc_mem_stat", "input": "程序内存汇总"}
+{"group": "anchor", "expect": "proc_mem_stat", "input": "哪个程序用的内存合计最多"}
+{"group": "anchor", "expect": "proc_mem_stat", "input": "内存占用明细"}
+{"group": "anchor", "expect": "proc_mem_stat", "input": "按进程统计内存使用"}
+{"group": "anchor", "expect": "proc_open_files", "input": "这个进程打开了哪些文件"}
+{"group": "anchor", "expect": "proc_open_files", "input": "lsof 看文件句柄"}
+{"group": "anchor", "expect": "proc_open_files", "input": "谁占着这个文件"}
+{"group": "anchor", "expect": "proc_open_files", "input": "进程的文件描述符"}
+{"group": "anchor", "expect": "proc_open_files", "input": "查一下进程打开的文件"}
+{"group": "anchor", "expect": "proc_open_files", "input": "查看进程打开的文件"}
+{"group": "anchor", "expect": "proc_open_files", "input": "lsof 的输出"}
+{"group": "anchor", "expect": "proc_open_files", "input": "哪个进程占用这个文件"}
+{"group": "anchor", "expect": "proc_open_files", "input": "这个文件被谁使用"}
+{"group": "anchor", "expect": "proc_open_files", "input": "查一下文件句柄"}
+{"group": "anchor", "expect": "proc_port", "input": "这个端口被谁占用"}
+{"group": "anchor", "expect": "proc_port", "input": "8081 端口是什么程序"}
+{"group": "anchor", "expect": "proc_port", "input": "谁在监听这个端口"}
+{"group": "anchor", "expect": "proc_port", "input": "端口占用情况"}
+{"group": "anchor", "expect": "proc_port", "input": "查一下端口被什么占用"}
+{"group": "anchor", "expect": "proc_port", "input": "查看端口占用"}
+{"group": "anchor", "expect": "proc_port", "input": "80 端口被哪个进程占用"}
+{"group": "anchor", "expect": "proc_port", "input": "谁在监听 443 端口"}
+{"group": "anchor", "expect": "proc_port", "input": "ss -tlnp 看下端口"}
+{"group": "anchor", "expect": "proc_port", "input": "查一下 3306 端口被谁占用"}
+{"group": "anchor", "expect": "proc_top_cpu", "input": "哪个进程占 cpu 最高"}
+{"group": "anchor", "expect": "proc_top_cpu", "input": "谁在烧 cpu"}
+{"group": "anchor", "expect": "proc_top_cpu", "input": "cpu 占用排行榜"}
+{"group": "anchor", "expect": "proc_top_cpu", "input": "最耗 cpu 的程序"}
+{"group": "anchor", "expect": "proc_top_cpu", "input": "哪个程序最费 cpu"}
+{"group": "anchor", "expect": "proc_top_cpu", "input": "cpu 占用最高的进程"}
+{"group": "anchor", "expect": "proc_top_cpu", "input": "哪个程序把 cpu 吃满了"}
+{"group": "anchor", "expect": "proc_top_cpu", "input": "查看 cpu 使用排行"}
+{"group": "anchor", "expect": "proc_top_cpu", "input": "谁最占 cpu"}
+{"group": "anchor", "expect": "proc_top_cpu", "input": "cpu 打满的是哪个进程"}
+{"group": "anchor", "expect": "proc_top_mem", "input": "哪个进程吃内存最多"}
+{"group": "anchor", "expect": "proc_top_mem", "input": "内存占用最高的程序"}
+{"group": "anchor", "expect": "proc_top_mem", "input": "谁内存占得厉害"}
+{"group": "anchor", "expect": "proc_top_mem", "input": "top 按内存排序"}
+{"group": "anchor", "expect": "proc_top_mem", "input": "谁吃内存最凶"}
+{"group": "anchor", "expect": "proc_top_mem", "input": "内存占用最多的进程"}
+{"group": "anchor", "expect": "proc_top_mem", "input": "哪个程序最耗内存"}
+{"group": "anchor", "expect": "proc_top_mem", "input": "top 一下内存排行"}
+{"group": "anchor", "expect": "proc_top_mem", "input": "看下谁内存用得多"}
+{"group": "anchor", "expect": "proc_top_mem", "input": "内存大户是哪个进程"}
+{"group": "anchor", "expect": "proc_tree", "input": "进程的父子关系"}
+{"group": "anchor", "expect": "proc_tree", "input": "进程树长什么样"}
+{"group": "anchor", "expect": "proc_tree", "input": "pstree 看下进程"}
+{"group": "anchor", "expect": "proc_tree", "input": "进程是怎么组织的"}
+{"group": "anchor", "expect": "proc_tree", "input": "看下进程树"}
+{"group": "anchor", "expect": "proc_tree", "input": "查看进程树"}
+{"group": "anchor", "expect": "proc_tree", "input": "进程层级关系"}
+{"group": "anchor", "expect": "proc_tree", "input": "pstree 输出"}
+{"group": "anchor", "expect": "proc_tree", "input": "进程的从属关系"}
+{"group": "anchor", "expect": "proc_tree", "input": "看看进程树结构"}
+{"group": "anchor", "expect": "proc_zombie", "input": "清理僵尸进程"}
+{"group": "anchor", "expect": "proc_zombie", "input": "干掉僵尸进程"}
+{"group": "anchor", "expect": "proc_zombie", "input": "zombie 进程清理"}
+{"group": "anchor", "expect": "proc_zombie", "input": "清除死掉的进程"}
+{"group": "anchor", "expect": "proc_zombie", "input": "清理孤儿进程"}
+{"group": "anchor", "expect": "proc_zombie", "input": "把僵尸进程清掉"}
+{"group": "anchor", "expect": "proc_zombie", "input": "清理已死的进程"}
+{"group": "anchor", "expect": "proc_zombie", "input": "消灭僵尸进程"}
+{"group": "anchor", "expect": "proc_zombie", "input": "处理僵尸进程"}
+{"group": "anchor", "expect": "proc_zombie", "input": "把挂掉的进程清理了"}
+{"group": "anchor", "expect": "query_knowledge", "input": "亮度怎么调"}
+{"group": "anchor", "expect": "query_knowledge", "input": "wifi连不上怎么办"}
+{"group": "anchor", "expect": "query_knowledge", "input": "知识库里查一下音量设置"}
+{"group": "anchor", "expect": "query_knowledge", "input": "怎么连接网络"}
+{"group": "anchor", "expect": "query_knowledge", "input": "查一下知识库"}
+{"group": "anchor", "expect": "query_knowledge", "input": "查一下知识库里怎么调亮度"}
+{"group": "anchor", "expect": "query_knowledge", "input": "音量问题查知识库"}
+{"group": "anchor", "expect": "query_knowledge", "input": "wifi 连接的问题怎么解决"}
+{"group": "anchor", "expect": "query_knowledge", "input": "知识库里有屏幕相关的说明吗"}
+{"group": "anchor", "expect": "query_knowledge", "input": "帮我查一下知识库里的网络配置"}
+{"group": "anchor", "expect": "reboot", "input": "重启一下设备"}
+{"group": "anchor", "expect": "reboot", "input": "把机器重启了"}
+{"group": "anchor", "expect": "reboot", "input": "重新开机"}
+{"group": "anchor", "expect": "reboot", "input": "帮我重启系统"}
+{"group": "anchor", "expect": "reboot", "input": "重启一下"}
+{"group": "anchor", "expect": "reboot", "input": "把设备重启一下"}
+{"group": "anchor", "expect": "reboot", "input": "重启机器"}
+{"group": "anchor", "expect": "reboot", "input": "重新启动设备"}
+{"group": "anchor", "expect": "reboot", "input": "帮我重启"}
+{"group": "anchor", "expect": "reboot", "input": "系统重启一下"}
+{"group": "anchor", "expect": "sec_antivirus", "input": "查一下病毒"}
+{"group": "anchor", "expect": "sec_antivirus", "input": "clamscan 扫描"}
+{"group": "anchor", "expect": "sec_antivirus", "input": "杀毒扫描"}
+{"group": "anchor", "expect": "sec_antivirus", "input": "扫描这个目录有没有病毒"}
+{"group": "anchor", "expect": "sec_antivirus", "input": "检查一下有没有病毒"}
+{"group": "anchor", "expect": "sec_antivirus", "input": "病毒扫描一下"}
+{"group": "anchor", "expect": "sec_antivirus", "input": "clamav 查毒"}
+{"group": "anchor", "expect": "sec_antivirus", "input": "扫描 /var 目录有没有病毒"}
+{"group": "anchor", "expect": "sec_antivirus", "input": "全盘杀毒"}
+{"group": "anchor", "expect": "sec_antivirus", "input": "查一下这个文件有没有病毒"}
+{"group": "anchor", "expect": "sec_lastlog", "input": "所有账号的登录情况"}
+{"group": "anchor", "expect": "sec_lastlog", "input": "lastlog2 看下"}
+{"group": "anchor", "expect": "sec_lastlog", "input": "各用户上次登录"}
+{"group": "anchor", "expect": "sec_lastlog", "input": "账号登录历史"}
+{"group": "anchor", "expect": "sec_lastlog", "input": "查一下全部登录记录"}
+{"group": "anchor", "expect": "sec_lastlog", "input": "查看所有用户上次登录时间"}
+{"group": "anchor", "expect": "sec_lastlog", "input": "lastlog2 的输出"}
+{"group": "anchor", "expect": "sec_lastlog", "input": "每个账号的登录记录"}
+{"group": "anchor", "expect": "sec_lastlog", "input": "全部账号登录情况"}
+{"group": "anchor", "expect": "sec_lastlog", "input": "查一下 lastlog2"}
+{"group": "anchor", "expect": "service_list", "input": "所有服务状态"}
+{"group": "anchor", "expect": "service_list", "input": "systemctl 看全部服务"}
+{"group": "anchor", "expect": "service_list", "input": "有哪些服务"}
+{"group": "anchor", "expect": "service_list", "input": "服务列表"}
+{"group": "anchor", "expect": "service_list", "input": "看看服务都什么状态"}
+{"group": "anchor", "expect": "service_list", "input": "查看所有服务的状态"}
+{"group": "anchor", "expect": "service_list", "input": "systemctl 服务列表"}
+{"group": "anchor", "expect": "service_list", "input": "列出所有服务"}
+{"group": "anchor", "expect": "service_list", "input": "全部服务运行情况"}
+{"group": "anchor", "expect": "service_list", "input": "查一下服务列表"}
+{"group": "anchor", "expect": "service_restart", "input": "重启 ssh 服务"}
+{"group": "anchor", "expect": "service_restart", "input": "systemctl restart nginx"}
+{"group": "anchor", "expect": "service_restart", "input": "把这个服务重启一下"}
+{"group": "anchor", "expect": "service_restart", "input": "服务重新启动"}
+{"group": "anchor", "expect": "service_restart", "input": "重启一下这个服务"}
+{"group": "anchor", "expect": "service_restart", "input": "把 nginx 服务重启"}
+{"group": "anchor", "expect": "service_restart", "input": "重启服务 nginx"}
+{"group": "anchor", "expect": "service_restart", "input": "service ssh restart"}
+{"group": "anchor", "expect": "service_restart", "input": "重新启动 ssh 服务"}
+{"group": "anchor", "expect": "service_restart", "input": "重启这个守护进程"}
+{"group": "anchor", "expect": "service_start", "input": "启动 ssh 服务"}
+{"group": "anchor", "expect": "service_start", "input": "systemctl start"}
+{"group": "anchor", "expect": "service_start", "input": "把这个服务开起来"}
+{"group": "anchor", "expect": "service_start", "input": "开启服务"}
+{"group": "anchor", "expect": "service_start", "input": "启动这个服务"}
+{"group": "anchor", "expect": "service_start", "input": "启动 nginx 服务"}
+{"group": "anchor", "expect": "service_start", "input": "systemctl start ssh"}
+{"group": "anchor", "expect": "service_start", "input": "把服务拉起来"}
+{"group": "anchor", "expect": "service_start", "input": "开启这个服务"}
+{"group": "anchor", "expect": "service_start", "input": "启动这个守护进程"}
+{"group": "anchor", "expect": "service_status", "input": "ssh 服务在运行吗"}
+{"group": "anchor", "expect": "service_status", "input": "检查一下服务状态"}
+{"group": "anchor", "expect": "service_status", "input": "这个服务开着没"}
+{"group": "anchor", "expect": "service_status", "input": "服务运行情况"}
+{"group": "anchor", "expect": "service_status", "input": "查一下服务有没有在跑"}
+{"group": "anchor", "expect": "service_status", "input": "看看 nginx 服务是否在运行"}
+{"group": "anchor", "expect": "service_status", "input": "服务当前状态"}
+{"group": "anchor", "expect": "service_status", "input": "systemctl status 看下"}
+{"group": "anchor", "expect": "service_status", "input": "这个服务启动了吗"}
+{"group": "anchor", "expect": "service_status", "input": "查一下服务是否正常"}
+{"group": "anchor", "expect": "service_stop", "input": "停掉 ssh 服务"}
+{"group": "anchor", "expect": "service_stop", "input": "systemctl stop"}
+{"group": "anchor", "expect": "service_stop", "input": "把服务停止"}
+{"group": "anchor", "expect": "service_stop", "input": "关闭这个服务"}
+{"group": "anchor", "expect": "service_stop", "input": "停掉这个服务"}
+{"group": "anchor", "expect": "service_stop", "input": "停止 nginx 服务"}
+{"group": "anchor", "expect": "service_stop", "input": "systemctl stop ssh"}
+{"group": "anchor", "expect": "service_stop", "input": "把服务关掉"}
+{"group": "anchor", "expect": "service_stop", "input": "停用这个服务"}
+{"group": "anchor", "expect": "service_stop", "input": "停止这个守护进程"}
+{"group": "anchor", "expect": "set_brightness", "input": "屏幕调亮点"}
+{"group": "anchor", "expect": "set_brightness", "input": "把亮度调暗一点"}
+{"group": "anchor", "expect": "set_brightness", "input": "屏幕太亮了"}
+{"group": "anchor", "expect": "set_brightness", "input": "调一下屏幕亮度"}
+{"group": "anchor", "expect": "set_brightness", "input": "亮度低一点"}
+{"group": "anchor", "expect": "set_brightness", "input": "屏幕太暗了"}
+{"group": "anchor", "expect": "set_brightness", "input": "把屏幕调亮"}
+{"group": "anchor", "expect": "set_brightness", "input": "亮度能调高吗"}
+{"group": "anchor", "expect": "set_brightness", "input": "屏幕光线有点刺眼"}
+{"group": "anchor", "expect": "set_brightness", "input": "调暗屏幕"}
+{"group": "anchor", "expect": "set_volume", "input": "把音量调到百分之五十"}
+{"group": "anchor", "expect": "set_volume", "input": "声音大一点"}
+{"group": "anchor", "expect": "set_volume", "input": "音量小一些"}
+{"group": "anchor", "expect": "set_volume", "input": "把声音开小一点"}
+{"group": "anchor", "expect": "set_volume", "input": "音量太大了调低点"}
+{"group": "anchor", "expect": "set_volume", "input": "声音开大"}
+{"group": "anchor", "expect": "set_volume", "input": "把音量调到百分之三十"}
+{"group": "anchor", "expect": "set_volume", "input": "音量现在有点小"}
+{"group": "anchor", "expect": "set_volume", "input": "声音能调大点吗"}
+{"group": "anchor", "expect": "set_volume", "input": "把音量调高一些"}
+{"group": "anchor", "expect": "sys_arch", "input": "系统是 32 位还是 64 位"}
+{"group": "anchor", "expect": "sys_arch", "input": "架构是什么"}
+{"group": "anchor", "expect": "sys_arch", "input": "cpu 是什么架构"}
+{"group": "anchor", "expect": "sys_arch", "input": "是 x64 还是 arm"}
+{"group": "anchor", "expect": "sys_arch", "input": "系统位数是多少"}
+{"group": "anchor", "expect": "sys_arch", "input": "这台机器是多少位的"}
+{"group": "anchor", "expect": "sys_arch", "input": "查看系统架构"}
+{"group": "anchor", "expect": "sys_arch", "input": "uname -m 的结果"}
+{"group": "anchor", "expect": "sys_arch", "input": "系统位数"}
+{"group": "anchor", "expect": "sys_arch", "input": "查一下架构信息"}
+{"group": "anchor", "expect": "sys_cpu", "input": "cpu 是什么型号"}
+{"group": "anchor", "expect": "sys_cpu", "input": "有几个核"}
+{"group": "anchor", "expect": "sys_cpu", "input": "处理器信息"}
+{"group": "anchor", "expect": "sys_cpu", "input": "看下 cpuinfo"}
+{"group": "anchor", "expect": "sys_cpu", "input": "cpu 规格是什么"}
+{"group": "anchor", "expect": "sys_cpu", "input": "查看 cpu 信息"}
+{"group": "anchor", "expect": "sys_cpu", "input": "这台机器的 cpu 是什么"}
+{"group": "anchor", "expect": "sys_cpu", "input": "cpu 核心数是多少"}
+{"group": "anchor", "expect": "sys_cpu", "input": "lscpu 看下"}
+{"group": "anchor", "expect": "sys_cpu", "input": "处理器型号"}
+{"group": "anchor", "expect": "sys_hw", "input": "硬件配置是什么"}
+{"group": "anchor", "expect": "sys_hw", "input": "查看硬件信息"}
+{"group": "anchor", "expect": "sys_hw", "input": "这台机器的硬件列表"}
+{"group": "anchor", "expect": "sys_hw", "input": "lshw 看下硬件"}
+{"group": "anchor", "expect": "sys_hw", "input": "硬件清单"}
+{"group": "anchor", "expect": "sys_hw", "input": "查看硬件配置"}
+{"group": "anchor", "expect": "sys_hw", "input": "这台设备的硬件详情"}
+{"group": "anchor", "expect": "sys_hw", "input": "列出硬件信息"}
+{"group": "anchor", "expect": "sys_hw", "input": "机器硬件概况"}
+{"group": "anchor", "expect": "sys_hw", "input": "lshw 的输出"}
+{"group": "anchor", "expect": "sys_kernel", "input": "内核是什么版本"}
+{"group": "anchor", "expect": "sys_kernel", "input": "看一下 kernel"}
+{"group": "anchor", "expect": "sys_kernel", "input": "系统内核信息"}
+{"group": "anchor", "expect": "sys_kernel", "input": "uname 显示的内核"}
+{"group": "anchor", "expect": "sys_kernel", "input": "内核是多少"}
+{"group": "anchor", "expect": "sys_kernel", "input": "查一下内核版本号"}
+{"group": "anchor", "expect": "sys_kernel", "input": "系统内核是哪个版本"}
+{"group": "anchor", "expect": "sys_kernel", "input": "uname -r 的结果是什么"}
+{"group": "anchor", "expect": "sys_kernel", "input": "内核发行版本"}
+{"group": "anchor", "expect": "sys_kernel", "input": "看看内核信息"}
+{"group": "anchor", "expect": "sys_kernel_limits", "input": "内核资源限制"}
+{"group": "anchor", "expect": "sys_kernel_limits", "input": "共享内存上限"}
+{"group": "anchor", "expect": "sys_kernel_limits", "input": "ipcs 看内核限制"}
+{"group": "anchor", "expect": "sys_kernel_limits", "input": "内核参数限制"}
+{"group": "anchor", "expect": "sys_kernel_limits", "input": "查一下内核限制"}
+{"group": "anchor", "expect": "sys_kernel_limits", "input": "查看内核资源限制"}
+{"group": "anchor", "expect": "sys_kernel_limits", "input": "共享内存最大值"}
+{"group": "anchor", "expect": "sys_kernel_limits", "input": "ipcs 限制参数"}
+{"group": "anchor", "expect": "sys_kernel_limits", "input": "内核级资源上限"}
+{"group": "anchor", "expect": "sys_kernel_limits", "input": "查内核限制参数"}
+{"group": "anchor", "expect": "sys_limits", "input": "系统资源限制"}
+{"group": "anchor", "expect": "sys_limits", "input": "ulimit 是多少"}
+{"group": "anchor", "expect": "sys_limits", "input": "打开文件数上限"}
+{"group": "anchor", "expect": "sys_limits", "input": "进程数限制"}
+{"group": "anchor", "expect": "sys_limits", "input": "资源限制是多少"}
+{"group": "anchor", "expect": "sys_limits", "input": "查看资源限制"}
+{"group": "anchor", "expect": "sys_limits", "input": "ulimit 的配置是什么"}
+{"group": "anchor", "expect": "sys_limits", "input": "最大打开文件数是多少"}
+{"group": "anchor", "expect": "sys_limits", "input": "系统限制参数"}
+{"group": "anchor", "expect": "sys_limits", "input": "查一下进程数限制"}
+{"group": "anchor", "expect": "sys_mem_size", "input": "内存有多大"}
+{"group": "anchor", "expect": "sys_mem_size", "input": "总内存多少"}
+{"group": "anchor", "expect": "sys_mem_size", "input": "多少 g 内存"}
+{"group": "anchor", "expect": "sys_mem_size", "input": "内存容量多大"}
+{"group": "anchor", "expect": "sys_mem_size", "input": "内存大小是多少"}
+{"group": "anchor", "expect": "sys_mem_size", "input": "查看内存大小"}
+{"group": "anchor", "expect": "sys_mem_size", "input": "这台机器内存多大"}
+{"group": "anchor", "expect": "sys_mem_size", "input": "总内存容量"}
+{"group": "anchor", "expect": "sys_mem_size", "input": "free -h 看内存总量"}
+{"group": "anchor", "expect": "sys_mem_size", "input": "内存有多少 g"}
+{"group": "anchor", "expect": "sys_mem_type", "input": "内存条是什么型号"}
+{"group": "anchor", "expect": "sys_mem_type", "input": "内存规格是什么"}
+{"group": "anchor", "expect": "sys_mem_type", "input": "内存是 ddr 几"}
+{"group": "anchor", "expect": "sys_mem_type", "input": "内存条参数"}
+{"group": "anchor", "expect": "sys_mem_type", "input": "查一下内存型号"}
+{"group": "anchor", "expect": "sys_mem_type", "input": "查看内存条信息"}
+{"group": "anchor", "expect": "sys_mem_type", "input": "内存是什么类型"}
+{"group": "anchor", "expect": "sys_mem_type", "input": "ddr 几代的内存"}
+{"group": "anchor", "expect": "sys_mem_type", "input": "内存规格详情"}
+{"group": "anchor", "expect": "sys_mem_type", "input": "查一下内存型号参数"}
+{"group": "anchor", "expect": "sys_modules", "input": "内核加载了哪些模块"}
+{"group": "anchor", "expect": "sys_modules", "input": "lsmod 看下模块"}
+{"group": "anchor", "expect": "sys_modules", "input": "驱动模块列表"}
+{"group": "anchor", "expect": "sys_modules", "input": "加载的模块有哪些"}
+{"group": "anchor", "expect": "sys_modules", "input": "查一下内核模块"}
+{"group": "anchor", "expect": "sys_modules", "input": "查看已加载的内核模块"}
+{"group": "anchor", "expect": "sys_modules", "input": "lsmod 输出"}
+{"group": "anchor", "expect": "sys_modules", "input": "内核驱动有哪些"}
+{"group": "anchor", "expect": "sys_modules", "input": "模块加载情况"}
+{"group": "anchor", "expect": "sys_modules", "input": "查一下模块列表"}
+{"group": "anchor", "expect": "sys_pci", "input": "有什么 pci 设备"}
+{"group": "anchor", "expect": "sys_pci", "input": "显卡是什么型号"}
+{"group": "anchor", "expect": "sys_pci", "input": "看看 pci 设备列表"}
+{"group": "anchor", "expect": "sys_pci", "input": "硬件里有哪些 pci 卡"}
+{"group": "anchor", "expect": "sys_pci", "input": "查一下 pci 设备"}
+{"group": "anchor", "expect": "sys_pci", "input": "查看 pci 总线上的设备"}
+{"group": "anchor", "expect": "sys_pci", "input": "有哪些 pci 设备接在机器上"}
+{"group": "anchor", "expect": "sys_pci", "input": "显卡信息"}
+{"group": "anchor", "expect": "sys_pci", "input": "lspci 看下设备"}
+{"group": "anchor", "expect": "sys_pci", "input": "pci 设备清单"}
+{"group": "anchor", "expect": "sys_resolution", "input": "屏幕分辨率是多少"}
+{"group": "anchor", "expect": "sys_resolution", "input": "当前分辨率"}
+{"group": "anchor", "expect": "sys_resolution", "input": "xrandr 看下分辨率"}
+{"group": "anchor", "expect": "sys_resolution", "input": "显示器分辨率"}
+{"group": "anchor", "expect": "sys_resolution", "input": "分辨率是多少"}
+{"group": "anchor", "expect": "sys_resolution", "input": "查看当前分辨率"}
+{"group": "anchor", "expect": "sys_resolution", "input": "屏幕当前多大分辨率"}
+{"group": "anchor", "expect": "sys_resolution", "input": "xrandr 输出"}
+{"group": "anchor", "expect": "sys_resolution", "input": "分辨率设置"}
+{"group": "anchor", "expect": "sys_resolution", "input": "查一下屏幕分辨率"}
+{"group": "anchor", "expect": "sys_uptime", "input": "机器运行了多久"}
+{"group": "anchor", "expect": "sys_uptime", "input": "开机多长时间了"}
+{"group": "anchor", "expect": "sys_uptime", "input": "uptime 是多少"}
+{"group": "anchor", "expect": "sys_uptime", "input": "系统跑了多久"}
+{"group": "anchor", "expect": "sys_uptime", "input": "运行时间多长了"}
+{"group": "anchor", "expect": "sys_uptime", "input": "系统开机多久了"}
+{"group": "anchor", "expect": "sys_uptime", "input": "这台机器跑了多长时间"}
+{"group": "anchor", "expect": "sys_uptime", "input": "开机时长"}
+{"group": "anchor", "expect": "sys_uptime", "input": "查一下运行时间"}
+{"group": "anchor", "expect": "sys_uptime", "input": "机器连续运行多久了"}
+{"group": "anchor", "expect": "usb_list", "input": "插了哪些 usb 设备"}
+{"group": "anchor", "expect": "usb_list", "input": "u 盘识别到了吗"}
+{"group": "anchor", "expect": "usb_list", "input": "外设列表"}
+{"group": "anchor", "expect": "usb_list", "input": "usb 设备有哪些"}
+{"group": "anchor", "expect": "usb_list", "input": "看看接了哪些外设"}
+{"group": "anchor", "expect": "usb_list", "input": "usb 口上都插了什么"}
+{"group": "anchor", "expect": "usb_list", "input": "查看 usb 设备列表"}
+{"group": "anchor", "expect": "usb_list", "input": "识别到了哪些 u 盘"}
+{"group": "anchor", "expect": "usb_list", "input": "外接设备有哪些"}
+{"group": "anchor", "expect": "usb_list", "input": "lsusb 看下"}
+{"group": "anchor", "expect": "sys_version", "input": "这台机器是什么系统"}
+{"group": "anchor", "expect": "sys_version", "input": "系统版本号是多少"}
+{"group": "anchor", "expect": "sys_version", "input": "运行的是什么发行版"}
+{"group": "anchor", "expect": "sys_version", "input": "查一下系统版本"}
+{"group": "anchor", "expect": "sys_version", "input": "os 是什么版本"}
+{"group": "anchor", "expect": "sys_version", "input": "系统是哪个版本"}
+{"group": "anchor", "expect": "sys_version", "input": "这台设备的系统信息"}
+{"group": "anchor", "expect": "sys_version", "input": "查一下系统版本号"}
+{"group": "anchor", "expect": "sys_version", "input": "系统发行版本是什么"}
+{"group": "anchor", "expect": "sys_version", "input": "看看 os 版本"}
+{"group": "anchor", "expect": "text_convert", "input": "把这个文件转成 utf8"}
+{"group": "anchor", "expect": "text_convert", "input": "convmv 转码"}
+{"group": "anchor", "expect": "text_convert", "input": "gbk 转 utf8"}
+{"group": "anchor", "expect": "text_convert", "input": "文件编码转换一下"}
+{"group": "anchor", "expect": "text_convert", "input": "转一下文件编码"}
+{"group": "anchor", "expect": "text_convert", "input": "把目录下文件统一转成 utf8"}
+{"group": "anchor", "expect": "text_convert", "input": "convmv 转换编码"}
+{"group": "anchor", "expect": "text_convert", "input": "把 gbk 编码转成 utf8"}
+{"group": "anchor", "expect": "text_convert", "input": "转换这个文件的字符集"}
+{"group": "anchor", "expect": "text_convert", "input": "把编码转一下"}
+{"group": "anchor", "expect": "text_encoding", "input": "这个文件是什么编码"}
+{"group": "anchor", "expect": "text_encoding", "input": "编码检测一下"}
+{"group": "anchor", "expect": "text_encoding", "input": "文件是 utf8 还是 gbk"}
+{"group": "anchor", "expect": "text_encoding", "input": "enca 看编码"}
+{"group": "anchor", "expect": "text_encoding", "input": "查一下文件编码"}
+{"group": "anchor", "expect": "text_encoding", "input": "查看文件编码格式"}
+{"group": "anchor", "expect": "text_encoding", "input": "这个文件的字符集"}
+{"group": "anchor", "expect": "text_encoding", "input": "检测文件编码"}
+{"group": "anchor", "expect": "text_encoding", "input": "文件是 gbk 还是 utf8"}
+{"group": "anchor", "expect": "text_encoding", "input": "查一下文件的编码类型"}
+{"group": "anchor", "expect": "user_add", "input": "新建一个用户"}
+{"group": "anchor", "expect": "user_add", "input": "useradd 加用户"}
+{"group": "anchor", "expect": "user_add", "input": "创建一个账号"}
+{"group": "anchor", "expect": "user_add", "input": "添加用户 tom"}
+{"group": "anchor", "expect": "user_add", "input": "加一个新用户"}
+{"group": "anchor", "expect": "user_add", "input": "帮我新建一个账号"}
+{"group": "anchor", "expect": "user_add", "input": "添加用户 bob"}
+{"group": "anchor", "expect": "user_add", "input": "useradd 创建一个用户"}
+{"group": "anchor", "expect": "user_add", "input": "增加一个新的登录账号"}
+{"group": "anchor", "expect": "user_add", "input": "创建用户 jack"}
+{"group": "anchor", "expect": "user_del", "input": "删除用户"}
+{"group": "anchor", "expect": "user_del", "input": "userdel 移除账号"}
+{"group": "anchor", "expect": "user_del", "input": "把用户删了"}
+{"group": "anchor", "expect": "user_del", "input": "移除这个账号"}
+{"group": "anchor", "expect": "user_del", "input": "删除一个账号"}
+{"group": "anchor", "expect": "user_del", "input": "把用户 bob 删掉"}
+{"group": "anchor", "expect": "user_del", "input": "userdel 删除账号"}
+{"group": "anchor", "expect": "user_del", "input": "移除用户 tom"}
+{"group": "anchor", "expect": "user_del", "input": "删除一个登录账号"}
+{"group": "anchor", "expect": "user_del", "input": "把那个账号删了"}
+{"group": "anchor", "expect": "user_list", "input": "系统有哪些用户"}
+{"group": "anchor", "expect": "user_list", "input": "用户列表"}
+{"group": "anchor", "expect": "user_list", "input": "所有账号"}
+{"group": "anchor", "expect": "user_list", "input": "有哪些账号"}
+{"group": "anchor", "expect": "user_list", "input": "查看系统用户"}
+{"group": "anchor", "expect": "user_list", "input": "查看所有用户"}
+{"group": "anchor", "expect": "user_list", "input": "用户账号列表"}
+{"group": "anchor", "expect": "user_list", "input": "系统里都有哪些账号"}
+{"group": "anchor", "expect": "user_list", "input": "列出系统用户"}
+{"group": "anchor", "expect": "user_list", "input": "查一下用户列表"}
+{"group": "anchor", "expect": "user_lock", "input": "锁定这个用户"}
+{"group": "anchor", "expect": "user_lock", "input": "禁用账号"}
+{"group": "anchor", "expect": "user_lock", "input": "usermod 锁用户"}
+{"group": "anchor", "expect": "user_lock", "input": "让这个用户登不进去"}
+{"group": "anchor", "expect": "user_lock", "input": "锁一下这个账号"}
+{"group": "anchor", "expect": "user_lock", "input": "把用户 tom 锁定"}
+{"group": "anchor", "expect": "user_lock", "input": "停用这个账号"}
+{"group": "anchor", "expect": "user_lock", "input": "usermod 禁用该用户"}
+{"group": "anchor", "expect": "user_lock", "input": "让这个用户无法登录"}
+{"group": "anchor", "expect": "user_lock", "input": "锁掉这个账号"}
+{"group": "anchor", "expect": "user_unlock", "input": "解锁用户"}
+{"group": "anchor", "expect": "user_unlock", "input": "启用账号"}
+{"group": "anchor", "expect": "user_unlock", "input": "把账号解锁"}
+{"group": "anchor", "expect": "user_unlock", "input": "恢复用户登录"}
+{"group": "anchor", "expect": "user_unlock", "input": "解锁这个账号"}
+{"group": "anchor", "expect": "user_unlock", "input": "把用户 tom 解锁"}
+{"group": "anchor", "expect": "user_unlock", "input": "启用这个账号"}
+{"group": "anchor", "expect": "user_unlock", "input": "usermod 解除锁定"}
+{"group": "anchor", "expect": "user_unlock", "input": "恢复该用户登录"}
+{"group": "anchor", "expect": "user_unlock", "input": "解锁掉这个账号"}
+{"group": "anchor", "expect": "wifi_connect", "input": "连接这个 wifi"}
+{"group": "anchor", "expect": "wifi_connect", "input": "连上家里的网络"}
+{"group": "anchor", "expect": "wifi_connect", "input": "wifi 密码连接"}
+{"group": "anchor", "expect": "wifi_connect", "input": "加入网络"}
+{"group": "anchor", "expect": "wifi_connect", "input": "连接到这个网络"}
+{"group": "anchor", "expect": "wifi_connect", "input": "帮我连上这个 wifi"}
+{"group": "anchor", "expect": "wifi_connect", "input": "连接家里的无线网"}
+{"group": "anchor", "expect": "wifi_connect", "input": "用密码连接这个网络"}
+{"group": "anchor", "expect": "wifi_connect", "input": "加入这个 wifi"}
+{"group": "anchor", "expect": "wifi_connect", "input": "连接无线网络"}
+{"group": "anchor", "expect": "wifi_disconnect", "input": "断开 wifi"}
+{"group": "anchor", "expect": "wifi_disconnect", "input": "退出当前网络"}
+{"group": "anchor", "expect": "wifi_disconnect", "input": "wifi 断开连接"}
+{"group": "anchor", "expect": "wifi_disconnect", "input": "不连网了"}
+{"group": "anchor", "expect": "wifi_disconnect", "input": "断开网络连接"}
+{"group": "anchor", "expect": "wifi_disconnect", "input": "把 wifi 断开"}
+{"group": "anchor", "expect": "wifi_disconnect", "input": "退出无线网络"}
+{"group": "anchor", "expect": "wifi_disconnect", "input": "断开当前的 wifi"}
+{"group": "anchor", "expect": "wifi_disconnect", "input": "不再连接这个网络"}
+{"group": "anchor", "expect": "wifi_disconnect", "input": "把网络断掉"}
+{"group": "anchor", "expect": "wifi_scan", "input": "扫描一下周围的 wifi"}
+{"group": "anchor", "expect": "wifi_scan", "input": "有哪些 wifi 可以连"}
+{"group": "anchor", "expect": "wifi_scan", "input": "搜索可用网络"}
+{"group": "anchor", "expect": "wifi_scan", "input": "wifi 列表"}
+{"group": "anchor", "expect": "wifi_scan", "input": "看看附近有什么网络"}
+{"group": "anchor", "expect": "wifi_scan", "input": "查看附近的无线网络"}
+{"group": "anchor", "expect": "wifi_scan", "input": "扫描可用的 wifi"}
+{"group": "anchor", "expect": "wifi_scan", "input": "列出周围的网络"}
+{"group": "anchor", "expect": "wifi_scan", "input": "搜索一下 wifi 信号"}
+{"group": "anchor", "expect": "wifi_scan", "input": "看看能连哪些无线网"}
+{"group": "anchor", "expect": "wifi_status", "input": "wifi 连上了吗"}
+{"group": "anchor", "expect": "wifi_status", "input": "当前网络状态"}
+{"group": "anchor", "expect": "wifi_status", "input": "wifi 信号怎么样"}
+{"group": "anchor", "expect": "wifi_status", "input": "检查网络连接"}
+{"group": "anchor", "expect": "wifi_status", "input": "看看网络连上没有"}
+{"group": "anchor", "expect": "wifi_status", "input": "查看 wifi 连接状态"}
+{"group": "anchor", "expect": "wifi_status", "input": "当前连的什么网络"}
+{"group": "anchor", "expect": "wifi_status", "input": "无线连接情况"}
+{"group": "anchor", "expect": "wifi_status", "input": "wifi 状态怎么样"}
+{"group": "anchor", "expect": "wifi_status", "input": "查一下网络连接状态"}
+{"group": "anchor", "expect": "system_update_status", "input": "系统更新状态"}
+{"group": "anchor", "expect": "system_update_status", "input": "系统升级进度"}
+{"group": "anchor", "expect": "system_update_status", "input": "更新完成了吗"}
+{"group": "anchor", "expect": "system_update_status", "input": "系统更新结果"}
+{"group": "anchor", "expect": "system_update_status", "input": "系统更新好了吗"}

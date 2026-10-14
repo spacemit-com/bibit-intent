@@ -1,0 +1,38 @@
+# 连接编排 Skill —— 「连接 <名字>」没有 WiFi/蓝牙明示词时按环境判域：
+# 两侧都查，哪边有就连哪边；两边都有 → 反问；都没有 → 如实报告并提示下一步。
+name: connect
+version: "1.0"
+display: "连接设备（自动判域）"
+description: "只给设备名时自动判域：先查 WiFi 可见网络与已保存配置，再查蓝牙已知/已配对设备，哪边有就连哪边"
+author: "bibit"
+
+# Skill 依赖的系统命令（加载时只标记，运行时报明确错误）
+requires:
+  - nmcli          # WiFi 侧（NetworkManager）
+  - bluetoothctl   # 蓝牙侧（BlueZ）
+
+tools:
+
+  connect_any:
+    display: "连接设备（自动判域）"
+    display_en: "Connect a device when the user gives only a name and it is unclear whether it is a WiFi network or a Bluetooth device. It checks the visible WiFi list and saved WiFi profiles first, then Bluetooth (known/paired devices and a discovery window), and connects whichever side actually has it. If the name is on both sides it asks the user instead of guessing. Use wifi_connect when the user says WiFi/无线/密码, and bt_connect when the user says Bluetooth/蓝牙."
+    short: "connany"
+    aliases: ["connect_any", "连接设备"]
+    params:
+      device: {type: str}    # 用户说的名字（可能是 SSID，也可能是蓝牙设备名）
+    routes:
+      rule:
+        patterns:
+          # 中文：连接/连上 + 限定词 + <名字>（句尾收口）。两个负向前瞻把带域明示词的句子
+          # 留给 wifi_connect / bt_connect，并排除「连接 + 抽象名词」（连接状态/连接速度…）；
+          # 动词须在句首（只容忍 请/麻烦/帮我/给我），名字至少 2 字符。
+          - "^(?!(?:.*(?:蓝牙|配对|无线|网络|密码|耳机|音响|音箱|鼠标|键盘|手柄|网线|以太|有线|(?i:bluetooth|pair|wi-?fi|wifi|wireless|password|usb))))(?!.*(?:状态|情况|速度|速率|方式|方法|问题|失败|成功|超时|中断|记录|日志|信息|延迟|带宽|时间|次数|命令|列表|详情|数量)\\s*[。．.!！]*$)(?:请|麻烦|帮我|帮忙|给我)?\\s*(?:把|将)?\\s*(?:重新|再)?\\s*(?:连接|连上|连|接入|加入)(?:一?下|一?次)?\\s*(?:到|上)?\\s*(?:我的|你的|这个|那个)?\\s*(?P<device>[A-Za-z0-9\\u4e00-\\u9fa5][A-Za-z0-9\\u4e00-\\u9fa5 _\\-\\.]{1,28}?)\\s*[。．.!！]*$"
+          # 英文：connect [to] <名字>（同样排除带域明示词的句子；名字至少 2 字符）
+          - "^(?!(?:.*(?i:bluetooth|pair|wi-?fi|wifi|wireless|network|password)))(?i:(?:please\\s+)?(?:connect|join)(?:\\s+to)?)\\s+(?P<device>[A-Za-z0-9][A-Za-z0-9 _\\-\\.]{1,28}?)\\s*[.!]*$"
+        # 故意不写 keywords：本工具靠规则层 1.0 直通，弱命中只会把它塞进候选池给模型乱 CALL；
+        # 且"连接设备"这类词会被 bt_connect 的类别词规则以 1.0 抢走。
+        keywords: []
+      local: "connany(device:...)"
+    handler: "connect_any"
+    mcp:
+      group: control

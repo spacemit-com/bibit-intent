@@ -1,0 +1,20 @@
+{"text":"打开浏览器","label":"simple"}
+{"text":"install curl","label":"simple"}
+{"text":"把音量调到60","label":"simple"}
+{"text":"查看系统版本","label":"simple"}
+{"text":"open Firefox","label":"simple"}
+{"text":"下载这个文件","label":"simple"}
+{"text":"检查网络状态","label":"simple"}
+{"text":"关闭终端","label":"simple"}
+{"text":"set volume to 40","label":"simple"}
+{"text":"查看磁盘空间","label":"simple"}
+{"text":"打开浏览器并播放音乐","label":"complex"}
+{"text":"安装 curl，前提是磁盘空间足够","label":"complex"}
+{"text":"install curl provided there is enough disk space","label":"complex"}
+{"text":"先打开终端再查询系统信息","label":"complex"}
+{"text":"download the file and then install it","label":"complex"}
+{"text":"请不要删除这个文件","label":"complex"}
+{"text":"为什么安装失败以及如何修复","label":"complex"}
+{"text":"open Firefox and frobnicate data","label":"complex"}
+{"text":"frobnicate 123","label":"complex"}
+{"text":"下载软件，不要安装","label":"complex"}

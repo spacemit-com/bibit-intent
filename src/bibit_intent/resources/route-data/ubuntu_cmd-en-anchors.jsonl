@@ -1,0 +1,8 @@
+{"group":"anchor","expect":"pkg_install","input":"could you install nginx for me"}
+{"group":"anchor","expect":"pkg_remove","input":"please remove the vim package"}
+{"group":"anchor","expect":"pkg_installed","input":"what software packages are installed"}
+{"group":"anchor","expect":"service_status","input":"is sshd currently running"}
+{"group":"anchor","expect":"service_restart","input":"please restart the ssh daemon"}
+{"group":"anchor","expect":"disk_usage","input":"how much disk space is used"}
+{"group":"anchor","expect":"sys_cpu","input":"how busy is the processor"}
+{"group":"anchor","expect":"sys_mem_size","input":"how much RAM does this system have"}

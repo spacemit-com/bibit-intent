@@ -1,0 +1,4 @@
+{"group":"question","expect":"QUESTION","input":"what is quantum entanglement?"}
+{"group":"question","expect":"QUESTION","input":"why is the sky blue?"}
+{"group":"question","expect":"QUESTION","input":"how does Wi-Fi work?"}
+{"group":"question","expect":"QUESTION","input":"explain how memory works"}

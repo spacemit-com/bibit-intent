@@ -1,0 +1,19 @@
+{"group":"anchor","expect":"set_volume","input":"could you make the audio a little quieter"}
+{"group":"anchor","expect":"set_volume","input":"the sound is too loud"}
+{"group":"anchor","expect":"set_brightness","input":"my screen is too bright"}
+{"group":"anchor","expect":"set_brightness","input":"make the display a bit dimmer"}
+{"group":"anchor","expect":"launch_app","input":"could you start the web browser"}
+{"group":"anchor","expect":"close_app","input":"please close the terminal window"}
+{"group":"anchor","expect":"reboot","input":"restart the computer please"}
+{"group":"anchor","expect":"rotate_screen","input":"change the screen orientation"}
+{"group":"anchor","expect":"set_resolution","input":"make the display sharper"}
+{"group":"anchor","expect":"set_refresh_rate","input":"use a faster refresh rate"}
+{"group":"anchor","expect":"set_display_mode","input":"extend the desktop to another monitor"}
+{"group":"anchor","expect":"wifi_scan","input":"what wireless networks are nearby"}
+{"group":"anchor","expect":"wifi_connect","input":"connect me to the office network"}
+{"group":"anchor","expect":"wifi_status","input":"tell me whether Wi-Fi is online"}
+{"group":"anchor","expect":"bt_scan","input":"look for Bluetooth devices around me"}
+{"group":"anchor","expect":"bt_connect","input":"connect my wireless headphones"}
+{"group":"anchor","expect":"eth_status","input":"is the wired connection working"}
+{"group":"anchor","expect":"usb_list","input":"which USB devices are plugged in"}
+{"group":"anchor","expect":"usb_reset","input":"reinitialize the USB device"}

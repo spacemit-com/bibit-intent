@@ -1,0 +1,65 @@
+# 内置模板 3／5：项目计划 / 排期表
+#
+# 参考（仅借鉴列集与语义，未复制上游资产）：
+#   - mermaid-js/mermaid（MIT）：gantt 的任务/开始/时长/依赖/里程碑语义
+#   - SheetJS/sheetjs（Apache-2.0）：表格列约定（表头首行、无合并单元格）
+#   - jmcnamara/XlsxWriter（BSD-2-Clause）：列宽与状态列的写法
+id: project_plan
+version: 1
+doc_type: calc
+name: "项目计划 / 排期表"
+name_en: "Project plan and schedule"
+when_to_use: "用户要做排期、项目计划、任务分解、里程碑、进度跟踪表"
+when_to_use_en: "The user wants a project schedule, task breakdown, milestones or a progress tracker."
+deliverable: [xlsx, pdf]
+ask_at_most: 2
+inputs:
+  - key: project
+    label: 项目名
+    example: K3 智能办公
+    fallback: 项目
+  - key: start
+    label: 开始日期
+    example: "2026-09-15"
+    fallback: ""
+  - key: owner
+    label: 负责人
+    example: 张三
+    fallback: ""
+knowledge:
+  # 本地先查：既有排期表、需求文档；云端一般不必要。
+  local: [file_search]
+  cloud: []
+sheets:
+  - name: "计划"
+    header: [任务, 负责人, 开始, 截止, 状态, 进度%, 备注]
+    rows:
+      - ["需求确认", "{owner}", "{start}", "", "未开始", "0", ""]
+      - ["方案设计", "", "", "", "未开始", "0", ""]
+      - ["开发实现", "", "", "", "未开始", "0", ""]
+      - ["联调验收", "", "", "", "未开始", "0", ""]
+    guidance: "任务粒度按「一个交付物一条」；日期用 YYYY-MM-DD；进度只填 0/25/50/75/100。"
+    columns_width: [22, 12, 12, 12, 10, 8, 24]
+  - name: "里程碑"
+    header: [里程碑, 交付物, 计划时间, 验收标准]
+    rows:
+      - ["", "", "", ""]
+      - ["", "", "", ""]
+    guidance: "3–6 个里程碑；验收标准要能被外部检查（文件、指标、演示）。"
+    columns_width: [18, 28, 14, 36]
+export:
+  default: xlsx
+  allowed: [xlsx, pdf]
+references:
+  - project: mermaid-js/mermaid
+    url: https://github.com/mermaid-js/mermaid
+    license: MIT
+    what: gantt 的任务/开始/时长/依赖/里程碑语义
+  - project: SheetJS/sheetjs
+    url: https://github.com/SheetJS/sheetjs
+    license: Apache-2.0
+    what: 表格列约定（表头首行、避免合并单元格）
+  - project: jmcnamara/XlsxWriter
+    url: https://github.com/jmcnamara/XlsxWriter
+    license: BSD-2-Clause
+    what: 列宽与状态列写法

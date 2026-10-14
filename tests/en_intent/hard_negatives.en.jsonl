@@ -1,0 +1,4 @@
+{"input":"what is quantum entanglement?","expect":"open_question"}
+{"input":"write a poem about Linux","expect":"writing_task"}
+{"input":"how do I open the file manager?","expect":"open_question"}
+{"input":"tell me a joke about Wi-Fi","expect":"open_question"}

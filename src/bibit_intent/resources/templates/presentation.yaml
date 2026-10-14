@@ -1,0 +1,62 @@
+# 内置模板 5／5：演示汇报
+#
+# 参考（仅借鉴叙事结构与页序，未复制上游资产）：
+#   - marp-team/marpit（MIT）：Markdown 源 -> 逐页幻灯的「一页一个观点」写法
+#   - hakimel/reveal.js（MIT）：封面/目录/正文/结论 的页序惯例
+id: presentation
+version: 1
+doc_type: impress
+name: "演示汇报"
+name_en: "Presentation deck"
+when_to_use: "用户要做 PPT、汇报幻灯、演示材料、宣讲稿"
+when_to_use_en: "The user wants slides, a deck or presentation material."
+deliverable: [pptx, pdf]
+ask_at_most: 2
+inputs:
+  - key: topic
+    label: 主题
+    example: K3 端侧 AI 能力
+    fallback: 汇报
+  - key: audience
+    label: 听众
+    example: 产品评审会
+    fallback: ""
+  - key: duration
+    label: 时长
+    example: 10 分钟
+    fallback: ""
+knowledge:
+  local: [file_search]
+  # 演示材料常需要外部事实（版本号、发布信息）→ 允许网络搜索兜底。
+  cloud: [web_search]
+slides:
+  - title: "{topic}"
+    bullets: ["汇报人：{owner}", "{date}"]
+    guidance: "封面只放主题与身份信息，不放结论。"
+  - title: "目录"
+    bullets: ["背景与目标", "做法", "结果与数据", "下一步"]
+    guidance: "3–4 项，与后面页标题逐字对应。"
+  - title: "背景与目标"
+    bullets: []
+    guidance: "一页一个观点；标题写成结论句（例：『端侧延迟是当前瓶颈』）。"
+  - title: "做法"
+    bullets: []
+    guidance: "每页 ≤5 条，每条 ≤20 字；细节留给口头讲。"
+  - title: "结果与数据"
+    bullets: []
+    guidance: "只放能核对的数据；没有数据就写『本期无可量化结果』。"
+  - title: "下一步"
+    bullets: []
+    guidance: "写清交付物与时间点，最多 3 条。"
+export:
+  default: pptx
+  allowed: [pptx, pdf]
+references:
+  - project: marp-team/marpit
+    url: https://github.com/marp-team/marpit
+    license: MIT
+    what: Markdown 源逐页幻灯的「一页一个观点」写法
+  - project: hakimel/reveal.js
+    url: https://github.com/hakimel/reveal.js
+    license: MIT
+    what: 封面/目录/正文/结论 的页序惯例

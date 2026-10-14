@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+*.embed_cache.json
+# 开发机锁文件：设备端（riscv64）不用 uv，部署走 deploy.sh（pip + requirements.txt）；
+# 且 uv.lock 是按 x86_64/清华 PyPI 解析的，不含 pydantic-core/cryptography 的
+# riscv64 wheel，提交了在设备上也无法 `uv sync --locked` 复现。
+uv.lock
+# 本地密钥（cloud_api_key 等）；deploy.sh 同步时已排除
+.env
+
+# 统一回归脚本输出
+/tests/results/
+
+# dpkg-buildpackage 构建产物
+/debian/.debhelper/
+/debian/bibit-intent/
+/debian/*.debhelper
+/debian/*.substvars
+/debian/debhelper-build-stamp
+/debian/files
