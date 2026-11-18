@@ -237,7 +237,7 @@ def test_router_bound_enum_missing_no_model_call():
     assert local.bound_calls == [] and local.wide_calls == []
 
 
-def test_router_wide_enum_guess_not_executed():
+def test_router_wide_enum_guess_not_executed(monkeypatch):
     calls = []
 
     def fake_display(**kw):
@@ -249,7 +249,9 @@ def test_router_wide_enum_guess_not_executed():
             action="CALL", tool_name="set_display_mode", params={"mode": "mirror"}
         )
     )
-    # 真实 decide：「屏幕显示模式帮我改一下」→ 多候选（非锁定）→ 宽 CALL 路径
+    monkeypatch.setattr(router_module, "decide_local_intent", lambda *a, **kw: IntentPlan(
+        action=IntentAction.TO_MODEL, candidates=["set_display_mode", "set_resolution"],
+    ))
     r = _router(local, {"set_display_mode": fake_display}).handle(
         "屏幕显示模式帮我改一下"
     )

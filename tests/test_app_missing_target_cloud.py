@@ -68,13 +68,13 @@ def test_bound_missing_target_is_cloud(router, monkeypatch):
 
 def test_other_tools_keep_existing_local_clarification(router, monkeypatch):
     monkeypatch.setattr(router_module, "decide_local_intent", lambda *args, **kwargs: IntentPlan(
-        action=IntentAction.RULE_CALL, tool_name="set_resolution", slots={},
+        action=IntentAction.RULE_CALL, tool_name="set_volume", slots={},
     ))
     session = SessionState()
-    result = router.handle("设置分辨率", session)
+    result = router.handle("设置音量", session)
     assert result.stage is Stage.RULE
-    assert result.exec_result.need_param == "mode"
-    assert session.pending.tool_name == "set_resolution"
+    assert result.exec_result.need_param == "level"
+    assert session.pending.tool_name == "set_volume"
 
 
 def test_executor_still_reports_schema_errors_for_mcp(router):

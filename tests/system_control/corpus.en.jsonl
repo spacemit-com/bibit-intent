@@ -59,3 +59,6 @@
 {"id":"EN-SC-059","group":"rule","input":"stop the camera","expect":"camera_close"}
 {"id":"EN-SC-060","group":"rule","input":"done taking photos","expect":"camera_close"}
 {"id":"EN-SC-061","group":"rule","input":"close camera","expect":"camera_close"}
+{"id":"EN-SC-062","group":"rule","input":"take a screenshot","expect":"screenshot"}
+{"id":"EN-SC-063","group":"rule","input":"capture the screen","expect":"screenshot"}
+{"id":"EN-SC-064","group":"rule","input":"grab a screenshot","expect":"screenshot"}

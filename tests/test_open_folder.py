@@ -85,7 +85,8 @@ def test_resolve_directory_xdg_alias(monkeypatch):
     assert resolve_directory("下载") == "/home/tester/download"
 
 
-def test_open_folder_rejects_missing_relative_and_file_paths(tmp_path):
+def test_open_folder_rejects_missing_relative_and_file_paths(tmp_path, monkeypatch):
+    monkeypatch.setattr(st, "_dir_locate_roots", lambda: [tmp_path])
     # 空 → 缺参；相对/不存在/文件 → 本地无法确认，升级云端
     r = st.open_folder("")
     assert not r.ok and r.need_param == "path"
@@ -428,3 +429,9 @@ def test_open_folder_nested_base_resolves_home_shortcut(monkeypatch):
     r = st.open_folder("src", location="whatever")
     assert r.ok
     assert opened["path"] == str(base / "src")
+
+
+def test_locate_directories_preserves_non_utf8_filenames(tmp_path):
+    target = tmp_path / "report-\udc82"
+    target.mkdir()
+    assert st.locate_directories("report", roots=[tmp_path]) == [str(target)]

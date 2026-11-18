@@ -23,9 +23,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
-import yaml
-
 from bibit_intent.core.registry import ToolRegistry
+from bibit_intent.core.yaml_utils import safe_load
 
 
 @dataclass
@@ -48,6 +47,8 @@ def load_skills(
     skills_dir: str | Path,
     registry: ToolRegistry,
     handlers: dict[str, Callable],
+    *,
+    groups: set[str] | None = None,
 ) -> list[LoadedSkill]:
     """
     扫描 skills_dir，加载所有 Skill。
@@ -56,13 +57,20 @@ def load_skills(
       - skill.yaml   元数据 + 工具声明
       - handlers.py  执行实现（含 HANDLERS 分发表）
 
+    groups：
+      MCP 分组过滤。工具定义仍全部注册到 registry，只有至少包含一个目标
+      分组工具的 Skill 才导入 handlers.py。这样可以缩短按组启动时间，同时
+      不会把导入成本转移到首次工具调用。
+
     副作用：
       - 把 skill 工具注册进 registry（source=skill名）
-      - 把 skill 的 handlers 并入传入的 handlers 字典
+      - 把目标分组 Skill 的 handlers 并入传入的 handlers 字典
 
     返回：加载成功的 Skill 列表（含依赖缺失信息）。
     """
     skills_dir = Path(skills_dir)
+    if groups is not None:
+        groups = {str(group).casefold() for group in groups}
     loaded: list[LoadedSkill] = []
     if not skills_dir.is_dir():
         return loaded
@@ -74,7 +82,13 @@ def load_skills(
         if not manifest.is_file():
             continue
         try:
-            ls = _load_one(skill_path, manifest, registry, handlers)
+            ls = _load_one(
+                skill_path,
+                manifest,
+                registry,
+                handlers,
+                groups=groups,
+            )
             if ls:
                 loaded.append(ls)
         except Exception as e:
@@ -89,19 +103,26 @@ def _load_one(
     manifest: Path,
     registry: ToolRegistry,
     handlers: dict[str, Callable],
+    *,
+    groups: set[str] | None = None,
 ) -> LoadedSkill | None:
     """加载单个 Skill。"""
-    meta = yaml.safe_load(manifest.read_text(encoding="utf-8"))
+    meta = safe_load(manifest.read_text(encoding="utf-8"))
     name = meta.get("name") or skill_path.name
 
     # 1. 依赖检查（缺失也加载，只标记，执行时才报错）
     requires = meta.get("requires", []) or []
     missing = [d for d in requires if not _check_dep(d)]
 
+    tools = meta.get("tools") or {}
+    load_handler = groups is None or any(
+        _mcp_group(tool_data) in groups for tool_data in tools.values()
+    )
+
     # 2. 动态导入 handlers.py，取其 HANDLERS 分发表
     handler_file = skill_path / "handlers.py"
     skill_handlers: dict[str, Callable] = {}
-    if handler_file.is_file():
+    if load_handler and handler_file.is_file():
         mod_name = f"_skill_{name}"
         spec = importlib.util.spec_from_file_location(mod_name, handler_file)
         module = importlib.util.module_from_spec(spec)
@@ -111,7 +132,7 @@ def _load_one(
 
     # 3. 注册工具到 registry + 合并 handlers
     tool_names: list[str] = []
-    for tool_name, tool_data in (meta.get("tools") or {}).items():
+    for tool_name, tool_data in tools.items():
         # skill.yaml 的工具字段映射到 ToolDef 需要的结构
         data = {
             "display": tool_data.get("display", tool_name),
@@ -133,7 +154,10 @@ def _load_one(
 
         # 合并 handler（skill.yaml 的 handler 字段指定函数名）
         fn_name = tool_data.get("handler", tool_name)
-        if fn_name in skill_handlers:
+        if (
+            fn_name in skill_handlers
+            and (groups is None or _mcp_group(tool_data) in groups)
+        ):
             handlers[tool_name] = skill_handlers[fn_name]
 
     return LoadedSkill(
@@ -144,3 +168,14 @@ def _load_one(
         requires=requires,
         missing_deps=missing,
     )
+
+
+def _mcp_group(tool_data: dict[str, Any]) -> str:
+    """Return the same default MCP group as ``ToolDef.mcp_group``."""
+    mcp_cfg = tool_data.get("mcp") or {}
+    group = mcp_cfg.get("group") if isinstance(mcp_cfg, dict) else None
+    if group:
+        return str(group).casefold()
+    if tool_data.get("confirm"):
+        return "admin"
+    return "control"

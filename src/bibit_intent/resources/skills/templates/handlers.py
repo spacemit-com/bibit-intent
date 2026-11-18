@@ -44,7 +44,6 @@ def _reply(zh: str, en: str, language: str | None = None) -> str:
 _KNOWLEDGE_LABELS = {
     "file_search": ("本地文件检索（file_search → 读正文再落笔）", "local file search (file_search, then read the file)"),
     "web_search": ("网络搜索（Runtime web_search）", "web search (Runtime web_search)"),
-    "knowledge_base": ("本地知识库（query_knowledge）", "local knowledge base (query_knowledge)"),
 }
 
 _EXPORT_LABELS = {

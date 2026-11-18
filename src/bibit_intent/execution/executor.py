@@ -71,8 +71,9 @@ _PARAM_SAMPLE_BY_TOOL = {
 }
 
 _READ_ONLY_BUILTINS = frozenset(
-    {"get_system_info", "get_vol_status", "get_display_light", "display_modes",
-     "query_knowledge", "eth_status", "eth_ip",
+    {"get_system_info", "get_system_time", "get_locale_settings", "list_locale_options",
+     "get_vol_status", "get_display_light", "display_modes",
+     "eth_status", "eth_ip",
      "window_list", "list_apps", "file_search"}
 )
 _READ_ONLY_WIFI = frozenset({"wifi_scan", "wifi_status", "wifi_ip"})
@@ -210,10 +211,6 @@ class Executor:
             )
             if not valid:
                 return result(False, "安装和卸载仅支持一个或多个完整准确的包名；正则、通配符需要先解析并确认清单，本次未执行操作。")
-
-        # 知识库查询不在此处执行（由路由器交给 knowledge 模块）
-        if tool.system.get("type") == "knowledge_base":
-            return result(False, "知识库查询应由路由器处理，不走执行层")
 
         # 1. 参数补全 + 校验（缺必填参数 → 提示用户补充，而非普通失败）
         ok, filled, err, need = self._prepare_params(tool, params)

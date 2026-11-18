@@ -383,3 +383,15 @@
 {"id": "H975", "group": "rule", "input": "缩放比例设为2", "expect": "set_aspect_ratio", "note": "屏幕/缩放比例（整数 2 → 2.00）"}
 {"id": "H976", "group": "rule", "input": "把屏幕缩放调为2", "expect": "set_aspect_ratio", "note": "屏幕/缩放比例（把…调为 N）"}
 {"id": "H977", "group": "rule", "input": "屏幕缩放调到125%", "expect": "set_aspect_ratio", "note": "屏幕/缩放比例（百分比 125% → 1.25）"}
+{"id": "H978", "group": "rule", "input": "截图", "expect": "screenshot", "note": "截图/选区截图（默认模式）"}
+{"id": "H979", "group": "rule", "input": "截屏", "expect": "screenshot", "note": "截图/选区截图"}
+{"id": "H980", "group": "rule", "input": "屏幕截图", "expect": "screenshot", "note": "截图/选区截图"}
+{"id": "H981", "group": "rule", "input": "全屏截图", "expect": "screenshot", "note": "截图/全屏（slot_map 补 mode=full）"}
+{"id": "H982", "group": "rule", "input": "区域截图", "expect": "screenshot", "note": "截图/选区（slot_map 补 mode=region）"}
+{"id": "H983", "group": "rule", "input": "选区截图", "expect": "screenshot", "note": "截图/选区（slot_map 补 mode=region）"}
+{"id": "H984", "group": "rule", "input": "帮我截个图", "expect": "screenshot", "note": "截图/礼貌前缀"}
+{"id": "H985", "group": "rule", "input": "截个图", "expect": "screenshot", "note": "截图/口语"}
+{"id": "H986", "group": "rule", "input": "帮我截图", "expect": "screenshot", "note": "截图/礼貌前缀"}
+{"id": "H987", "group": "rule", "input": "帮我截一张图", "expect": "screenshot", "note": "截图/量词"}
+{"id": "H988", "group": "rule", "input": "截取屏幕", "expect": "screenshot", "note": "截图/截取屏幕"}
+{"id": "H989", "group": "rule", "input": "截一下屏", "expect": "screenshot", "note": "截图/截一下屏"}

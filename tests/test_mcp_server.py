@@ -18,6 +18,25 @@ from bibit_intent.mcp_server.server import (
 )
 
 
+@pytest.mark.asyncio
+async def test_time_tool_preserves_confirmation(monkeypatch):
+    pytest.importorskip("mcp.server.fastmcp")
+    from bibit_intent.execution.system_tools import ExecResult
+    from bibit_intent.mcp_server import server
+
+    registry, executor = _build_executor()
+    confirmation = {"kind": "disable_ntp_and_set_time", "datetime": "15:30:00",
+                    "language": "zh", "description": "Confirm NTP disable"}
+    monkeypatch.setattr(executor, "execute", lambda *args, **kwargs: ExecResult(False, "Confirm", confirmation=confirmation))
+    monkeypatch.setattr(server, "_build_executor", lambda: (registry, executor))
+    monkeypatch.setattr(server, "_tools_for_groups", lambda *args: [registry.get("set_system_time")])
+    mcp = server.create_server()
+    result = json.loads(await mcp._tool_manager.get_tool("set_system_time").fn(datetime="15:30"))
+    assert result["confirmation"] == confirmation
+    assert result["ok"] is False
+    assert "token" not in result["confirmation"]
+
+
 def test_mcp_stdio_initialize_list_and_call():
     """Exercise the standard MCP handshake and a read-only tool end to end."""
     pytest.importorskip("mcp.server.fastmcp")
@@ -107,10 +126,17 @@ def test_audio_output_switch_normalizes_es8326_aliases():
     assert _canonical_output_device("speaker") == "speaker"
 
 
-def test_file_search_executes_via_filesearch_service():
+def test_file_search_executes_via_filesearch_service(tmp_path, monkeypatch):
     """file_search 在 MCP 侧应转发到 bibit-filesearch 服务，而非"无执行实现"。"""
     from unittest.mock import patch
 
+    from bibit_intent import file_results
+    monkeypatch.setattr(file_results, "load_settings", lambda port=None: {
+        "index_dirs": [str(tmp_path)], "exclude_patterns": [],
+        "indexable_types": ["md"], "max_depth": 3,
+    })
+    for name in ("a.md", "b.md"):
+        (tmp_path / name).write_text("真实正文")
     registry, executor = _build_executor()
     assert registry.get("file_search").system.get("type") == "filesearch"
     with patch("httpx.post") as fake_post:
@@ -118,14 +144,18 @@ def test_file_search_executes_via_filesearch_service():
         fake_post.return_value.json.return_value = {
             "code": 0,
             "data": {"results": [
-                {"fileName": "a.md", "filePath": "/d/a.md", "confidence": 1.0},
-                {"fileName": "b.md", "filePath": "/d/b.md", "confidence": 0.5},
+                {"fileName": "a.md", "filePath": str(tmp_path / "a.md"), "confidence": 1.0},
+                {"fileName": "b.md", "filePath": str(tmp_path / "b.md"), "confidence": 0.5},
             ]},
         }
         result = executor.execute("file_search", {"query": "GTK"})
         assert result.ok is True
-        assert "a.md（100%）" in result.message
-        assert "b.md（50%）" in result.message
+        assert "a.md（相对匹配度 100%）" in result.message
+        assert "按相关度排序，第 1 位最相关" in result.message
+        assert "\n\n第 1 位：a.md" in result.message
+        assert "\n\n第 2 位：b.md" in result.message
+        assert "\n\n可点击文件名" in result.message
+        assert "b.md（相对匹配度 50%）" in result.message
     # 空 query → 缺参澄清（executor 校验层拦截），而非"无执行实现"
     empty = executor.execute("file_search", {})
     assert empty.need_param == "query"
@@ -299,7 +329,6 @@ def test_mcp_group_derivation_and_filter():
     assert registry.get("get_display_light").mcp_group() == "readonly"
     assert registry.get("list_apps").mcp_group() == "readonly"
     assert registry.get("get_system_info").mcp_group() == "readonly"
-    assert registry.get("query_knowledge").mcp_group() == "readonly"
     assert registry.get("file_search").mcp_group() == "readonly"
     assert registry.get("eth_status").mcp_group() == "readonly"
     assert registry.get("eth_ip").mcp_group() == "readonly"
@@ -607,7 +636,9 @@ def test_mcp_e2e_failed_tool_call_reports_is_error():
         async with stdio_client(params) as (read, write):
             async with ClientSession(read, write) as session:
                 await session.initialize()
-                res = await session.call_tool("appcli_verify", {"appcli": "no-such-app"})
+                res = await session.call_tool("appcli_verify", {
+                    "appcli": "no-such-app", "action": "verify", "path": "/nonexistent/artifact",
+                })
                 assert res.isError is True
                 payload = json.loads(res.content[0].text)
                 assert payload["ok"] is False

@@ -176,4 +176,4 @@ echo ""
 echo "插件加载约定（在 runtime 中）："
 echo "  BIBIT_INTENT_SRC=$REMOTE_DIR/src  # 默认值，插件从此处 import bibit_intent"
 
-echo "AI Gateway must be installed/configured separately. Provision models explicitly; see docs/design/design.md."
+echo "AI Gateway must be installed/configured separately. Provision models explicitly; see docs/design/gateway_model_provisioning.md."

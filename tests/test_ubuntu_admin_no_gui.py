@@ -125,7 +125,7 @@ def test_session_found_runs_sudo_with_session_env(monkeypatch, tmp_path):
     assert wrapper.is_file()
     text = wrapper.read_text(encoding="utf-8")
     assert text.startswith("#!/bin/sh")
-    assert "exec '/usr/bin/true'" in text
+    assert f"exec {str(Path('/bin/true').resolve())!r}" in text
     env_text = (Path(tmp_path) / "bibit-askpass" / "env").read_text(encoding="utf-8")
     assert "export QT_QPA_PLATFORMTHEME=" in env_text
     assert "export QT_PLATFORM_PLUGIN=" in env_text

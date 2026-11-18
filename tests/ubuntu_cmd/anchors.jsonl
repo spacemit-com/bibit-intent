@@ -548,16 +548,6 @@
 {"group": "anchor", "expect": "proc_zombie", "input": "消灭僵尸进程"}
 {"group": "anchor", "expect": "proc_zombie", "input": "处理僵尸进程"}
 {"group": "anchor", "expect": "proc_zombie", "input": "把挂掉的进程清理了"}
-{"group": "anchor", "expect": "query_knowledge", "input": "亮度怎么调"}
-{"group": "anchor", "expect": "query_knowledge", "input": "wifi连不上怎么办"}
-{"group": "anchor", "expect": "query_knowledge", "input": "知识库里查一下音量设置"}
-{"group": "anchor", "expect": "query_knowledge", "input": "怎么连接网络"}
-{"group": "anchor", "expect": "query_knowledge", "input": "查一下知识库"}
-{"group": "anchor", "expect": "query_knowledge", "input": "查一下知识库里怎么调亮度"}
-{"group": "anchor", "expect": "query_knowledge", "input": "音量问题查知识库"}
-{"group": "anchor", "expect": "query_knowledge", "input": "wifi 连接的问题怎么解决"}
-{"group": "anchor", "expect": "query_knowledge", "input": "知识库里有屏幕相关的说明吗"}
-{"group": "anchor", "expect": "query_knowledge", "input": "帮我查一下知识库里的网络配置"}
 {"group": "anchor", "expect": "reboot", "input": "重启一下设备"}
 {"group": "anchor", "expect": "reboot", "input": "把机器重启了"}
 {"group": "anchor", "expect": "reboot", "input": "重新开机"}

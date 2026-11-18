@@ -271,5 +271,6 @@ def test_launch_app_reports_verify_failure_not_app_not_found(monkeypatch):
     monkeypatch.setattr(st, "_process_pids", lambda name: set())
     result = st.launch_app("终端")
     assert not result.ok
-    assert "未检测到" in result.message
+    assert "暂未确认" in result.message
+    assert result.unverified
     assert result.escalate is None

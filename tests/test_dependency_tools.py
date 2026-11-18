@@ -379,7 +379,7 @@ def routing():
 )
 def test_dep_apply_routed_before_ecosystem(routing, text, items):
     decide, registry, rule = routing
-    plan = decide(text, registry, rule)
+    plan = decide(text, rule=rule, registry=registry)
 
     assert plan.tool_name == "dep_apply"
     assert plan.slots["plan_id"] == "dep-76270bf385e5"
@@ -389,8 +389,8 @@ def test_dep_apply_routed_before_ecosystem(routing, text, items):
 def test_ecosystem_install_still_routes_to_pip_and_npm(routing):
     decide, registry, rule = routing
 
-    assert decide("装 python 库 requests", registry, rule).tool_name == "pip_install"
-    assert decide("装个依赖 lodash", registry, rule).tool_name == "npm_install"
+    assert decide("装 python 库 requests", rule=rule, registry=registry).tool_name == "pip_install"
+    assert decide("装个依赖 lodash", rule=rule, registry=registry).tool_name == "npm_install"
 
 
 # ── 回滚清单与安装审计 ──────────────────────────────────────────────

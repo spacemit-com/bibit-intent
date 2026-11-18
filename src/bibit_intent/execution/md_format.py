@@ -25,6 +25,8 @@ def code_block(text: str, limit: int | None = 4000) -> str:
 
 def render_detail(detail: str, detail_format: str = "markdown") -> str:
     """原始文本只在展示边界包围栏，既有 Markdown 保持原样。"""
+    if detail_format == "internal":
+        return ""
     if detail_format == "text":
         return code_block(detail, limit=None) if detail else ""
     return detail.strip()

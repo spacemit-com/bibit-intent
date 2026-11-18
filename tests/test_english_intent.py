@@ -13,6 +13,7 @@ def test_language_detection():
     assert detect_language("什么是 Linux") == "zh"
     assert detect_language("open 浏览器 and launch terminal") == "en"
     assert detect_language("什么是黑洞") == "zh"
+    assert detect_language("把 /home/bianbu/Pictures/wallpaper-does-not-exist.jpg 设置为壁纸") == "zh"
 
 def test_english_open_questions():
     d = QuestionDetector()

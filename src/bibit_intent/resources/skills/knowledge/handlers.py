@@ -649,120 +649,24 @@ def _filesearch_port() -> int:
     return 18700 if os.getuid() < 1000 else 18700 + (os.getuid() - 1000)
 
 
-def _allowed_dirs() -> tuple[list, str]:
-    """允许读取的目录 = filesearch 的 index_dirs；服务不可用时退回默认索引目录。"""
-    from pathlib import Path
-
-    fallback = [Path.home() / "Desktop", Path.home() / "Documents"]
-    try:
-        import httpx
-
-        body = httpx.get(
-            f"http://127.0.0.1:{_filesearch_port()}/api/settings", timeout=5.0
-        ).json()
-        raw_dirs = (body.get("data") or {}).get("index_dirs") or []
-        dirs = [Path(str(item)).expanduser().resolve() for item in raw_dirs if str(item)]
-        if dirs:
-            return dirs, "filesearch"
-    except Exception:  # noqa: BLE001 - 读不到设置就用默认索引目录
-        pass
-    return fallback, "default"
-
-
-def file_read(
-    path: str = "",
-    max_bytes: int = 0,
-    language: str | None = None,
-    **_,
-) -> ExecResult:
-    """读取本地索引目录里的一个文本文件（只读；越界/二进制/超大一律拒绝）。"""
-    from pathlib import Path
+def file_read(path: str = "", max_bytes: int = 0, language: str | None = None, **_) -> ExecResult:
+    """读取当前授权下的正文，所有文件结果入口共用相同边界。"""
+    from bibit_intent.file_results import FileResultError, authorized_open, extract_text
 
     raw_path = str(path or "").strip()
     if not raw_path:
-        return _fail(
-            "file_missing_path",
-            "读取文件需要给出路径（用 file_search 找到的绝对路径）。",
-            "Reading a file needs a path (use the absolute path returned by file_search).",
-            language,
-            need_param="path",
-        )
-    candidate = Path(raw_path).expanduser()
-    if not candidate.is_absolute():
-        return _fail(
-            "file_path_relative",
-            "请给出绝对路径：file_search 返回的就是绝对路径。",
-            "Give an absolute path: file_search returns absolute paths.",
-            language,
-        )
-    resolved = candidate.resolve()
-    dirs, dirs_source = _allowed_dirs()
-    if not any(resolved == item or resolved.is_relative_to(item) for item in dirs):
-        dirs_text = "、".join(str(item) for item in dirs)
-        return _fail(
-            "file_outside_index_dirs",
-            f"只允许读本地检索索引目录里的文件（当前：{dirs_text}）。越界不读。",
-            f"Only files inside the local-search index directories can be read (currently: {dirs_text}).",
-            language,
-            extra={"index_dirs": [str(item) for item in dirs], "dirs_source": dirs_source},
-        )
-    if not resolved.is_file():
-        return _fail(
-            "file_not_found",
-            f"文件不存在或不是普通文件：{resolved}",
-            f"File not found or not a regular file: {resolved}",
-            language,
-        )
-    limit = int(max_bytes or DEFAULT_READ_BYTES)
-    limit = max(1, min(limit, MAX_READ_BYTES))
-    size = resolved.stat().st_size
+        return _fail("file_missing_path", "读取文件需要给出绝对路径。", "An absolute file path is required.", language, need_param="path")
+    if not raw_path.startswith("/"):
+        return _fail("file_path_relative", "请给出绝对路径。", "Give an absolute file path.", language)
     try:
-        with resolved.open("rb") as handle:
-            data = handle.read(limit)
-    except OSError as exc:
-        return _fail(
-            "file_unreadable",
-            f"读取失败（{type(exc).__name__}）：{resolved}",
-            f"Could not read the file ({type(exc).__name__}): {resolved}",
-            language,
-        )
-    if b"\x00" in data[:1000] or data[:4] == b"%PDF":
-        return _ok(
-            "file_binary",
-            _reply(
-                f"{resolved.name}：{_BINARY_HINT}",
-                f"{resolved.name}: {_BINARY_HINT_EN}",
-                language,
-            ),
-            {
-                "path": str(resolved),
-                "size": size,
-                "binary": True,
-                "index_dirs": [str(item) for item in dirs],
-            },
-        )
-    text = data.decode("utf-8", errors="replace")
-    truncated = size > len(data)
-    shown = text[:MAX_READ_CHARS]
-    header = _reply(
-        f"{resolved}（{size} 字节{ '，已截断' if truncated else '' }）：",
-        f"{resolved} ({size} bytes{', truncated' if truncated else ''}):",
-        language,
-    )
-    body = shown if len(shown) == len(text) else shown + _reply("…（已截断）", "…(truncated)", language)
-    footer = _reply(
-        "引用时写清这个路径；内容不足就说没有依据，不要补编。",
-        "Cite this path; if the content is not enough, say so instead of inventing.",
-        language,
-    )
-    return _ok(
-        "file_text",
-        "\n".join([header, body, footer]),
-        {
-            "path": str(resolved),
-            "size": size,
-            "index_dirs": [str(item) for item in dirs],
-        },
-    )
+        limit = max(1, min(int(max_bytes or DEFAULT_READ_BYTES), MAX_READ_BYTES))
+        with authorized_open(raw_path) as (fd, resolved, info):
+            text, truncated = extract_text(fd, resolved, info.st_size, max_chars=MAX_READ_CHARS, max_bytes=limit)
+        header = f"{resolved}（{info.st_size} 字节{'，已截断' if truncated else ''}）："
+        if str(language or "").lower().startswith("en"):
+            header = f"{resolved} ({info.st_size} bytes{', truncated' if truncated else ''}):"
+        return _ok("file_text", header + "\n" + text, {"path": str(resolved), "size": info.st_size, "truncated": truncated})
+    except (FileResultError, ValueError) as exc:
+        return _fail("file_unavailable", str(exc), "The file is unavailable, unauthorized or its format is unsupported.", language)
 
 HANDLERS["file_read"] = file_read

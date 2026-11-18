@@ -52,10 +52,16 @@ def test_named_service_restart_stays_local(context):
 
 
 def test_bare_service_or_process_action_escalates(context):
-    for text in ("重启服务", "停止服务", "启动服务", "结束进程", "关闭进程"):
+    for text in ("重启服务", "停止服务", "启动服务", "关闭进程"):
         plan = _plan(text, context)
         assert plan.action is IntentAction.ESCALATE
         assert plan.reason == "ambiguous_control"
+
+
+def test_unverified_process_command_escalates(context):
+    plan = _plan("结束进程", context)
+    assert plan.action is IntentAction.ESCALATE
+    assert plan.reason == "unverified_command"
 
 
 def test_ambiguous_open_object_escalates(context):

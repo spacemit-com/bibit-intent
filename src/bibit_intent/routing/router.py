@@ -17,6 +17,9 @@ from typing import Any, Callable
 
 from bibit_intent.analysis.deterministic import default_analyzer
 from bibit_intent.core.language import detect_language
+from bibit_intent.core.locale_request import is_locale_request, parse_locale_request
+from bibit_intent.core.wallpaper_request import is_wallpaper_request, parse_wallpaper_request
+from bibit_intent.core.system_time import is_system_time_query, is_system_time_request, parse_system_time_request
 from bibit_intent.core.app_request import normalize_app_request
 from bibit_intent.routing.multi_action import detect_multi_action
 from bibit_intent.routing.complexity import classify_complexity, Complexity, ComplexityThresholds
@@ -482,6 +485,54 @@ class Router:
 
     def handle(self, user_input: str, session=None) -> RouteResult:
         t0 = time.monotonic()
+        wallpaper_path = parse_wallpaper_request(user_input)
+        if wallpaper_path is not None or is_wallpaper_request(user_input):
+            self._stats.total_requests += 1
+            if session is not None:
+                session.clear_pending()
+            if wallpaper_path is None:
+                return self._cloud_fallback(user_input, "ambiguous_wallpaper_request", t0)
+            params = {"path": wallpaper_path}
+            result = self._executor.execute("set_wallpaper", params, language=detect_language(user_input))
+            return RouteResult(
+                stage=Stage.RULE, tool_name="set_wallpaper", params=params,
+                exec_result=result, latency_ms=(time.monotonic() - t0) * 1000,
+            )
+        locale_request = parse_locale_request(user_input)
+        if locale_request is not None or is_locale_request(user_input):
+            self._stats.total_requests += 1
+            if session is not None:
+                session.clear_pending()
+            if locale_request is None:
+                return self._cloud_fallback(user_input, "ambiguous_locale_request", t0)
+            tool_name, params = locale_request
+            result = self._executor.execute(tool_name, params, language=detect_language(user_input))
+            return RouteResult(
+                stage=Stage.RULE, tool_name=tool_name, params=params,
+                exec_result=result, latency_ms=(time.monotonic() - t0) * 1000,
+            )
+        if is_system_time_query(user_input):
+            self._stats.total_requests += 1
+            if session is not None:
+                session.clear_pending()
+            result = self._executor.execute("get_system_time", {}, language=detect_language(user_input))
+            return RouteResult(
+                stage=Stage.RULE, tool_name="get_system_time", params={},
+                exec_result=result, latency_ms=(time.monotonic() - t0) * 1000,
+            )
+        if is_system_time_request(user_input):
+            self._stats.total_requests += 1
+            if session is not None:
+                session.clear_pending()
+            target = parse_system_time_request(user_input)
+            if target is None:
+                return self._cloud_fallback(user_input, "ambiguous_system_time", t0)
+            params = {"datetime": target}
+            result = self._executor.execute("set_system_time", params, language=detect_language(user_input))
+            return RouteResult(
+                stage=Stage.RULE, tool_name="set_system_time", params=params,
+                exec_result=result, latency_ms=(time.monotonic() - t0) * 1000,
+            )
         if session is not None and session.pending is not None:
             if session.pending.tool_name in _APP_TARGET_TOOLS and not session.pending.confirm:
                 session.clear_pending()
@@ -690,14 +741,7 @@ class Router:
             if r is not None:
                 return r
 
-        # 若涉及知识库查询，注入相关知识片段
-        kb_context = ""
-        if self._kb and candidates and "query_knowledge" in candidates:
-            kb_context = self._kb.context_snippet(user_input)
-
         full_input = user_input
-        if kb_context:
-            full_input = f"[背景知识]\n{kb_context}\n\n[用户问题]\n{user_input}"
 
         try:
             local_r = self._local.infer(
@@ -1314,14 +1358,6 @@ class Router:
         if not side_effect_contract_allows(tool_name, user_input):
             return ExecResult(False, "请求未明确要求执行该设备操作", escalate="unverified_command")
         tool = self._registry.get(tool_name)
-        if tool and tool.system.get("type") == "knowledge_base":
-            if self._kb is None:
-                return None
-            query = str(params.get("query") or user_input).strip()
-            snippet = self._kb.context_snippet(query)
-            if not snippet:
-                return None
-            return ExecResult(True, snippet)
         if tool and tool.system.get("type") == "filesearch":
             return self._local_file_search(
                 str(params.get("query") or user_input).strip()
@@ -1329,47 +1365,8 @@ class Router:
         return self._executor.execute(tool_name, params, language=detect_language(user_input))
 
     def _local_file_search(self, query: str) -> ExecResult | None:
-        """本地文件检索：转发到 bibit-filesearch 服务（:18700 段），返回文件列表。"""
-        if not query:
-            return ExecResult(False, "本地搜索需要查询内容。")
-        try:
-            import httpx
-
-            resp = httpx.post(
-                f"http://127.0.0.1:{self._filesearch_port}/api/search",
-                json={"query": query, "page": 1, "pageSize": 10},
-                timeout=15.0,
-            )
-            resp.raise_for_status()
-            body = resp.json()
-        except Exception as exc:  # noqa: BLE001 - 服务不可用降级
-            return ExecResult(
-                False,
-                f"本地文件检索服务不可用（{type(exc).__name__}），"
-                "请确认 bibit-filesearch 已启动。",
-            )
-        data = body.get("data") or {}
-        results = data.get("results") or []
-        if not results:
-            return ExecResult(False, "本地没有找到相关文件。")
-        lines = ["本地检索结果："]
-        for i, item in enumerate(results[:10], 1):
-            conf = round(float(item.get("confidence") or 0) * 100)
-            lines.append(
-                f"{i}. {item.get('fileName') or ''}（{conf}%）"
-                f" — {item.get('filePath') or ''}"
-            )
-        # 直通回答只给文件名（filesearch 只回元数据）。明确告诉用户/模型下一步
-        # 怎么拿正文——否则「本地资料」就停在文件名上（K13）。
-        lines.append(
-            "如需在桌面打开该文件，请调用 open_file(path=<文件路径>)，"
-            "不要用 terminal 直接运行 libreoffice/xdg-open。"
-        )
-        lines.append(
-            "需要正文时：说「读取本地文件 <路径>」（只读索引目录里的文本文件，"
-            "docx/pdf 暂时只能给文件名）。"
-        )
-        return ExecResult(True, "\n".join(lines))
+        from bibit_intent.execution.system_tools import local_file_search
+        return local_file_search(query, port=self._filesearch_port)
 
     # ── 会话级缺参回填 ──────────────────────────────────────────────
 

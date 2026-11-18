@@ -17,16 +17,21 @@ import os
 import pwd
 import shlex
 import shutil
+import signal
 import subprocess
+import sys
 import re
+import tempfile
 import threading
 import time
 from dataclasses import dataclass
+from datetime import datetime as system_datetime
 from pathlib import Path
 from typing import Literal
 
-from .cancellation import remaining_budget, run_command
+from .cancellation import raise_if_cancelled, remaining_budget, run_command
 from .md_format import md_table as _md_table
+from bibit_intent.core.system_time import normalize_system_datetime, resolve_system_datetime
 from bibit_intent.core.desktop_locations import (
     DESKTOP_LOCATIONS,
     resolve_desktop_shortcut,
@@ -49,11 +54,13 @@ class ExecResult:
     # 的逐级回退据此判断：只有没发起过启动才继续尝试下一种解析方式，避免把
     # "启动了但进程没起来"的明确失败改写成误导性的 app_not_found。
     attempted: bool = False
-    detail_format: Literal["text", "markdown"] = "markdown"
+    detail_format: Literal["text", "markdown", "internal"] = "markdown"
     # 该挂起不是缺参回填，而是用户确认后执行（如允许降级）。
     confirm: bool = False
     # 供用户「N 选一」的候选值列表（如定位到多个同名目录时让用户选序号）。
     choices: list[str] | None = None
+    confirmation: dict | None = None
+    unverified: bool = False
 
 
 def _reply(zh: str, en: str, language: str | None = None) -> str:
@@ -63,6 +70,60 @@ def _reply(zh: str, en: str, language: str | None = None) -> str:
     language here also keeps direct MCP/Executor calls from leaking Chinese.
     """
     return en if str(language or "").lower().startswith("en") else zh
+
+
+def _settings_host_guard(language: str | None = None) -> ExecResult | None:
+    if is_sandboxed():
+        return ExecResult(False, _reply(
+            "系统时间、语言和区域必须在宿主机全局执行，请转交宿主通道。",
+            "System time, language and region require the host execution channel.", language),
+            escalate="needs_host_channel")
+    return None
+
+
+def get_system_time(language: str | None = None, **_) -> ExecResult:
+    blocked = _settings_host_guard(language)
+    if blocked is not None:
+        return blocked
+    current = system_datetime.now().astimezone()
+    offset = current.strftime("%z")
+    offset = f"{offset[:3]}:{offset[3:]}"
+    zone = current.tzname() or f"UTC{offset}"
+    stamp = current.strftime("%Y-%m-%d %H:%M:%S")
+    return ExecResult(True, _reply(
+        f"当前系统时间：{stamp}，时区：{zone}（UTC{offset}）。",
+        f"Current system time: {stamp}, timezone: {zone} (UTC{offset}).", language),
+        _reply("读取设备本地时钟，未验证网络校时状态。",
+               "Read from the device clock; network synchronization has not been verified.", language),
+        detail_format="markdown")
+
+
+def set_system_time(datetime: str, language: str | None = None, **_) -> ExecResult:
+    blocked = _settings_host_guard(language)
+    if blocked is not None:
+        return blocked
+    target = normalize_system_datetime(datetime)
+    if target is None:
+        return ExecResult(False, _reply(
+            "请提供有效的完整日期时间、日期（YYYY-MM-DD）或时间（HH:MM[:SS]）。",
+            "Provide a valid date and time, date (YYYY-MM-DD), or time (HH:MM[:SS]).", language))
+    from .time_confirmation import prepare_time_change
+
+    return prepare_time_change(target, language)
+
+
+def _write_system_time(target: str, language: str | None = None) -> ExecResult:
+    if len(target) in (8, 10):
+        target = resolve_system_datetime(target, system_datetime.now().astimezone())
+    result = _run(["timedatectl", "--no-ask-password", "set-time", target])
+    if not result.ok:
+        return ExecResult(False, _reply(
+            "系统时间未设置成功，请检查时间同步（NTP）状态及系统时间修改权限。",
+            "Could not set system time. Check automatic time synchronization (NTP) and permissions.", language),
+            result.detail or result.message, detail_format="text")
+    return ExecResult(True, _reply(
+        f"已将系统时间设置为 {target}（系统当前时区）。",
+        f"System time set to {target} (current system timezone).", language))
 
 
 def _run(cmd: list[str], timeout: int = 10, env: dict | None = None) -> ExecResult:
@@ -662,9 +723,9 @@ def _app_aliases() -> dict[str, str]:
     global _APP_ALIASES_CACHE
     if _APP_ALIASES_CACHE is None:
         try:
-            import yaml
+            from bibit_intent.core.yaml_utils import safe_load
             from bibit_intent.resources import resource_path
-            data = yaml.safe_load(resource_path("tools.yaml").read_text(encoding="utf-8")) or {}
+            data = safe_load(resource_path("tools.yaml").read_text(encoding="utf-8")) or {}
             tools = data.get("tools", {})
             merged: dict[str, str] = {}
             for tool_name in ("launch_app", "close_app"):
@@ -969,7 +1030,7 @@ def _launch_via_user_manager(argv: list[str], session_env: dict | None) -> bool:
     return p.returncode == 0
 
 
-_LAUNCH_VERIFY_TIMEOUT = 4.0
+_LAUNCH_VERIFY_TIMEOUT = 8.0
 _LAUNCH_VERIFY_INTERVAL = 0.2
 
 
@@ -1096,9 +1157,11 @@ def _verify_launch(
         if time.monotonic() >= deadline:
             return ExecResult(
                 False,
-                f"启动后未检测到“{app_name}”进程，应用可能未能显示",
+                f"已发送“{app_name}”的启动请求，暂未确认窗口是否显示，请检查桌面；不会重复启动。",
                 f"expected process: {target}",
                 attempted=True,
+                detail_format="internal",
+                unverified=True,
             )
         time.sleep(_LAUNCH_VERIFY_INTERVAL)
 
@@ -1852,6 +1915,201 @@ def camera_close(**_) -> ExecResult:
     return ExecResult(False, "相机未在运行")
 
 
+# ── 截图 ─────────────────────────────────────────────────────────────
+#
+# 系统里已有截图工具 bianbu-screenshot（grim 取图 + slurp 选区 + wl-copy 写
+# Wayland 剪贴板）：产物目录与命名规则、剪贴板行为、取消与失败退出码都由它一处
+# 实现，labwc 快捷键与桌面右键菜单用的是同一个二进制。这里只做一层薄封装——
+# 注入桌面会话环境后调用它、把退出码翻成用户文案——bibit-intent 内部不再存第二份
+# grim/slurp/wl-copy 逻辑，否则「语音截图存这里、按键截图存那里」两边必然漂移。
+
+_SHOT_BINARIES = ("/usr/bin/bianbu-screenshot", "/usr/local/bin/bianbu-screenshot")
+_SHOT_MODES = ("region", "full")
+# slurp 的等待时长是「人在拖框」，正常几秒；到点按超时处理并回收进程组。
+_SHOT_TIMEOUT = 35
+
+
+def _screenshot_binary() -> str | None:
+    """定位系统截图工具；未安装返回 None（老镜像可能没有这个包）。"""
+    for path in _SHOT_BINARIES:
+        if os.path.isfile(path) and os.access(path, os.X_OK):
+            return path
+    return None
+
+
+def _kill_process_group(process: subprocess.Popen) -> None:
+    """SIGTERM 后仍不退出就 SIGKILL；只等直接子进程，不等它 fork 出去的守护。"""
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        try:
+            os.killpg(process.pid, sig)
+        except ProcessLookupError:
+            return
+        try:
+            process.wait(timeout=1)
+            return
+        except subprocess.TimeoutExpired:
+            continue
+
+
+def _run_shot_tool(binary: str, mode: str, env: dict[str, str]) -> tuple[int, str, str]:
+    """跑系统截图工具，返回 (退出码, stdout, stderr)。
+
+    不用 ``cancellation.run_command``：那个实现把输出收在管道里，而截图工具内部用
+    ``setsid wl-copy`` 起剪贴板守护，守护会继承交给它的 stdout/stderr，工具自身退出
+    后管道仍不关 —— run_command 收尾时的 ``communicate()`` 永远等不到 EOF，实测
+    region 超时后 ``/v1/runs`` 一直不返回（35s 已超时，请求仍挂在会话里）。
+    输出落临时文件即可绕开管道继承，同时保留「超时/取消按进程组回收」的语义。
+    """
+    with tempfile.TemporaryFile() as out_file, tempfile.TemporaryFile() as err_file:
+        process = subprocess.Popen(
+            [binary, mode],
+            stdin=subprocess.DEVNULL,
+            stdout=out_file,
+            stderr=err_file,
+            env=env,
+            start_new_session=True,
+        )
+        deadline = time.monotonic() + _SHOT_TIMEOUT
+        returncode: int | None = None
+        try:
+            while True:
+                code = process.poll()
+                if code is not None:
+                    returncode = code
+                    break
+                raise_if_cancelled()
+                if time.monotonic() >= deadline:
+                    raise subprocess.TimeoutExpired([binary, mode], _SHOT_TIMEOUT)
+                time.sleep(0.05)
+        finally:
+            if returncode is None:
+                # 超时或被取消：slurp 还挂在选区上，必须连同进程组一起收掉。
+                _kill_process_group(process)
+        out_file.seek(0)
+        err_file.seek(0)
+        return (
+            returncode,
+            out_file.read().decode("utf-8", errors="replace"),
+            err_file.read().decode("utf-8", errors="replace"),
+        )
+
+
+def _shot_output_path(stdout: str) -> str:
+    """取出 PNG 产物路径，供回复文案展示。
+
+    系统工具末行形如「已保存并复制到剪贴板：/path/x.png」，中英文各一套；
+    这里不去猜分隔符语义，只按「行尾的绝对 png 路径」抽取，抽不到只影响文案。
+    """
+    for line in reversed((stdout or "").splitlines()):
+        m = re.search(r"(/[^\s:：]+\.png)\s*$", line.strip())
+        if m:
+            return m.group(1)
+    return ""
+
+
+def screenshot(mode: str = "region", language: str | None = None, **_) -> ExecResult:
+    """截图：选区/全屏 → 落盘 → 复制进 Wayland 剪贴板（委托 bianbu-screenshot）。
+
+    退出码语义（工具约定）：0 成功 / 1 失败 / 2 用户取消 / 3 无 Wayland 会话 /
+    4 缺少依赖。取消要按「成功但没做」返回（不产生文件、剪贴板不变），不能报失败。
+    """
+    session_env = _find_desktop_session_env()
+    if session_env is None:
+        return ExecResult(
+            False,
+            _reply(
+                "未找到桌面会话（无法确定 Wayland 环境），截图失败",
+                "No desktop session found, so no screenshot was taken.", language,
+            ),
+            detail_format="text",
+        )
+    binary = _screenshot_binary()
+    if binary is None:
+        return ExecResult(
+            False,
+            _reply(
+                "端侧缺少截图工具 bianbu-screenshot，无法截图",
+                "The screenshot tool is not installed on this device.", language,
+            ),
+            detail_format="text",
+        )
+    if mode not in _SHOT_MODES:
+        mode = "region"
+    env = _gui_child_env(session_env)
+    try:
+        returncode, stdout, stderr = _run_shot_tool(binary, mode, env)
+    except FileNotFoundError:
+        return ExecResult(False, _reply("命令不存在：bianbu-screenshot",
+                                        "Command not found: bianbu-screenshot.", language),
+                          detail_format="text")
+    except subprocess.TimeoutExpired:
+        return ExecResult(
+            False,
+            _reply(
+                "截图超时：选区等待时间过长，本次未截图",
+                "The screenshot timed out while waiting for a selection.", language,
+            ),
+            detail_format="text",
+        )
+    except OSError as e:
+        return ExecResult(False, f"截图失败：{e}", detail_format="text")
+
+    if returncode == 0:
+        path = _shot_output_path(stdout)
+        if path:
+            return ExecResult(
+                True,
+                _reply(f"已截图并复制到剪贴板：{path}，可直接粘贴",
+                       f"Screenshot saved and copied to the clipboard: {path}", language),
+                detail_format="text",
+            )
+        return ExecResult(
+            True,
+            _reply("已截图并复制到剪贴板", "Screenshot copied to the clipboard.", language),
+            detail_format="text",
+        )
+    if returncode == 2:
+        # 用户按 Esc 取消选区：没有产生文件，也不算失败。
+        return ExecResult(True, _reply("已取消截图。", "Screenshot cancelled.", language),
+                          detail_format="text")
+    if returncode == 3:
+        return ExecResult(
+            False,
+            _reply(
+                "未找到 Wayland 会话，无法截图（请在图形会话中操作）",
+                "No Wayland session found, so no screenshot was taken.", language,
+            ),
+            detail_format="text",
+        )
+    if returncode == 4:
+        return ExecResult(
+            False,
+            _reply(
+                "端侧缺少截图依赖（grim / slurp / wl-clipboard），无法截图",
+                "The screenshot dependencies (grim, slurp, wl-clipboard) are missing.", language,
+            ),
+            detail_format="text",
+        )
+    detail = (stderr or "").strip() or (stdout or "").strip()
+    if "还在进行中" in detail or "still running" in detail:
+        # 系统工具自己的单实例锁：上一次选区没结束（用户还没拖完框）。
+        # 不把 detail 一起带上：成功结果里 detail 会被渲染成代码块，同一句话显示两遍。
+        return ExecResult(
+            True,
+            _reply(
+                "上一次截图还在进行中，请先完成或按 Esc 取消",
+                "A previous capture is still running; finish it or press Esc.", language,
+            ),
+            detail_format="text",
+        )
+    return ExecResult(
+        False,
+        _reply("截图失败", "The screenshot failed.", language),
+        detail,
+        detail_format="text",
+    )
+
+
 # ── 拍照 ─────────────────────────────────────────────────────────────
 #
 # snapshot 没有命令行拍照入口（`snapshot --help` 只有 -d），D-Bus 也不导出
@@ -2259,7 +2517,6 @@ def eth_ip(**_) -> ExecResult:
 
 _POWER_ACTIONS = {
     "poweroff": "正在关机...",
-    "reboot": "正在重启设备...",
     "suspend": "正在进入睡眠...",
     "hibernate": "正在进入休眠...",
 }
@@ -2270,6 +2527,10 @@ def _power_action(action: str) -> ExecResult:
     r = _run(["systemctl", action], timeout=20)
     if r.ok:
         return ExecResult(True, _POWER_ACTIONS[action])
+    return _power_failure(action, r)
+
+
+def _power_failure(action: str, r: ExecResult) -> ExecResult:
     detail = (r.detail or "") + " " + (r.message or "")
     if "interactive authentication required" in detail.casefold() \
             or "access denied" in detail.casefold():
@@ -2284,7 +2545,15 @@ def _power_action(action: str) -> ExecResult:
 
 def reboot(**_) -> ExecResult:
     """重启：真正执行由执行层在二次确认后调用。"""
-    return _power_action("reboot")
+    result = _run(["systemctl", "reboot", "--when=+1min"], timeout=20)
+    if not result.ok:
+        return _power_failure("reboot", result)
+    return ExecResult(
+        True,
+        "重启指令已发送，设备将在约一分钟后重启，连接将断开。",
+        '{"device_action":"reboot","status":"accepted","expected_disconnect":true}',
+        detail_format="internal",
+    )
 
 
 def shutdown(**_) -> ExecResult:
@@ -2333,53 +2602,56 @@ def _filesearch_port() -> int:
     return 18700 if os.getuid() < 1000 else 18700 + (os.getuid() - 1000)
 
 
-def local_file_search(query: str = "", **_) -> ExecResult:
-    """本地文件检索：转发到 bibit-filesearch 服务，返回文件列表。
+def local_file_search(query: str = "", *, port: int | None = None, **_) -> ExecResult:
+    """两个搜索入口共用真实结果契约，保留旧文字消费者。"""
+    from bibit_intent.file_results import FileResultError, normalize_results
 
-    供 MCP/Executor 直调 file_search 使用；router 触发词直通走同一转发
-    （routing/router.py _local_file_search），返回格式保持一致。
-    """
     query = str(query or "").strip()
     if not query:
-        return ExecResult(False, "本地搜索需要查询内容。")
+        # 缺参而不是"服务坏了"：明确告诉调用方该补什么，避免模型以为检索服务挂了。
+        return ExecResult(
+            False, "本地搜索需要查询内容。",
+            need_param="query",
+        )
     try:
         import httpx
-
-        resp = httpx.post(
-            f"http://127.0.0.1:{_filesearch_port()}/api/search",
-            json={"query": query, "page": 1, "pageSize": 10},
-            timeout=15.0,
+        response = httpx.post(
+            f"http://127.0.0.1:{port or _filesearch_port()}/api/search",
+            json={"query": query, "page": 1, "pageSize": 10}, timeout=15, trust_env=False,
         )
-        resp.raise_for_status()
-        body = resp.json()
-    except Exception as exc:  # noqa: BLE001 - 服务不可用降级
+        response.raise_for_status()
+        body = response.json()
+    except Exception as exc:
+        # 只有真·不可达（连接失败/超时/HTTP 错误/JSON 坏）才是"服务不可用"。
+        return ExecResult(False, f"本地文件检索服务不可用（{type(exc).__name__}），请确认 bibit-filesearch 已启动。")
+    # 走到这里说明服务活着并回了 200，code!=0 是业务层拒绝（典型是 query
+    # 分词后关键词为空，服务端回 code=1001「query 不能为空」）。原样透出服务端
+    # 的 message 并标记 need_param，让调用方知道"换个更具体的词重试"，
+    # 而不是把它误当成服务故障转去绕路（如改开终端扫盘）。
+    if not isinstance(body, dict) or body.get("code", 0) != 0:
+        reason = ""
+        if isinstance(body, dict):
+            reason = str(body.get("message") or "").strip()
         return ExecResult(
             False,
-            f"本地文件检索服务不可用（{type(exc).__name__}），"
-            "请确认 bibit-filesearch 已启动。",
+            f"本地检索已拒绝该查询：{reason or 'query 无效'}。请改用更具体的词"
+            "（文件名、主题、扩展名，如 合同 / 周报 / pdf），不要用 * 或「所有文件」这类泛词。",
+            need_param="query",
         )
-    data = body.get("data") or {}
-    results = data.get("results") or []
-    if not results:
-        return ExecResult(False, "本地没有找到相关文件。")
-    lines = ["本地检索结果："]
-    for i, item in enumerate(results[:10], 1):
-        conf = round(float(item.get("confidence") or 0) * 100)
-        lines.append(
-            f"{i}. {item.get('fileName') or ''}（{conf}%）"
-            f" — {item.get('filePath') or ''}"
-        )
-    # 直通回答只给文件名（filesearch 只回元数据）。明确告诉用户/模型下一步
-    # 怎么拿正文——否则「本地资料」就停在文件名上（K13）。
-    lines.append(
-        "如需在桌面打开该文件，请调用 open_file(path=<文件路径>)，"
-        "不要用 terminal 直接运行 libreoffice/xdg-open。"
-    )
-    lines.append(
-        "需要正文时：说「读取本地文件 <路径>」（只读索引目录里的文本文件，"
-        "docx/pdf 暂时只能给文件名）。"
-    )
-    return ExecResult(True, "\n".join(lines))
+    try:
+        result = normalize_results(body.get("data"), port=port)
+    except FileResultError as exc:
+        return ExecResult(False, str(exc))
+    entries = result["entries"]
+    lines = [f"本地检索结果（按相关度排序，第 1 位最相关）：{result['total_count']} 个候选文件（服务 Top-K 范围）"]
+    for index, item in enumerate(entries, 1):
+        score = f"（相对匹配度 {item['score']:.0%}）" if item["score"] is not None else "（未提供匹配度）"
+        lines.append(f"第 {index} 位：{item['name']}{score} — {item['path']}")
+    if not entries:
+        lines.append("本地没有找到当前授权下可用的相关文件。")
+    else:
+        lines.append("可点击文件名打开，或选择文件后总结正文；也可说「读取本地文件 <路径>」。")
+    return ExecResult(bool(entries), "\n\n".join(lines), json.dumps(result, ensure_ascii=False))
 
 
 def _default_open_argv(file_path: Path) -> list[str] | None:
@@ -2598,6 +2870,7 @@ def locate_directories(
         try:
             out = subprocess.run(
                 cmd, capture_output=True, text=True, timeout=10,
+                encoding=sys.getfilesystemencoding(), errors="surrogateescape",
             ).stdout
         except (OSError, subprocess.SubprocessError):
             continue
@@ -2781,6 +3054,8 @@ def open_folder(
 # ── 分发表 ───────────────────────────────────────────────────────────
 # 工具名 → 执行函数
 HANDLERS = {
+    "get_system_time": get_system_time,
+    "set_system_time": set_system_time,
     "get_vol_status": get_volume,
     "set_volume": set_volume,
     "adjust_volume": adjust_volume,
@@ -2812,6 +3087,7 @@ HANDLERS = {
     "camera_open": camera_open,
     "camera_close": camera_close,
     "take_photo": take_photo,
+    "screenshot": screenshot,
 }
 
 # 屏幕显示（分辨率/刷新率/旋转/缩放/外接屏模式）实现在 tools/display.py，
@@ -2827,6 +3103,20 @@ try:  # noqa: SIM105
     from .display_tools import HANDLERS as _DISPLAY_HANDLERS  # noqa: E402
 
     HANDLERS.update(_DISPLAY_HANDLERS)
+except ImportError:
+    pass
+
+try:
+    from .wallpaper_tools import HANDLERS as _WALLPAPER_HANDLERS
+
+    HANDLERS.update(_WALLPAPER_HANDLERS)
+except ImportError:
+    pass
+
+try:
+    from .locale_tools import HANDLERS as _LOCALE_HANDLERS
+
+    HANDLERS.update(_LOCALE_HANDLERS)
 except ImportError:
     pass
 

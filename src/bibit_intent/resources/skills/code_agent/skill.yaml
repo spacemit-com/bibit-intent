@@ -1,0 +1,48 @@
+# 代码任务 Skill —— 由设备上的 dsh（DeepSeek Harness）真正执行
+#
+# 路由取舍：编码任务不在端侧做规则直通。要判断改哪个文件、改成什么样、怎么验证，
+# 正则抽不准任务文本，端侧小模型也只会瞎选工具；这类意图整体交给云端模型，
+# 由它选 code_task 并组织任务描述（intent.py 里有 _CODE_TASK_RE 前置门）。
+#
+# 执行边界：dsh 打包在桌面应用里，运行时沙箱看不见，所以本 skill 的 handler 只
+# 通过回环 HTTP 把任务转给 bibit-intent 服务进程，由它在沙箱外起 dsh 子进程。
+# 工具声明 mcp.async，避免一次几十秒的执行撞上 Runtime 的 MCP 调用超时。
+
+name: code_agent
+version: "0.1"
+display: "代码任务"
+description: "把代码生成/修改/调试/分析交给 dsh 在受限工作区执行"
+author: "bibit"
+
+requires:
+  - node
+
+tools:
+
+  code_task:
+    display: "执行代码任务（由 dsh 完成）"
+    display_en: >-
+      Run a software engineering task on this device with the coding agent (dsh).
+      Use when the user asks to write, modify, fix, debug, refactor, explain or
+      analyze code or a project: creating a script, fixing a bug from a traceback,
+      adding a function, explaining what a file does. The agent works inside a
+      workspace on the device, edits files itself, runs commands to verify, and
+      reports which files changed. Pass the user's whole request as `task`,
+      keeping filenames, language, expected behavior and error text. Do not use
+      this for reading a single file's content (use file_read), for installing
+      packages (use pkg_install/pip_install), or for device control.
+    short: "codetask"
+    aliases: ["代码任务", "写代码", "改代码", "修代码", "调试代码", "代码分析", "coding task"]
+    params:
+      task: {type: str, hint: "完整的编码任务描述，含文件名、语言、期望行为、报错信息"}
+      workspace: {type: str, default: "", hint: "已有工程目录的绝对路径；留空则在 ~/bibit-code-workspace/runs/ 下新建"}
+    routes:
+      rule:
+        # 空 patterns：不在端侧直接命中，交给云端模型决定
+        patterns: []
+        keywords: ["写代码", "改代码", "修代码", "调试代码", "代码分析",
+                   "fix the bug", "write a script", "refactor"]
+      local: null
+    confirm: false
+    handler: "code_task"
+    mcp: {group: admin, async: true}

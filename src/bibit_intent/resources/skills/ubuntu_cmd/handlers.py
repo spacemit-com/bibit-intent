@@ -17,8 +17,8 @@ skills/ubuntu_cmd/handlers.py — Ubuntu 命令查询 Skill 的执行实现
 """
 from __future__ import annotations
 
-import os
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -1267,7 +1267,33 @@ def net_trace(host: str = "", **_) -> ExecResult:
     """查看到某一域名的路由情况：tracepath host"""
     if not host:
         return ExecResult(False, "缺少域名或主机")
-    return _run(["tracepath", host], timeout=30)
+    command = ["tracepath", host]
+    try:
+        result = run_command(command, timeout=8)
+    except FileNotFoundError:
+        return ExecResult(False, "未安装 tracepath，无法执行路由跟踪。")
+    except subprocess.TimeoutExpired as error:
+        output = error.stdout or ""
+        diagnostics = error.stderr or ""
+        if isinstance(output, bytes):
+            output = output.decode("utf-8", errors="replace")
+        if isinstance(diagnostics, bytes):
+            diagnostics = diagnostics.decode("utf-8", errors="replace")
+        detail = "\n".join(part.strip() for part in (output, diagnostics) if part.strip())
+        return ExecResult(
+            False,
+            "路由跟踪在 8 秒内未完成；以下仅为已取得的部分输出，不能据此判定网络故障。"
+            if detail else "路由跟踪在 8 秒内未完成，未取得路径信息；不能据此判定网络故障。",
+            detail,
+            detail_format="text",
+        )
+    return ExecResult(
+        result.returncode == 0,
+        "路由跟踪结束，请根据输出判断路径是否到达目标。" if result.returncode == 0
+        else f"路由跟踪失败（码 {result.returncode}），保留已取得的输出。",
+        "\n".join(part.strip() for part in (result.stdout, result.stderr) if part.strip()),
+        detail_format="text",
+    )
 
 
 _CLOUD_PROBE_DEFAULT = "https://api.rvcompute.com:60000/v1"
@@ -1444,10 +1470,12 @@ def net_http_head(url: str = "", **_) -> ExecResult:
 
 def iptables_list(**_):
     """查看 iptables 规则：iptables -L -n + nat"""
-    r = _run(["iptables", "-L", "-n"], timeout=15)
+    r = _run(["sudo", "-n", "/usr/sbin/iptables", "-L", "-n"], timeout=15)
     if not r.ok:
         return r
-    nat = _run(["iptables", "-t", "nat", "-L", "-n"], timeout=15)
+    nat = _run(["sudo", "-n", "/usr/sbin/iptables", "-t", "nat", "-L", "-n"], timeout=15)
+    if not nat.ok:
+        return ExecResult(False, "NAT 规则查询失败", r.detail + "\n" + nat.message + "\n" + nat.detail, detail_format="text")
     detail = r.detail + ("\n\n[ NAT 规则 ]\n" + nat.detail if nat.ok else "")
     return ExecResult(True, "iptables 规则", _code_block(detail, 3000))
 
@@ -1461,9 +1489,25 @@ def sec_lastlog(**_):
 
 def sec_antivirus(path: str = ".", **_) -> ExecResult:
     """病毒扫描：clamscan -r path"""
-    if not path:
-        path = "."
-    return _run(["clamscan", "-r", path], timeout=600)
+    path = str(path or ".").strip()
+    if path != "." and not path.startswith("/"):
+        return ExecResult(False, "病毒扫描路径必须是绝对路径", "请提供以 / 开头的文件或目录路径")
+    if "\x00" in path:
+        return ExecResult(False, "病毒扫描路径无效", "路径不能包含 NUL 字符")
+    if not os.path.exists(path):
+        return ExecResult(False, "病毒扫描路径不存在", path)
+    try:
+        result = run_command(["clamscan", "--suppress-ok-results", "-r", path], timeout=600)
+    except FileNotFoundError:
+        return ExecResult(False, "未安装 ClamAV，请先安装 clamav 并更新病毒库")
+    except subprocess.TimeoutExpired:
+        return ExecResult(False, "病毒扫描超时，未完成全部扫描", "请缩小扫描范围后重试，不能据此判断目录安全。")
+    detail = "\n".join(part for part in (result.stdout, result.stderr) if part)
+    if result.returncode == 0:
+        return ExecResult(True, "病毒扫描完成，未发现病毒", detail, detail_format="text")
+    if result.returncode == 1:
+        return ExecResult(True, "病毒扫描发现威胁；未删除或隔离任何文件", detail, detail_format="text")
+    return ExecResult(False, "病毒扫描不完整，请检查扫描错误；不能判断目录安全", detail, detail_format="text")
 
 
 # ── 服务列表 ─────────────────────────────────────────────────────────

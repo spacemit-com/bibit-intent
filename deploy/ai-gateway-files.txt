@@ -19,8 +19,9 @@ tests/test_ai_gateway.py
 tests/test_gateway_artifacts.py
 tests/test_gateway_migration.py
 tests/test_legacy_retirement.py
-docs/design/design.md
-docs/design/design.en.md
+docs/design/gateway_model_provisioning.md
+docs/design/ai_gateway_migration.md
+docs/evaluation/ai_gateway_k3_20260920.md
 deploy/retire-legacy-models.sh
 src/bibit_intent/models/gateway_bootstrap.py
 deploy/bibit-intent-models.service

@@ -43,6 +43,16 @@ def test_registry_exposes_power_tools():
     assert _registry.get("shutdown").mcp_schema()["function"]["name"] == "shutdown"
 
 
+def test_reboot_receipt_is_preserved_but_not_displayed(monkeypatch):
+    import json
+    from bibit_intent.pipeline import _format_reply
+
+    _fake_run(monkeypatch)
+    result = system_tools.reboot()
+    assert json.loads(result.detail)["status"] == "accepted"
+    assert _format_reply(result) == result.message
+
+
 def test_shutdown_patterns_route_locally():
     for text in ("关机", "帮我关机", "关机吧", "关闭系统", "关闭电脑", "把电脑关机", "关掉电脑"):
         assert _match(text) == "shutdown", text
@@ -71,10 +81,21 @@ def test_shutdown_runs_systemctl_poweroff(monkeypatch):
     assert "关机" in r.message
 
 
-def test_reboot_still_runs_systemctl_reboot(monkeypatch):
+def test_reboot_schedules_before_reporting_acceptance(monkeypatch):
     calls = _fake_run(monkeypatch)
-    assert system_tools.reboot().ok is True
-    assert calls == [["systemctl", "reboot"]]
+    result = system_tools.reboot()
+    assert result.ok is True
+    assert calls == [["systemctl", "reboot", "--when=+1min"]]
+    assert '"status":"accepted"' in result.detail
+    assert "一分钟" in result.message
+
+
+def test_reboot_failure_never_falls_back_to_immediate_reboot(monkeypatch):
+    calls = _fake_run(monkeypatch, ExecResult(False, "unsupported or denied"))
+    result = system_tools.reboot()
+    assert not result.ok
+    assert not result.detail
+    assert len(calls) == 1
 
 
 def test_power_action_surfaces_command_failure(monkeypatch):
@@ -89,6 +110,16 @@ def test_power_action_maps_authentication_failure(monkeypatch):
     r = system_tools.shutdown()
     assert r.ok is False
     assert "未执行" in r.message
+
+
+def test_reboot_preserves_authorization_error(monkeypatch):
+    calls = _fake_run(monkeypatch, ExecResult(False, "failed", "Access denied", detail_format="text"))
+    result = system_tools.reboot()
+    assert not result.ok
+    assert "需要授权" in result.message
+    assert result.detail == "Access denied"
+    assert result.detail_format == "text"
+    assert len(calls) == 1
 
 
 def test_sleep_reports_unsupported_hardware(monkeypatch):

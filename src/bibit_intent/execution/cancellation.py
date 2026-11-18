@@ -110,10 +110,10 @@ def end_execution_without_side_effect() -> None:
         started.clear()
 
 
-def interruptible_call(function):
-    """Allow cancellation while waiting on side-effect-free blocking I/O."""
+def interruptible_call(function, *, deadline: float | None = None):
+    """Allow cancellation and an optional total deadline for blocking I/O."""
     event = getattr(_LOCAL, "cancel_event", None)
-    if event is None:
+    if event is None and deadline is None:
         return function()
     result: Queue[tuple[bool, object]] = Queue(maxsize=1)
 
@@ -123,13 +123,20 @@ def interruptible_call(function):
         except BaseException as exc:
             result.put((False, exc))
 
+    def check_budget():
+        raise_if_cancelled()
+        if deadline is not None and time.monotonic() >= deadline:
+            raise EdgeDeadlineExceeded("edge I/O deadline exceeded")
+
+    check_budget()
     threading.Thread(target=invoke, name="bibit-interruptible-io", daemon=True).start()
     while True:
-        raise_if_cancelled()
+        check_budget()
         try:
             ok, value = result.get(timeout=0.05)
         except Empty:
             continue
+        check_budget()
         if ok:
             return value
         if isinstance(value, BaseException):

@@ -339,6 +339,7 @@ def _run_sudo_via_user_manager(
     *,
     input: str | None = None,
     on_output=None,
+    force_reauth: bool = False,
 ) -> ExecResult:
     """在带 no_new_privs 的进程里，把提权执行交给用户管理器。
 
@@ -351,7 +352,7 @@ def _run_sudo_via_user_manager(
     """
     # 带 .service 后缀：停止时不必依赖 systemd 的单位名推导。
     unit = f"bibit-sudo-{os.getpid()}-{secrets.token_hex(4)}.service"
-    script = 'exec sudo -A "$@"\n'
+    script = 'exec sudo -A -k "$@"\n' if force_reauth else 'exec sudo -A "$@"\n'
     argv = [
         "systemd-run", "--user", "--quiet", "--collect", "--wait", "--pipe",
         "--service-type=exec", f"--unit={unit}",
@@ -410,7 +411,7 @@ def _authorize_sudo(env: dict[str, str], timeout: int | None) -> ExecResult | No
     return None
 
 
-def _run_sudo(cmd: list[str], timeout: int | None = 60, input: str | None = None, on_output=None) -> ExecResult:
+def _run_sudo(cmd: list[str], timeout: int | None = 60, input: str | None = None, on_output=None, *, force_reauth: bool = False) -> ExecResult:
     """以 sudo -A 提权执行：SUDO_ASKPASS 指向 ssh-askpass，弹出 GUI 密码框，
     由用户在桌面输入密码，代码中不保存密码。"""
     # 无可用图形会话（agent 服务常驻 systemd、SSH 远程等）时不要启动 Qt 版
@@ -450,12 +451,12 @@ def _run_sudo(cmd: list[str], timeout: int | None = 60, input: str | None = None
         # root 也无法写入。这两种情况都改由用户管理器的 transient unit 在
         # host mount namespace 中执行同一套授权 + 命令。
         if host_package_command or _no_new_privs_active() or _usr_mount_read_only():
-            return _run_sudo_via_user_manager(cmd, timeout, env, input=input, on_output=on_output)
-        denied = _authorize_sudo(env, timeout)
+            return _run_sudo_via_user_manager(cmd, timeout, env, input=input, on_output=on_output, force_reauth=force_reauth)
+        denied = None if force_reauth else _authorize_sudo(env, timeout)
         if denied is not None:
             return denied
         p = run_command(
-            ["sudo", "-A"] + cmd,
+            ["sudo", "-A"] + (["-k"] if force_reauth else []) + cmd,
             timeout=timeout,
             env=env,
             input=input,
@@ -2519,7 +2520,7 @@ def iptables_block(ip: str = "", **_) -> ExecResult:
     """阻止一个 IP：iptables -A INPUT -s ip -j DROP"""
     if not ip:
         return ExecResult(False, "缺少 IP 地址")
-    return _run(["iptables", "-A", "INPUT", "-s", ip, "-j", "DROP"], timeout=30)
+    return _run_sudo(["/usr/sbin/iptables", "-A", "INPUT", "-s", ip, "-j", "DROP"], timeout=30, force_reauth=True)
 
 
 def net_enable_nat(**_):

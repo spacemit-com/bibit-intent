@@ -324,6 +324,11 @@ class EmbeddedBibitPipeline:
             while not entry.lock.acquire(timeout=0.05):
                 raise_if_cancelled()
             entry_acquired = True
+            from .file_results import SUMMARY_PREFIX, summarize
+            if str(text).startswith(SUMMARY_PREFIX):
+                summary = summarize(str(text)[len(SUMMARY_PREFIX):], getattr(self._router, "_local", None))
+                return PipelineOutcome(handled=True, reply=summary.message, route="local", reason="file_summary",
+                                       metadata={"route": "local", "tool": "file_summary", "ok": summary.ok})
             result = self._router.handle(str(text), session=entry.state)
         finally:
             with self._sessions_lock:
@@ -346,6 +351,19 @@ class EmbeddedBibitPipeline:
         }
         if result.tool_name:
             metadata["tool"] = result.tool_name
+        execution = result.exec_result
+        if execution is not None:
+            if getattr(execution, "unverified", False):
+                metadata["task_status"] = "unverified"
+            elif execution.confirmation is not None or execution.confirm:
+                metadata["task_status"] = "awaiting_confirmation"
+            elif execution.need_param is not None or execution.choices:
+                metadata["task_status"] = "awaiting_input"
+            else:
+                metadata["task_status"] = "succeeded" if execution.ok else "failed"
+        confirmation = getattr(result.exec_result, "confirmation", None)
+        if confirmation is not None:
+            metadata["time_confirmation"] = confirmation
         structured = _readonly_detail(result.exec_result)
         if structured is not None:
             metadata["result"] = structured

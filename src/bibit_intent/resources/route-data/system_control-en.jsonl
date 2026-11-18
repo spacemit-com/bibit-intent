@@ -114,3 +114,6 @@
 {"group":"rule","expect":"sleep","input":"sleep"}
 {"group": "rule", "expect": "display_modes", "input": "which refresh rates are supported"}
 {"group": "rule", "expect": "display_modes", "input": "what resolutions are available"}
+{"group":"rule","expect":"screenshot","input":"take a screenshot"}
+{"group":"rule","expect":"screenshot","input":"capture the screen"}
+{"group":"rule","expect":"screenshot","input":"grab a screenshot"}

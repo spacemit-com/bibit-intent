@@ -4,6 +4,94 @@
 
 tools:
 
+  set_wallpaper:
+    display: "将明确指定的本地图片设为宿主桌面壁纸。必须提供图片完整路径；不自动选图、不循环切换、不下载网络图片。缺少路径先澄清。"
+    display_en: "Set an explicitly specified local image as the host desktop wallpaper. Requires a full image path. Never choose an image, cycle wallpapers or download a URL; clarify a missing path."
+    short: "wallpaper"
+    params:
+      path: {type: str, hint: "本地图片绝对路径、~/Pictures/photo.png 或 file:///home/user/Pictures/photo.png；不是目录"}
+    routes:
+      rule: {patterns: [], keywords: []}
+      local: "wallpaper(path:str)"
+    system: {type: builtin, channel: host}
+
+  get_locale_settings:
+    display: "获取宿主机全局语言与区域配置，不读取 sandbox 或用户个人配置。正在运行的程序可能尚未应用新配置。"
+    display_en: "Read the host's global system language and formatting region, never sandbox or personal configuration. Running applications may retain old settings."
+    short: "locale_get"
+    params:
+      scope: {type: str, enum: [system], default: system}
+    routes:
+      rule: {patterns: [], keywords: []}
+      local: "locale_get(scope:system)"
+    system: {type: builtin, channel: host}
+
+  list_locale_options:
+    display: "列出本机已安装的可选语言和区域。界面语言仅简体中文 zh_CN 和英文 en_US；区域按已安装 UTF-8 locale 动态查询。"
+    display_en: "List installed UTF-8 locales for regions and available UI languages (only Simplified Chinese zh_CN and English en_US). Choose exact locale codes for ambiguous regions."
+    short: "locale_list"
+    params: {}
+    routes:
+      rule: {patterns: [], keywords: []}
+      local: "locale_list()"
+    system: {type: builtin, channel: host}
+
+  set_system_language:
+    display: "修改宿主机全局界面语言，仅简体中文 zh_CN 或英文 en_US，保留区域。不写 sandbox 或用户个人配置。需授权及注销重新登录，不自动注销。模糊指令先澄清。"
+    display_en: "Set the host's global language to installed zh_CN or en_US, preserving region. Never write sandbox or personal configuration. Requires system authorization and next login; never log out automatically or guess a target."
+    short: "locale_lang"
+    params:
+      locale: {type: str, hint: "zh_CN / en_US (简体中文 / English)"}
+      scope: {type: str, enum: [system], default: system}
+    routes:
+      rule: {patterns: [], keywords: []}
+      local: "locale_lang(locale:str,scope:system)"
+    system: {type: builtin, channel: host}
+
+  set_system_region:
+    display: "修改宿主机全局数字、货币、日期等区域格式，保留界面语言和时区。选择已安装的明确 locale；不写 sandbox 或个人配置。需授权及注销重新登录。"
+    display_en: "Set the host's global formatting region, preserving language and timezone. Choose an installed exact locale; clarify ambiguity. Never write sandbox or personal configuration. Requires authorization and next login, no automatic logout."
+    short: "locale_region"
+    params:
+      locale: {type: str, hint: "已安装的 locale，如 zh_CN / en_US / en_GB；先查询 list_locale_options"}
+      scope: {type: str, enum: [system], default: system}
+    routes:
+      rule: {patterns: [], keywords: []}
+      local: "locale_region(locale:str,scope:system)"
+    system: {type: builtin, channel: host}
+
+  get_system_time:
+    display: "查询设备当前系统日期、时间、时区及 UTC 偏移。只读，不联网校时。不用于其他城市或指定日期的时间换算。"
+    display_en: "Read the device's current system date, time, timezone and UTC offset. Read-only; does not synchronize the clock or verify its accuracy. Not for time conversion or the time in another city."
+    short: "get_time"
+    params: {}
+    routes:
+      rule:
+        patterns: []
+        keywords: []
+      local: "get_time()"
+    system:
+      type: builtin
+      channel: host
+
+  set_system_time:
+    display: "设置宿主系统日期时间。支持完整日期时间、仅日期 YYYY-MM-DD 或仅时间 HH:MM[:SS]。缺失部分保留执行时的值，未给秒取00。不更改时区。NTP开启时暂停，必须经Runtime确认按钮批准关闭自动校时后继续，不能以模型参数或口头确认绕过。模糊或相对时间先澄清。"
+    display_en: "Set host date/time using YYYY-MM-DD HH:MM[:SS], YYYY-MM-DD or HH:MM[:SS]. Preserve omitted date/clock fields at execution; omitted seconds become 00. Never change timezone. If NTP is enabled, pause for explicit Runtime approval to disable synchronization and continue. Model arguments cannot substitute for approval. Clarify ambiguous or relative values."
+    short: "system_time"
+    params:
+      datetime:
+        type: str
+        hint: "YYYY-MM-DD HH:MM[:SS] / YYYY-MM-DD / HH:MM[:SS]，使用宿主机当前时区"
+    routes:
+      rule:
+        patterns: []
+        keywords: []
+      local: "system_time(datetime:str)"
+    system:
+      type: shell
+      cmd: "timedatectl"
+      channel: host
+
   get_vol_status:
     display: "查询音量"
     display_en: "Read the current system master output volume level (0-100). Use when the user asks what the current volume is, how loud the sound currently is, or wants to check the volume without changing it. For changing the volume use set_volume or adjust_volume."
@@ -38,12 +126,12 @@ tools:
         patterns:
           - "^(?:set|turn)\\s+(?:the\\s+)?volume\\s+(?:to\\s+)?(?P<level>\\d{1,3})(?:%| percent)?$"
           - "^(?:please\\s+)?(?:set|put|adjust|change)\\s+(?:the\\s+)?(?:volume|sound|audio|loudness)(?:\\s+level)?\\s*(?:to|at|on)?\\s*(?P<level>\\d{1,3})%?(?:\\s*percent)?$"
-          - "^(?!.*(?:麦克风|话筒|录音|输入))(音量|声音).{0,6}(调|设|改)\\D{0,4}(?P<level>\\d+(?!成))"
+          - "^(?!.*(?:调高|调低|调大|调小)(?!到|为|成))(?!.*(?:麦克风|话筒|录音|输入))(音量|声音).{0,6}(调|设|改)\\D{0,4}(?P<level>\\d+(?!成))"
           # 中文数字档位："调到六成/百分之六十/一半"（cn_number 解析）
-          - "^(?!.*(?:麦克风|话筒|录音|输入))(音量|声音).{0,6}(调|设|改)\\D{0,4}(?P<level>百分之[零一二两三四五六七八九十百]+|[零一二两三四五六七八九]成|\\d+成|半)"
+          - "^(?!.*(?:调高|调低|调大|调小)(?!到|为|成))(?!.*(?:麦克风|话筒|录音|输入))(音量|声音).{0,6}(调|设|改)\\D{0,4}(?P<level>百分之[零一二两三四五六七八九十百]+|[零一二两三四五六七八九]成|\\d+成|半)"
           - "^(?!.*(?:麦克风|话筒|录音|输入))(?:把|将)\\s*(?:音量|声音)\\s*(?:调|设|改)(?:到|为|成)?\\s*(?P<level>百分之[零一二两三四五六七八九十百]+|[零一二两三四五六七八九]成|\\d+成|半|\\d{1,3})$"
-          - "^(?!.*(?:麦克风|话筒|录音|输入))(调|设)\\D{0,4}(音量|声音)\\D{0,4}(?P<level>\\d+(?!成))"
-          - "^(?!.*(?:麦克风|话筒|录音|输入))(调|设)\\D{0,4}(音量|声音)\\D{0,4}(?P<level>百分之[零一二两三四五六七八九十百]+|[零一二两三四五六七八九]成|\\d+成|半)"
+          - "^(?!.*(?:调高|调低|调大|调小)(?!到|为|成))(?!.*(?:麦克风|话筒|录音|输入))(调|设)\\D{0,4}(音量|声音)\\D{0,4}(?P<level>\\d+(?!成))"
+          - "^(?!.*(?:调高|调低|调大|调小)(?!到|为|成))(?!.*(?:麦克风|话筒|录音|输入))(调|设)\\D{0,4}(音量|声音)\\D{0,4}(?P<level>百分之[零一二两三四五六七八九十百]+|[零一二两三四五六七八九]成|\\d+成|半)"
           - "^(?!.*(?:麦克风|话筒|录音|输入))(?P<level>\\d+(?!成)).{0,4}(音量|声音)"
           - "^(?!.*(?:麦克风|话筒|录音|输入))(?P<level>百分之[零一二两三四五六七八九十百]+|[零一二两三四五六七八九]成|\\d+成|半).{0,4}(音量|声音)"
         keywords: ["音量", "声音", "volume", "sound", "audio"]
@@ -73,6 +161,8 @@ tools:
       rule:
         patterns:
           - "^(?:turn|make)\\s+(?:the\\s+)?(?:volume|sound|audio|it)\\s+(?:up|higher|louder|down|lower|quieter)$"
+          - "^(?:把|将)?\\s*(?:系统)?(?:音量|声音)\\s*(?:调高|调大|提高|增大|开大|调低|调小|降低|减小|关小)(?:一下|一点)?\\s*(?P<amount>百分之[零一二两三四五六七八九十百]+|\\d{1,3})?(?:%|％)?$"
+          - "^(?:调高|调大|提高|增大|开大|调低|调小|降低|减小|关小)(?:一下|一点)?\\s*(?:系统)?(?:音量|声音)\\s*(?P<amount>百分之[零一二两三四五六七八九十百]+|\\d{1,3})?(?:%|％)?$"
           - "^(?:调高|调大|提高|增大|开大)(?:一下|一点)?(?:音量|声音)$"
           - "^(?:调低|调小|降低|减小|关小)(?:一下|一点)?(?:音量|声音)$"
           - "^(?:音量|声音)(?:调高|调大|调低|调小|大一点|小一点)(?:一下|一点)?$"
@@ -90,6 +180,7 @@ tools:
           小一点: {direction: down, amount: 10}
           降低: {direction: down, amount: 10}
           减小: {direction: down, amount: 10}
+          关小: {direction: down, amount: 10}
       local: "vol_adj(direction:up|down,amount:1-100)"
     system:
       type: alsa
@@ -167,7 +258,7 @@ tools:
           - "^(?:调|设)(?:亮|暗)(?:屏幕|画面|一点|一些)?$"
           - "^(?:调高|调亮|提高|增大)(?:一下|一点)?(?:亮度|屏幕亮度)$"
           - "^(?:调低|调暗|降低|减小)(?:一下|一点)?(?:亮度|屏幕亮度)$"
-          - "^(?:亮度|屏幕亮度)(?:调高|调亮|调低|调暗|亮一点|暗一点)(?:一下|一点)?$"
+          - "^(?:把|将)?(?:系统)?(?:亮度|屏幕亮度)(?:调高|调亮|调低|调暗|亮一点|暗一点)(?:一下|一点)?$"
         keywords: ["亮度", "屏幕亮度", "太暗", "看不清", "太亮", "刺眼", "晃眼", "brightness", "brighten", "dim", "dimmer", "darker", "调亮", "调暗"]
         slot_map_anchor: ["屏幕", "亮度", "背光", "显示器", "画面", "brightness", "screen", "backlight"]
         slot_map:
@@ -669,6 +760,43 @@ tools:
       type: shell
       cmd: "pkill -x snapshot"
 
+  screenshot:
+    display: "截图"
+    display_en: "Take a screenshot with the system screenshot tool and copy it to the clipboard. Use when the user asks to take a screenshot, grab the screen, or capture a selected area, e.g. 截图 / 截屏 / 屏幕截图 / 截个图. mode=region (default) lets the user drag a rectangle, mode=full captures the whole screen. For taking a photo with the camera use take_photo."
+    short: "shot"
+    aliases: ["screenshot", "screen shot", "capture screen", "截图", "截屏", "屏幕截图"]
+    params:
+      mode: {type: str, enum: [region, full], default: region}
+    routes:
+      rule:
+        # 整句锚定：截图是动作词，但「截图为证」「这个截图上写了什么」是叙述/问答句，
+        # 不加 ^...$ 会被整句吃掉直通执行。
+        # 动作动词必须走 `(?:截取|截)` / `(?:take|grab|capture|snap)` 交替组：
+        # 规则层的 predicates 门（_pattern_verb_roots ∩ analysis.predicates）认不出
+        # 裸的「截」和「grab」，写成别的形式会让整工具被过滤掉。
+        patterns:
+          - "^(?:帮我|给我|麻烦|请)?(?:截(?:个|张|一下|一张)?图|截(?:屏|一下屏)|屏幕截图|全屏截图|区域截图|选区截图|(?:截取|截屏|截图|截)(?:屏幕|全屏|整个屏幕))(?:吧|啊|呀|一下)?$"
+          - "^(?:please\\s+)?(?:take|grab|capture|snap)\\s+(?:a\\s+)?(?:screenshot|screen\\s?shot|screen\\s+capture)(?:\\s+of\\s+(?:the\\s+)?(?:whole|entire)\\s+screen)?$"
+          - "^(?:please\\s+)?(?:take|grab|capture|snap)\\s+(?:the\\s+)?(?:whole\\s+|entire\\s+)?screen$"
+          - "^(?:screenshot|screen\\s?shot)$"
+        keywords: ["截个图", "截屏", "屏幕截图", "全屏截图", "区域截图", "选区截图", "screenshot", "screen shot"]
+        # 模式词用 slot_map 补，不写进正则（与仓库既有 slot_map 用法一致）。
+        slot_map:
+          全屏截图: {mode: full}
+          截取全屏: {mode: full}
+          截取屏幕: {mode: region}
+          区域截图: {mode: region}
+          选区截图: {mode: region}
+      local: "shot(mode:region/full)"
+    system:
+      # 执行走 HANDLERS["screenshot"]：薄封装系统工具 bianbu-screenshot
+      # （grim + slurp + wl-copy），存盘目录/命名/剪贴板/取消语义与快捷键一致。
+      # 下方 cmd 仅作声明（同 lock_screen / take_photo 的写法）。
+      type: shell
+      cmd: "bianbu-screenshot region|full"
+      mcp:
+        group: control
+
   audio_output_switch:
     display: "切换音频输出设备"
     display_en: "Switch the audio output device (speaker/analog, headphone, HDMI, DP). Use when the user asks to change where sound plays from, e.g. switch to analog/speaker/headphone/HDMI. The built-in ES8326 codec is analog; identifiers such as snd-es8326, snd-8326, es8326 should be passed as device=analog. For switching the microphone/input device use audio_input_switch; for volume use set_volume."
@@ -1159,26 +1287,12 @@ tools:
         group: readonly
         discovery: true
 
-  query_knowledge:
-    display: "查询知识库"
-    display_en: "Query the local knowledge base for how-to or informational questions (e.g. how to adjust brightness, how to connect WiFi). Use when the user asks how to do something or wants an explanation, not when they ask to perform an action directly."
-    short: "kb"
-    params:
-      query: {type: str}
-    routes:
-      rule: null        # 知识库查询不走规则引擎，从第二段起
-      local: "kb(query:...)"
-    system:
-      type: knowledge_base
-      mcp:
-        group: readonly
-
   file_search:
     display: "本地搜索文件"
-    display_en: "Search for files locally on the device by name or content. Use when the user asks to find, locate, or search for a file or document on this machine."
+    display_en: "Search the local file index by KEYWORD (name, topic, or extension such as pdf / 周报 / 合同). This is a relevance search over indexed keywords, not a wildcard match and not a directory listing: the query must contain at least one concrete term that survives tokenization. Never pass \"*\", an empty string, or generic words like \"all files\" / \"所有文件\" / \"所有格式的文件\" — those are rejected by the service and cannot enumerate the device. Use when the user asks to find, locate, or search for a specific file or document on this machine. Do not pass a placeholder and do not pretend this tool can enumerate. WHEN THE REQUEST IS A GENERIC ENUMERATION (list/count all files, what formats exist, every file on the device) this tool cannot serve it, but the request itself is legitimate: it is the wrong tool, not an impossible request. Offer the two paths that actually work and ask the user which they want, instead of refusing or guessing: (1) a real enumeration — run it with the Runtime terminal tool, which is the only thing on the device that can walk the filesystem; say plainly that it scans paths outside the index (so it is slower and sees directories this tool cannot) and then run it, e.g. a find or ls pipeline that groups by extension; (2) this indexed keyword search — describe it as relevance search over the indexed directories only, limited to indexable types, invisible outside the index, and therefore unable to prove what exists on the device, then ask for one concrete anchor and wait for the next turn. WHEN YOU ASK FOR THAT ANCHOR, tell the user the phrasings that actually reach this tool, because a bare topic without a device word does not: the reliable form is a location word — 本地 / 本机 / 电脑上 / 电脑里 / 我电脑 — followed by a search verb (搜索 / 查找 / 找一下 / 查一下 / 检索), then the term, optionally with a format. Give one or two concrete examples instead of abstract instructions, e.g. 「本地搜索关于合同的 txt」「本地搜索关于周报的 pdf」「本机找一下会议纪要」「电脑上查一下关于 2026 的 md」. Only offer formats the index can actually hold — text and documents such as txt / md / pdf / docx / xlsx / py / json, and images; do not name media or archive types the index does not carry. Explain the difference in one or two sentences so the user can choose: enumeration is exhaustive but bypasses the index, keyword search is fast and index-scoped but needs a term. Never offer open_folder as a way to locate or filter files (it only opens one directory), never cite disk_dir_usage (directory size only) or file_info (one known path) as enumeration, and never claim a result proves what exists outside the index."
     short: "fs"
     params:
-      query: {type: str}
+      query: {type: str, hint: "具体关键词，如 合同 / 周报 / 2026 / pdf；不要用 * 或「所有文件」这类泛词（分词后为空会被服务端拒绝）"}
     routes:
       rule:
         # 补充前置层 _LOCAL_SEARCH_RE 漏掉的口语：方位词与检索动词之间隔了
@@ -1215,7 +1329,7 @@ tools:
 
   open_folder:
     display: "打开文件夹"
-    display_en: "Open a local directory with the file manager. Use for well-known locations (desktop/documents/downloads/home/root), an explicit absolute directory path, a fuzzy directory name, or a location-qualified name (open the bianbu folder on the desktop). Do not use launch_app for directories and do not run pcmanfm-qt/gio in terminal; open_file only opens a regular file."
+    display_en: "Open a local directory with the file manager. Use for well-known locations (desktop/documents/downloads/home/root), an explicit absolute directory path, a fuzzy directory name, or a location-qualified name (open the bianbu folder on the desktop). This only shows a directory — it cannot find, filter, list or enumerate the files inside it, so never offer it as a way to locate files by type or name. Do not use launch_app for directories and do not run pcmanfm-qt/gio in terminal; open_file only opens a regular file."
     short: "opendir"
     aliases: ["open folder", "open directory", "打开文件夹", "打开目录", "打开位置"]
     params:

@@ -1,0 +1,1 @@
+%sudo ALL=(root) NOPASSWD: /usr/sbin/iptables -L -n, /usr/sbin/iptables -t nat -L -n

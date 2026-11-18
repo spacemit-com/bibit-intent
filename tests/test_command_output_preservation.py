@@ -25,6 +25,67 @@ from bibit_intent.server import BibitIntentService
 RAW = "\n    root  value\n\tchild\n\n        leaf  \n\n"
 
 
+@pytest.mark.parametrize("returncode,ok", [(0, True), (1, True), (2, False)])
+def test_antivirus_preserves_scan_summary(monkeypatch, tmp_path, returncode, ok):
+    module = load_handlers("ubuntu_cmd")
+    target = tmp_path / "scan directory"
+    target.mkdir()
+    commands = []
+
+    def run(cmd, **kwargs):
+        commands.append(cmd)
+        return subprocess.CompletedProcess(cmd, returncode, stdout="scan summary", stderr="scan warning")
+
+    monkeypatch.setattr(module, "run_command", run)
+    result = module.sec_antivirus(path=str(target))
+    assert commands == [["clamscan", "--suppress-ok-results", "-r", str(target)]]
+    assert result.ok == ok
+    assert "scan summary" in result.detail
+    assert "scan warning" in result.detail
+
+
+def test_antivirus_rejects_relative_path():
+    module = load_handlers("ubuntu_cmd")
+    assert not module.sec_antivirus(path="tmp").ok
+
+
+def test_block_ip_requires_sudo_authorization(monkeypatch):
+    module = load_handlers("ubuntu_admin")
+    commands = []
+
+    def authorize(cmd, **kwargs):
+        assert kwargs["force_reauth"] is True
+        commands.append(cmd)
+        return module.ExecResult(False, "已取消授权")
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("IP blocking must not use the unprivileged command runner")
+
+    monkeypatch.setattr(module, "_run_sudo", authorize)
+    monkeypatch.setattr(module, "_run", forbidden)
+    result = module.iptables_block(ip="30.0.90.254")
+    assert not result.ok
+    assert commands == [["/usr/sbin/iptables", "-A", "INPUT", "-s", "30.0.90.254", "-j", "DROP"]]
+
+
+@pytest.mark.parametrize("nat_ok", [True, False])
+def test_firewall_uses_only_fixed_readonly_commands(monkeypatch, nat_ok):
+    module = load_handlers("ubuntu_cmd")
+    commands = []
+
+    def run(cmd, **kwargs):
+        commands.append(cmd)
+        return module.ExecResult(len(commands) == 1 or nat_ok, "status", "rules")
+
+    monkeypatch.setattr(module, "_run", run)
+    result = module.iptables_list()
+    assert result.ok == nat_ok
+    assert commands == [
+        ["sudo", "-n", "/usr/sbin/iptables", "-L", "-n"],
+        ["sudo", "-n", "/usr/sbin/iptables", "-t", "nat", "-L", "-n"],
+    ]
+
+
 def load_handlers(skill):
     spec = importlib.util.spec_from_file_location(
         f"output_preservation_{skill}", resource_path(f"skills/{skill}/handlers.py")

@@ -1,6 +1,6 @@
 # wheels/ 与 deps/ 依赖说明
 
-`wheels/` 存放离线 wheel 包（通过 Git LFS 保存，克隆后需执行 `git lfs pull`），作为 `deps/` 的再生成来源。
+`wheels/` 存放离线 wheel 包（已纳入 git），作为 `deps/` 的再生成来源。
 运行时实际使用的是 `deps/` 下解包后的 vendored 依赖，**无需 pip 安装**
 （由 `src/bibit_intent/core/text_normalizer.py` 自动加载）。
 

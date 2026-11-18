@@ -123,6 +123,21 @@ _WRITING_TASK_RE = re.compile(
     re.I,
 )
 
+# 代码类请求：修/改/调/分析类动作往往不含"写"字，_WRITING_TASK_RE 抓不到，
+# 会被后面的规则引擎误吃（"修一下这个报错"命中 usb_reset 之类的症状词）。
+# 这类请求端侧一律不判定，直接升级云端交给 code_task。
+_CODE_TASK_RE = re.compile(
+    r"(?:写|改|修|加|补|重构|优化|调试|排查|分析|解释|看懂|跑通|运行|编译)"
+    r"[^，。；]{0,12}"
+    r"(?:代码|函数|脚本|程序|项目|工程|报错|异常|堆栈|traceback|bug|Bug|BUG|"
+    r"\.py|\.c|\.cpp|\.h|\.rs|\.go|\.js|\.ts|Makefile|CMakeLists|def |class )"
+    r"|(?:代码|函数|脚本|项目|工程)[^，。；]{0,12}(?:写|改|修|调试|优化|重构|分析|解释)"
+    r"|\w+\.(?:py|c|cpp|h|rs|go|js|ts)\b[^，。；]{0,20}"
+    r"(?:改|修|写|补|调试|优化|重构|分析|解释|编译|运行|报错|错误|失败|不过|崩)"
+    r"|(?:write|fix|debug|refactor|explain|analyze)\b[^.]{0,20}(?:code|script|function|bug|error|traceback)",
+    re.I,
+)
+
 # 办公产出任务（产出动作 + 文档品类）不要被 file_search 直通吃掉；纯检索不受影响。
 _OFFICE_DELIVERABLE_RE = re.compile(
     r"(?:帮我|给我|请|替我)?\s*(?:写|撰写|起草|产出|生成|整理成|整理|汇总成|汇总|编排|做)"
@@ -445,8 +460,8 @@ _NET_KNOWLEDGE_RE = re.compile(
     r"|(?:什么是|什么叫)\s*"
     r"(?:以太网|tcp|TCP|udp|UDP|http|HTTP|https|HTTPS|dhcp|DHCP|dns|DNS|nat|NAT|"
     r"子网|局域网|广域网|网关|路由|交换机|网卡|协议)"
-    # 疑问词前置语序："怎么连接网络"（anchor 语料 expect=query_knowledge）——
-    # 上面的主体+谓词顺序抓不到，单独放一条；对象必须是网络域词，避免
+    # 疑问词前置语序："怎么连接网络"——上面的主体+谓词顺序抓不到，单独放一条；
+    # 对象必须是网络域词，避免
     # "怎么连接蓝牙耳机"被误升级。
     r"|(?:怎么|如何)\s*(?:连接|连上|接入|设置|配置|使用)\s*.{0,6}"
     r"(?:网络|wifi|WiFi|无线|有线网|有线|以太网|网卡)",
@@ -862,6 +877,8 @@ def decide_local_intent(
         return IntentPlan(action=IntentAction.ESCALATE, reason="unverified_command")
     if instruction_search(_WRITING_TASK_RE, user_input):
         return IntentPlan(action=IntentAction.ESCALATE, reason="writing_task")
+    if _CODE_TASK_RE.search(user_input):
+        return IntentPlan(action=IntentAction.ESCALATE, reason="code_task")
     if missing_app_target_request(user_input):
         return IntentPlan(action=IntentAction.ESCALATE, reason="missing_app_target")
     preview = preview_slots(user_input)

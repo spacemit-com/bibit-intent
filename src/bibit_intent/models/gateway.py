@@ -4,10 +4,11 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Mapping
 import json
+import ipaddress
 import math
 from urllib.error import URLError
 from urllib.parse import quote, urlsplit
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener, urlopen
 
 from bibit_intent.execution.cancellation import interruptible_call
 from bibit_intent.models.local_model import LocalModelClient
@@ -27,6 +28,11 @@ def validate_gateway_config(backend: str, url: str, *models: str) -> None:
         raise ValueError("Gateway model IDs must be nonempty single path segments")
 
 
+class _NoRedirect(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
 class GatewayTransport:
     def __init__(self, base_url: str, api_key: str = "", timeout: int = 20):
         self.base_url = base_url.rstrip("/")
@@ -34,7 +40,17 @@ class GatewayTransport:
         self.timeout = timeout
 
     def request(self, path: str, payload: dict | None = None, *, method: str | None = None,
-                timeout: int | None = None):
+                timeout: int | None = None, local_only: bool = False):
+        opener = urlopen
+        if local_only:
+            parsed = urlsplit(self.base_url)
+            try:
+                loopback = ipaddress.ip_address(parsed.hostname or "").is_loopback
+            except ValueError:
+                loopback = False
+            if not loopback or parsed.scheme not in {"http", "https"} or parsed.username or parsed.password:
+                raise ValueError("文件总结只允许连接本机 IP 地址上的模型网关")
+            opener = build_opener(ProxyHandler({}), _NoRedirect()).open
         headers = {"Content-Type": "application/json"}
         if self.api_key:
             headers["X-API-Key"] = self.api_key
@@ -45,7 +61,7 @@ class GatewayTransport:
         )
 
         def read():
-            with urlopen(request, timeout=timeout or self.timeout) as response:
+            with opener(request, timeout=timeout or self.timeout) as response:
                 return json.load(response)
 
         return interruptible_call(read)
@@ -81,8 +97,8 @@ class GatewayLocalModelClient(LocalModelClient):
         except (OSError, ValueError, TypeError, KeyError):
             return False
 
-    def _post(self, path: str, payload: dict) -> dict:
-        if path != '/completion' or payload.get('stream'):
+    def _post(self, path: str, payload: dict, *, timeout: int | None = None, local_only: bool = False) -> dict:
+        if path not in {'/completion', '/chat/completions'} or payload.get('stream'):
             raise ValueError('Only non-streaming completion is supported')
         if not self.is_available():
             raise URLError('Configured local Gateway model is not loaded')
@@ -92,10 +108,11 @@ class GatewayLocalModelClient(LocalModelClient):
         probabilities = request.pop('n_probs', 0)
         if probabilities:
             request['logprobs'] = probabilities
-        response = self.transport.request('/v1/llm/completions', request)
+        endpoint = '/v1/llm/chat/completions' if path == '/chat/completions' else '/v1/llm/completions'
+        response = self.transport.request(endpoint, request, timeout=timeout, **({'local_only': True} if local_only else {}))
         try:
             choice = response['choices'][0]
-            content = choice['text']
+            content = choice['message']['content'] if path == '/chat/completions' else choice['text']
             if not isinstance(content, str):
                 raise ValueError('Invalid completion text')
             scores = self._probabilities(choice.get('logprobs'))

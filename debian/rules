@@ -50,6 +50,8 @@ override_dh_auto_install:
 	# login1 的 power-off/reboot/suspend 默认 allow_active=yes、allow_any=auth_admin_keep，
 	# MCP 工具进程跑在无 seat 的 Runtime 系统服务里会被拒绝，关机/休眠会静默失败。
 	install -m 0644 deploy/50-bianbu-power.rules $(PACKAGE_ROOT)/etc/polkit-1/rules.d/50-bianbu-power.rules
+	install -d $(PACKAGE_ROOT)/etc/sudoers.d
+	install -m 0440 deploy/bibit-intent-iptables.sudoers $(PACKAGE_ROOT)/etc/sudoers.d/bibit-intent-iptables
 
 override_dh_strip:
 override_dh_dwz:

@@ -38,6 +38,8 @@ def gateway():
                 return self.respond(401, {"detail": "unauthorized"})
             if self.path == "/v1/embed/embeddings":
                 return self.respond(200, {"data": [{"index": 0, "embedding": state.embedding}]})
+            if self.path == "/v1/llm/chat/completions":
+                return self.respond(200, {"choices": [{"message": {"content": "[3,4]"}}]})
             if self.path == "/v1/llm/completions":
                 return self.respond(200, {
                     'choices': [{'text': 'CALL mute on=true', 'logprobs': {'content': [
@@ -360,3 +362,24 @@ def test_deployment_is_gateway_only():
     assert "spacemit-ai-gateway," in control
     assert "llama.cpp-tools-spacemit," not in control
     assert not (root / "src/bibit_intent/models/model_manager.py").exists()
+
+
+def test_local_summary_chat_preserves_schema_and_local_transport(gateway, monkeypatch):
+    client = local_client(gateway.config)
+    calls = []
+    original = client.transport.request
+    def request(path, payload=None, **kwargs):
+        calls.append((path, payload, kwargs))
+        return original(path, payload, **kwargs)
+    monkeypatch.setattr(client.transport, "request", request)
+    schema = {"type": "array", "items": {"type": "integer"}}
+    result = client._post("/chat/completions", {
+        "messages": [{"role": "user", "content": "文档事实"}], "n_predict": 128,
+        "response_format": {"type": "json_schema", "json_schema": {"name": "sentence_ids", "schema": schema}},
+    }, local_only=True)
+    assert result["content"] == "[3,4]"
+    path, payload, options = next(call for call in calls if call[0].endswith("/chat/completions"))
+    assert path == "/v1/llm/chat/completions"
+    assert options["local_only"] is True
+    assert payload["max_tokens"] == 128
+    assert payload["response_format"]["json_schema"]["schema"] == schema

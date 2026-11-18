@@ -55,6 +55,31 @@ def _status_file(tmp_path: Path, value: str) -> str:
     return str(path)
 
 
+@pytest.mark.parametrize("restricted", [False, True])
+@pytest.mark.parametrize("returncode", [0, 1])
+def test_block_ip_forces_reauth_on_both_paths(module, monkeypatch, restricted, returncode):
+    monkeypatch.setattr(module, "_no_new_privs_active", lambda: restricted)
+    monkeypatch.setattr(module, "_usr_mount_read_only", lambda: False)
+    monkeypatch.setattr(module, "_session_askpass_env", lambda: {"SUDO_ASKPASS": "/bin/true"})
+    calls = []
+
+    def run(cmd, **kwargs):
+        calls.append(cmd)
+        return subprocess.CompletedProcess(cmd, returncode, "", "sudo: a password is required" if returncode else "")
+
+    monkeypatch.setattr(module, "run_command", run)
+    result = module.iptables_block(ip="30.0.90.254")
+    assert result.ok == (returncode == 0)
+    assert len(calls) == 1
+    target = ["/usr/sbin/iptables", "-A", "INPUT", "-s", "30.0.90.254", "-j", "DROP"]
+    if restricted:
+        assert calls[0][0] == "systemd-run"
+        assert 'exec sudo -A -k "$@"\n' in calls[0]
+        assert calls[0][-len(target):] == target
+    else:
+        assert calls[0] == ["sudo", "-A", "-k", *target]
+
+
 @pytest.mark.parametrize(
     ("value", "expected"),
     [("1", True), ("0", False)],

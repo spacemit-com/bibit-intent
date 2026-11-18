@@ -99,7 +99,12 @@ def mcp_confirmation(action: str) -> bool:
 def _build_executor() -> tuple[ToolRegistry, Executor]:
     registry = ToolRegistry(resource_path("tools.yaml"))
     handlers = dict(HANDLERS)
-    load_skills(resource_path("skills"), registry, handlers)
+    load_skills(
+        resource_path("skills"),
+        registry,
+        handlers,
+        groups=_allowed_groups(),
+    )
     return registry, Executor(
         registry,
         handlers=handlers,
@@ -183,6 +188,38 @@ def _tool_payload_failed(result) -> bool:
             return False
         return isinstance(payload, dict) and payload.get("ok") is False
     return False
+
+
+def _file_search_ui_result(result):
+    """正文仅放 MCP 私有展示元数据，普通工具内容不得包含文件片段。"""
+    from mcp.types import CallToolResult, TextContent
+
+    blocks = getattr(result, "content", None) or result
+    if isinstance(blocks, tuple) and blocks and isinstance(blocks[0], list):
+        blocks = blocks[0]
+    private = None
+    try:
+        payload = json.loads(blocks[0].text)
+        detail = json.loads(payload.get("detail") or "null")
+        if payload.get("ok") is True and isinstance(detail, dict) and detail.get("schema") == "bibit.file-results.v1":
+            safe = {**detail, "entries": [
+                {**entry, "snippet": None, "snippet_source": None}
+                for entry in detail["entries"]
+            ]}
+            private = detail
+            payload = {**payload, "detail": json.dumps(safe, ensure_ascii=False)}
+        elif payload.get("ok") is not False:
+            raise ValueError("unknown file search result")
+        else:
+            payload = {**payload, "detail": ""}
+    except (ValueError, TypeError, KeyError, IndexError, AttributeError):
+        payload = {"ok": False, "message": "文件检索结果无效，请重新搜索。", "detail": ""}
+    fields = CallToolResult.model_fields
+    return CallToolResult(**{
+        "content": [TextContent(type="text", text=json.dumps(payload, ensure_ascii=False))],
+        "isError" if "isError" in fields else "is_error": payload.get("ok") is not True,
+        "_meta": {"bibit.file-results": private} if private is not None else None,
+    })
 
 
 def _mark_tool_failure(result):
@@ -402,9 +439,10 @@ def create_server():
 
         async def call_tool(self, name, arguments):
             params = self._params_by_tool.get(name) or {}
-            return _mark_tool_failure(
-                await super().call_tool(name, _unwrap_envelope(params, arguments))
-            )
+            result = await super().call_tool(name, _unwrap_envelope(params, arguments))
+            if name == "file_search":
+                return _file_search_ui_result(result)
+            return _mark_tool_failure(result)
 
     registry, executor = _build_executor()
     tools = list(_tools_for_groups(registry, _allowed_groups()))
@@ -464,6 +502,8 @@ def create_server():
                     "need_param": result.need_param,
                     "escalate": result.escalate,
                 }
+                if result.confirmation is not None:
+                    payload["confirmation"] = result.confirmation
                 return json.dumps(payload, ensure_ascii=False)
             invoke.__name__ = tool_name
             invoke.__doc__ = tool_description

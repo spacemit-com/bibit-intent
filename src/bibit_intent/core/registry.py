@@ -12,9 +12,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import yaml
 from pydantic import BaseModel
 
+from bibit_intent.core.yaml_utils import safe_load
 from bibit_intent.resources import resource_path
 
 
@@ -223,7 +223,7 @@ class ToolRegistry:
     def __init__(self, config_path: str | Path | None = None):
         if config_path is None:
             config_path = resource_path("tools.yaml")
-        raw = yaml.safe_load(Path(config_path).read_text(encoding="utf-8"))
+        raw = safe_load(Path(config_path).read_text(encoding="utf-8"))
         self._tools: dict[str, ToolDef] = {}
         # 核心控制域口语线索缓存（惰性构建，见 core_control_cues）
         self._core_cues: set[str] | None = None
@@ -384,7 +384,7 @@ class ToolRegistry:
 
         用于把端侧解码 grammar 的 tool-name 闭合到候选集合：只枚举有
         local_signature 的工具，避免 grammar 允许模型输出清单里根本不存在的
-        工具名（如 query_knowledge / 云端专属工具）。
+        工具名（如云端专属工具）。
         """
         if candidates is None:
             tools = list(self._tools.values())
@@ -402,14 +402,13 @@ class ToolRegistry:
         减少干扰项。
 
         只含**内置工具**(source=None)，排除：
-          - query_knowledge（走独立 KB 通道）
           - Skill 工具（source=skill名）——skill 工具靠关键词命中才注入，
             不进兜底核心集，避免 skill 越多、核心集越膨胀、模型越易误判。
         对照 design.md §5.1「动态候选注入」的兜底策略。
         """
         return [
             n for n in self._tools
-            if n != "query_knowledge" and self._tool_source.get(n) is None
+            if self._tool_source.get(n) is None
         ]
 
     def core_control_cues(self) -> set[str]:

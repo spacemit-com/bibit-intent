@@ -26,6 +26,11 @@ from bibit_intent.routing.rule_engine import RuleEngine
 
 # ── 用例：(输入, 期望工具, 期望槽位子集) ──────────────────────────────
 SLOT_CASES = [
+    ("帮我屏蔽ip 30.0.90.254", "iptables_block", {"ip": "30.0.90.254"}),
+    ("对/tmp目录进行一次病毒扫描", "sec_antivirus", {"path": "/tmp"}),
+    ("对/tmp进行病毒扫描", "sec_antivirus", {"path": "/tmp"}),
+    ("扫描/tmp目录的病毒", "sec_antivirus", {"path": "/tmp"}),
+    ("扫描 /var 目录有没有病毒", "sec_antivirus", {"path": "/var"}),
     # A. 包名不能被吞（本次 bug 现场）
     ("帮我安装 vim",        "pkg_install", {"pkg": "vim"}),
     ("帮我安装vim",         "pkg_install", {"pkg": "vim"}),

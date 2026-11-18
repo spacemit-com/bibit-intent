@@ -10,6 +10,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
+from pathlib import Path
 
 import pytest
 import yaml
@@ -46,6 +47,10 @@ class _Resp:
         self.status_code = status
         self._payload = payload
         self._json_error = json_error
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise OSError("HTTP failure")
 
     def json(self):
         if self._json_error:
@@ -433,13 +438,13 @@ def test_search_supports_english(tmp_path, monkeypatch, handlers):
 
 # ── file_read：本地取文（file_search 只回元数据）────────────────────
 
-def _no_service(monkeypatch):
-    """让 /api/settings 探不到：退回默认索引目录（$HOME/Desktop、$HOME/Documents）。"""
+def _default_authorized(monkeypatch):
+    """正常读取显式设置；服务故障拒绝访问另有安全回归。"""
     import httpx
-
-    monkeypatch.setattr(
-        httpx, "get", lambda *a, **k: (_ for _ in ()).throw(ConnectionError("no service"))
-    )
+    monkeypatch.setattr(httpx, "get", lambda *a, **k: _Resp(payload={"code": 0, "data": {
+        "index_dirs": [str(Path.home() / "Desktop"), str(Path.home() / "Documents")],
+        "exclude_patterns": [], "indexable_types": ["txt", "md", "docx", "pdf"], "max_depth": 3,
+    }}))
 
 
 def test_file_read_is_registered_readonly():
@@ -463,7 +468,7 @@ def test_file_read_reads_text_inside_index_dir(tmp_path, monkeypatch, handlers):
     home = tmp_path / "home"
     (home / "Desktop").mkdir(parents=True)
     monkeypatch.setenv("HOME", str(home))
-    _no_service(monkeypatch)
+    _default_authorized(monkeypatch)
     target = home / "Desktop" / "notes.md"
     target.write_text("# 周报\n本周完成了 A、B。\n", encoding="utf-8")
     result = handlers.file_read(str(target))
@@ -485,7 +490,7 @@ def test_file_read_uses_filesearch_index_dirs(tmp_path, monkeypatch, handlers):
     monkeypatch.setattr(
         httpx,
         "get",
-        lambda *a, **k: _Resp(payload={"data": {"index_dirs": [str(index_dir)]}}),
+        lambda *a, **k: _Resp(payload={"data": {"index_dirs": [str(index_dir)], "exclude_patterns": [], "indexable_types": ["txt"], "max_depth": 3}}),
     )
     inside = index_dir / "a.txt"
     inside.write_text("indexed", encoding="utf-8")
@@ -495,36 +500,36 @@ def test_file_read_uses_filesearch_index_dirs(tmp_path, monkeypatch, handlers):
     outside.write_text("not indexed", encoding="utf-8")
     result = handlers.file_read(str(outside))
     assert not result.ok
-    assert _code(result) == "file_outside_index_dirs"
+    assert _code(result) == "file_unavailable"
 
 
 def test_file_read_refuses_outside_binary_and_oversize(tmp_path, monkeypatch, handlers):
     home = tmp_path / "home"
     (home / "Desktop").mkdir(parents=True)
     monkeypatch.setenv("HOME", str(home))
-    _no_service(monkeypatch)
+    _default_authorized(monkeypatch)
 
     outside = tmp_path / "secret.txt"
     outside.write_text("secret", encoding="utf-8")
-    assert _code(handlers.file_read(str(outside))) == "file_outside_index_dirs"
+    assert _code(handlers.file_read(str(outside))) == "file_unavailable"
 
     binary = home / "Desktop" / "a.docx"
     binary.write_bytes(b"PK\x03\x04\x00\x00binary")
     result = handlers.file_read(str(binary))
-    assert result.ok
-    assert _code(result) == "file_binary"
-    assert "不要凭文件名猜内容" in result.message
+    assert not result.ok
+    assert _code(result) == "file_unavailable"
+    assert "DOCX" in result.message
 
     pdf = home / "Desktop" / "b.pdf"
     pdf.write_bytes(b"%PDF-1.7\n...")
-    assert _code(handlers.file_read(str(pdf))) == "file_binary"
+    assert not handlers.file_read(str(pdf)).ok
 
 
 def test_file_read_path_argument_errors(tmp_path, monkeypatch, handlers):
     home = tmp_path / "home"
     (home / "Desktop").mkdir(parents=True)
     monkeypatch.setenv("HOME", str(home))
-    _no_service(monkeypatch)
+    _default_authorized(monkeypatch)
 
     missing = handlers.file_read("")
     assert missing.need_param == "path"
@@ -534,14 +539,14 @@ def test_file_read_path_argument_errors(tmp_path, monkeypatch, handlers):
 
     gone = handlers.file_read(str(home / "Desktop" / "nope.txt"))
     assert not gone.ok
-    assert _code(gone) == "file_not_found"
+    assert _code(gone) == "file_unavailable"
 
 
 def test_file_read_truncates_by_max_bytes(tmp_path, monkeypatch, handlers):
     home = tmp_path / "home"
     (home / "Desktop").mkdir(parents=True)
     monkeypatch.setenv("HOME", str(home))
-    _no_service(monkeypatch)
+    _default_authorized(monkeypatch)
     target = home / "Desktop" / "big.txt"
     target.write_text("x" * 5000, encoding="utf-8")
     result = handlers.file_read(str(target), max_bytes=100)
@@ -701,7 +706,8 @@ def test_explicit_read_routes_to_file_read(rule):
 def test_explicit_read_with_extra_instruction_escalates(rule):
     plan = _plan("读取本地文件 /home/bianbu/Desktop/kb_uart_notes.txt，然后总结要点")
     assert plan.action.value == "escalate"
-    assert plan.reason == "file_read_with_instruction"
+    assert plan.reason == "multi_intent"
+    assert plan.tool_name is None
 
 
 def test_explicit_read_does_not_break_local_search(rule):
@@ -731,7 +737,8 @@ def test_office_deliverable_beats_the_local_search_fast_path(rule):
         "产出 PDF 和 DOCX"
     )
     assert plan.action.value == "escalate"
-    assert plan.reason == "office_deliverable"
+    assert plan.reason == "multi_intent"
+    assert plan.tool_name is None
 
 
 def test_search_wording_still_uses_the_fast_path(rule):

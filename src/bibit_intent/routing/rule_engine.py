@@ -38,12 +38,18 @@ from bibit_intent.knowledge.hallucination import (
 # 短式切换/改设单字动词词根：find_verbs 的词典 trie 只收录多字动作词，
 # 会把正则交替组里的裸单字动词（(?:切|换|转)、(切换|换|改|设)）漏掉，
 # 导致 analysis.predicates（换成/切到/转成/改到/设成）与 _pattern_verbs
-# 交集为空，整工具被 predicate 过滤误跳过。
-_SHORT_VERB_ROOTS = frozenset("切换转改设")
+# 交集为空，整工具被 predicate 过滤误跳过。截 同理：截图工具的 (?:截取|截)
+# 交替组里「截」是裸单字动词。
+_SHORT_VERB_ROOTS = frozenset("切换转改设截")
+# 词库在这些正则上下文里给不出 VERB 词性、但确实是该工具动作词的多字词根。
+# 例：截图工具写 `(?:截取|截)(?:屏幕|全屏)` 时，find_verbs 对「截取」返回空，
+# 「帮我截取屏幕」就会被 predicates 门误过滤掉（实测 predicate=('截取',)）。
+_SHORT_CN_VERB_ROOTS = ("截取", "抓取", "截屏", "截图")
 # 英文短动词词根（take/snap/…）：find_verbs 只收词典里的多字动词，正则交替组
 # 里裸的英文单字动词会被漏掉，导致 _pattern_verb_roots 认不出该工具的动作动词，
 # 混合中英 pattern 的工具（如 take_photo）对英文输入被谓词门直接过滤掉。
-_SHORT_EN_VERB_ROOTS = frozenset({"take", "snap"})
+# grab 与 take/snap 同类（grab a screenshot），词库里也没有。
+_SHORT_EN_VERB_ROOTS = frozenset({"take", "snap", "grab"})
 _VERB_PARTICLE_TAIL = "到成为回"
 
 
@@ -69,6 +75,9 @@ def _pattern_verb_roots(patterns: list) -> set[str]:
         for verb in find_verbs(s):
             roots.add(verb)
             roots.add(_verb_root(verb))
+        for cn in _SHORT_CN_VERB_ROOTS:
+            if re.search(rf"[|(:]{re.escape(cn)}(?=[|)])", s):
+                roots.add(cn)
         for ch in _SHORT_VERB_ROOTS:
             if re.search(rf"[|(:]{re.escape(ch)}(?=[|)])", s):
                 roots.add(ch)
@@ -346,6 +355,16 @@ class RuleEngine:
         # 避免"帮我不要关浏览器"被 close_app 等正则误执行。
         if analysis is not None and analysis.is_negated_action:
             return None
+
+        normalized = text.rstrip("。！？!? \t\r\n")
+        if normalized != text:
+            candidate = self._exact_match(normalized) or self._pattern_match(normalized, analysis)
+            if candidate and candidate.tool_name in {
+                "get_vol_status", "get_display_light", "adjust_volume",
+                "adjust_brightness", "set_volume", "set_brightness", "mute",
+                "lock_screen", "reboot", "shutdown",
+            }:
+                text = normalized
 
         # 1. 精确词表
         pattern_request = package_pattern_request(text)
